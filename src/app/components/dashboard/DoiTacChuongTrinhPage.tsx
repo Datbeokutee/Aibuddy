@@ -96,14 +96,6 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
   },
 ];
 
-// ── Danh sách địa lý mẫu ──────────────────────────────────────────────────────
-const DS_TINH_THANH = ["Hà Nội","TP. Hồ Chí Minh","Đà Nẵng","Hải Phòng","Cần Thơ","An Giang","Bình Dương","Đồng Nai","Khánh Hòa","Nghệ An"];
-const DS_CAP_HOC = ["Tiểu học","THCS","THPT"];
-const DS_TRUONG: Record<string, string[]> = {
-  "Hà Nội": ["Trường TH Đống Đa","Trường THCS Trưng Vương","Trường THPT Chu Văn An"],
-  "TP. Hồ Chí Minh": ["Trường TH Lê Văn Tám","Trường THCS Nguyễn Du","Trường THPT Lê Quý Đôn"],
-  "Đà Nẵng": ["Trường TH Phù Đổng","Trường THCS Trần Phú","Trường THPT Phan Châu Trinh"],
-};
 
 // ── DỮ LIỆU BẢNG ──────────────────────────────────────────────────────────────
 
@@ -222,14 +214,6 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
     const url = URL.createObjectURL(file);
     setF({ anhPreview: url });
   };
-
-  // Đơn vị áp dụng
-  const themDonVi = () =>
-    setF({ danhSachDonVi: [...form.danhSachDonVi, { id: `dv-${Date.now()}`, tinhThanh: "", capHoc: "", truong: "" }] });
-  const xoaDonVi = (id: string) =>
-    setF({ danhSachDonVi: form.danhSachDonVi.filter((d) => d.id !== id) });
-  const capNhatDonVi = (id: string, field: keyof DonViApDung, value: string) =>
-    setF({ danhSachDonVi: form.danhSachDonVi.map((d) => d.id === id ? { ...d, [field]: value, ...(field === "tinhThanh" ? { truong: "" } : {}) } : d) });
 
   // Validate & Lưu
   const handleLuu = () => {
@@ -445,128 +429,6 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
               {errors.monHoc && <p style={errorStyle}>{errors.monHoc}</p>}
               {form.monHocChon.length > 0 && (
                 <p style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>Đã chọn: {form.monHocChon.join(", ")}</p>
-              )}
-            </div>
-
-            {/* ── Đơn vị áp dụng ──────────────────────────────────────────────── */}
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a2e", margin: "0 0 12px" }}>Đơn vị áp dụng</p>
-
-              {/* Radio */}
-              <div style={{ display: "flex", gap: 24, marginBottom: 16 }}>
-                {([
-                  { val: "chon", label: "Chọn đơn vị" },
-                  { val: "nhap-ma", label: "Nhập danh sách mã trường" },
-                ] as const).map((opt) => (
-                  <label key={opt.val} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, cursor: "pointer", color: "#374151" }}>
-                    <div
-                      onClick={() => setF({ loaiDonVi: opt.val })}
-                      style={{
-                        width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                        border: `2px solid ${form.loaiDonVi === opt.val ? "#005CB6" : "#d1d5db"}`,
-                        display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-                        background: "#fff",
-                      }}
-                    >
-                      {form.loaiDonVi === opt.val && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#005CB6" }} />}
-                    </div>
-                    {opt.label}
-                  </label>
-                ))}
-              </div>
-
-              {form.loaiDonVi === "chon" ? (
-                <>
-                  {form.danhSachDonVi.map((dv, idx) => (
-                    <div key={dv.id} style={{ marginBottom: 12 }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }}>
-                        {/* Tỉnh thành */}
-                        <div>
-                          {idx === 0 && <label style={{ ...labelBase, marginBottom: 6 }}>Tỉnh thành <span style={{ color: "#ef4444" }}>*</span></label>}
-                          <div style={{ position: "relative" }}>
-                            <select
-                              value={dv.tinhThanh}
-                              onChange={(e) => capNhatDonVi(dv.id, "tinhThanh", e.target.value)}
-                              style={{ ...inputBase, appearance: "none", paddingRight: 32, color: dv.tinhThanh ? "#1a1a2e" : "#9ca3af" }}
-                            >
-                              <option value="">-- Chọn --</option>
-                              {DS_TINH_THANH.map((t) => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                            <ChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#9ca3af" }} />
-                          </div>
-                        </div>
-                        {/* Cấp học */}
-                        <div>
-                          {idx === 0 && <label style={{ ...labelBase, marginBottom: 6 }}>Cấp học</label>}
-                          <div style={{ position: "relative" }}>
-                            <select
-                              value={dv.capHoc}
-                              onChange={(e) => capNhatDonVi(dv.id, "capHoc", e.target.value)}
-                              style={{ ...inputBase, appearance: "none", paddingRight: 32, color: dv.capHoc ? "#1a1a2e" : "#9ca3af" }}
-                            >
-                              <option value="">-- Chọn --</option>
-                              {DS_CAP_HOC.map((c) => <option key={c} value={c}>{c}</option>)}
-                            </select>
-                            <ChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#9ca3af" }} />
-                          </div>
-                        </div>
-                        {/* Trường */}
-                        <div>
-                          {idx === 0 && <label style={{ ...labelBase, marginBottom: 6 }}>Trường</label>}
-                          <div style={{ position: "relative" }}>
-                            <select
-                              value={dv.truong}
-                              onChange={(e) => capNhatDonVi(dv.id, "truong", e.target.value)}
-                              disabled={!dv.tinhThanh}
-                              style={{ ...inputBase, appearance: "none", paddingRight: 32, color: dv.truong ? "#1a1a2e" : "#9ca3af", opacity: !dv.tinhThanh ? 0.55 : 1 }}
-                            >
-                              <option value="">-- Chọn trường --</option>
-                              {(DS_TRUONG[dv.tinhThanh] ?? []).map((t) => <option key={t} value={t}>{t}</option>)}
-                            </select>
-                            <ChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#9ca3af" }} />
-                          </div>
-                        </div>
-                        {/* Xóa */}
-                        <button
-                          onClick={() => xoaDonVi(dv.id)}
-                          disabled={form.danhSachDonVi.length === 1}
-                          style={{
-                            width: 34, height: 38, borderRadius: 8, border: "1px solid #fecaca",
-                            background: "#fff", cursor: form.danhSachDonVi.length === 1 ? "not-allowed" : "pointer",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            opacity: form.danhSachDonVi.length === 1 ? 0.35 : 1,
-                            marginTop: idx === 0 ? 22 : 0, flexShrink: 0,
-                          }}
-                        >
-                          <Trash2 size={14} color="#ef4444" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={themDonVi}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 6, padding: "8px 16px",
-                      borderRadius: 8, border: "1.5px solid #005CB6", background: "#fff",
-                      fontSize: 13, fontWeight: 600, color: "#005CB6", cursor: "pointer",
-                      fontFamily: "'Be Vietnam Pro', sans-serif", marginTop: 4,
-                    }}
-                  >
-                    <Plus size={14} />
-                    Thêm
-                  </button>
-                </>
-              ) : (
-                <div>
-                  <label style={{ ...labelBase }}>Danh sách mã trường <span style={{ fontWeight: 400, color: "#9ca3af" }}>(cách nhau bởi dấu phẩy)</span></label>
-                  <textarea
-                    value={form.maTruongNhap}
-                    onChange={(e) => setF({ maTruongNhap: e.target.value })}
-                    placeholder="VD: HN001, HN002, HCM003..."
-                    rows={4}
-                    style={{ ...inputBase, resize: "vertical" }}
-                  />
-                </div>
               )}
             </div>
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { SAMPLE_DATA as DS_CHUONG_TRINH_HOC_PAGE } from "./ChuongTrinhHocPage";
 import {
   Tags, Plus, Edit2, Eye, X, Check, AlertCircle, CheckCircle,
   ChevronDown, Search,
@@ -434,6 +435,7 @@ function LopSelector({ value, onChange }: { value: string[]; onChange: (v: strin
 interface KhacGiaEntry { giaGoc: string; giaBan: string; }
 
 interface FormState {
+  ctHocIds: string[];              // Chương trình học liên kết
   tenGoi: string;
   phanLoai: string;
   thoiLuongThuNghiem: string;
@@ -456,6 +458,7 @@ interface FormState {
 }
 
 const FORM_RONG: FormState = {
+  ctHocIds: [],
   tenGoi: "", phanLoai: "", thoiLuongThuNghiem: "7", thoiLuongSuDung: "12",
   maBCSS: "", lopIds: [], loaiGia: "dong-gia",
   giaGoc: "", giaFrom: "", giaTo: "",
@@ -470,8 +473,108 @@ const FORM_RONG: FormState = {
 const STEPS = [
   { label: "Thông tin chung",         icon: Tags        },
   { label: "Cấu hình giá & đối tượng", icon: DollarSign  },
-  { label: "Liên kết Môn học",        icon: BookOpen    },
+  { label: "Danh sách Môn học",        icon: BookOpen    },
 ];
+
+// ── Chọn Chương trình học (multi-select từ ChuongTrinhHocPage) ────────────────
+
+function CtHocPicker({ value, onChange }: { value: string[]; onChange: (ids: string[]) => void }) {
+  const [search, setSearch] = useState("");
+  const filtered = DS_CHUONG_TRINH_HOC_PAGE.filter(ct =>
+    ct.tenChuongTrinh.toLowerCase().includes(search.toLowerCase()) ||
+    ct.maChuongTrinh.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const toggle = (id: string) =>
+    onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id]);
+
+  const selectedItems = DS_CHUONG_TRINH_HOC_PAGE.filter(ct => value.includes(ct.id));
+
+  return (
+    <div>
+      {/* Selected chips */}
+      {selectedItems.length > 0 && (
+        <div style={{ display:"flex", flexWrap:"wrap", gap:6, padding:"10px 12px", borderBottom:"1px solid #E2E8F0", background:"#F8FAFC" }}>
+          {selectedItems.map(ct => (
+            <span key={ct.id} style={{
+              display:"inline-flex", alignItems:"center", gap:5,
+              padding:"3px 10px", borderRadius:20,
+              background:"rgba(0,92,182,0.08)", border:"1px solid rgba(0,92,182,0.22)",
+              fontSize:"0.75rem", fontWeight:600, color:"#005CB6",
+            }}>
+              {ct.tenChuongTrinh}
+              <span
+                onClick={() => toggle(ct.id)}
+                style={{ cursor:"pointer", display:"flex", alignItems:"center", opacity:0.7 }}
+              >
+                <X size={11} />
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Search */}
+      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderBottom:"1px solid #E2E8F0" }}>
+        <Search size={13} color="#94A3B8" style={{ flexShrink:0 }} />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Tìm chương trình học..."
+          style={{ flex:1, border:"none", outline:"none", fontSize:"0.78rem", background:"transparent", fontFamily:"inherit", color:"#374151" }}
+        />
+        {search && <X size={12} color="#94A3B8" style={{ cursor:"pointer" }} onClick={() => setSearch("")} />}
+      </div>
+
+      {/* List */}
+      <div style={{ maxHeight:200, overflowY:"auto" }}>
+        {filtered.length === 0 ? (
+          <div style={{ padding:"20px 12px", textAlign:"center", fontSize:"0.75rem", color:"#94A3B8" }}>
+            Không tìm thấy chương trình nào
+          </div>
+        ) : filtered.map((ct, idx) => {
+          const sel = value.includes(ct.id);
+          return (
+            <div
+              key={ct.id}
+              onClick={() => toggle(ct.id)}
+              style={{
+                display:"flex", alignItems:"center", gap:10, padding:"9px 12px",
+                borderTop: idx > 0 ? "1px solid #F1F5F9" : "none",
+                background: sel ? "rgba(0,92,182,0.04)" : "transparent",
+                cursor:"pointer", transition:"background 0.12s",
+              }}
+              onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "#F8FAFC"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = sel ? "rgba(0,92,182,0.04)" : "transparent"; }}
+            >
+              {/* Checkbox */}
+              <div style={{
+                width:16, height:16, borderRadius:4, flexShrink:0,
+                border:`2px solid ${sel ? "#005CB6" : "#CBD5E1"}`,
+                background: sel ? "#005CB6" : "#fff",
+                display:"flex", alignItems:"center", justifyContent:"center",
+              }}>
+                {sel && <Check size={9} color="#fff" strokeWidth={3} />}
+              </div>
+              {/* Tên */}
+              <span style={{ fontSize:"0.82rem", fontWeight: sel ? 600 : 400, color: sel ? "#005CB6" : "#0F172A", flex:1 }}>
+                {ct.tenChuongTrinh}
+              </span>
+              {/* Mã */}
+              <span style={{
+                fontSize:"0.68rem", fontWeight:700, color:"#005CB6", fontFamily:"monospace",
+                background:"rgba(0,92,182,0.07)", border:"1px solid rgba(0,92,182,0.18)",
+                padding:"1px 7px", borderRadius:5,
+              }}>
+                {ct.maChuongTrinh}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function StepIndicator({ current }: { current: 1|2|3 }) {
   return (
@@ -801,7 +904,7 @@ function MonHocTable({
       <div className="rounded-xl overflow-hidden" style={{ border:"1.5px solid #E2E8F0" }}>
         {/* Header */}
         <div className="grid items-center px-3.5 py-2.5"
-          style={{ gridTemplateColumns:"32px 1fr 90px 1fr", background:"#F8FAFC", borderBottom:"1.5px solid #E2E8F0" }}>
+          style={{ gridTemplateColumns:"32px 1fr 90px", background:"#F8FAFC", borderBottom:"1.5px solid #E2E8F0" }}>
           <button type="button" onClick={toggleAll}
             style={{ width:16, height:16, borderRadius:4, background:allSel?"#005CB6":"transparent",
               border:`2px solid ${allSel||someSel?"#005CB6":"#CBD5E1"}`,
@@ -811,7 +914,6 @@ function MonHocTable({
           </button>
           <span style={{ fontSize:"0.67rem", fontWeight:700, color:"#64748B", letterSpacing:"0.05em", textTransform:"uppercase" }}>Tên môn học</span>
           <span style={{ fontSize:"0.67rem", fontWeight:700, color:"#64748B", letterSpacing:"0.05em", textTransform:"uppercase" }}>Mã môn học</span>
-          <span style={{ fontSize:"0.67rem", fontWeight:700, color:"#64748B", letterSpacing:"0.05em", textTransform:"uppercase" }}>Khối lớp</span>
         </div>
 
         {/* Body */}
@@ -834,9 +936,9 @@ function MonHocTable({
               const sel = value.includes(mon.id);
               return (
                 <div key={mon.id}
-                  className="grid items-start px-3.5 py-2.5 cursor-pointer transition-colors"
+                  className="grid items-center px-3.5 py-2.5 cursor-pointer transition-colors"
                   style={{
-                    gridTemplateColumns:"32px 1fr 90px 1fr",
+                    gridTemplateColumns:"32px 1fr 90px",
                     borderTop: idx > 0 ? "1px solid #F1F5F9" : "none",
                     background: sel ? "rgba(0,92,182,0.04)" : idx%2===0 ? "#fff" : "#FAFBFC",
                   }}
@@ -844,40 +946,20 @@ function MonHocTable({
                   {/* Checkbox */}
                   <div style={{ width:16, height:16, borderRadius:4, background:sel?"#005CB6":"transparent",
                     border:`2px solid ${sel?"#005CB6":"#CBD5E1"}`,
-                    display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:3 }}>
+                    display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     {sel && <Check size={9} color="#fff" strokeWidth={3}/>}
                   </div>
                   {/* Tên môn */}
-                  <span style={{ fontSize:"0.83rem", fontWeight:sel?700:500, color:sel?"#005CB6":"#0F172A", paddingTop:1 }}>
+                  <span style={{ fontSize:"0.83rem", fontWeight:sel?700:500, color:sel?"#005CB6":"#0F172A" }}>
                     {mon.ten}
                   </span>
                   {/* Mã môn */}
-                  <div style={{ paddingTop:1 }}>
+                  <div>
                     <span style={{ display:"inline-flex", alignItems:"center", padding:"2px 10px",
                       background:"rgba(0,92,182,0.07)", border:"1px solid rgba(0,92,182,0.18)",
                       borderRadius:6, fontSize:"0.8rem", fontWeight:800, color:"#005CB6", fontFamily:"monospace" }}>
                       {mon.ma}
                     </span>
-                  </div>
-                  {/* Khối lớp pills */}
-                  <div className="flex flex-wrap gap-1 pt-0.5">
-                    {mon.khoiLop.map(k => {
-                      const isSpecial = k === "GDTX" || k === "Mẫu giáo";
-                      return (
-                        <span key={k}
-                          style={{
-                            display:"inline-flex", alignItems:"center",
-                            padding:"1px 6px", borderRadius:4,
-                            background: isSpecial ? "rgba(124,58,237,0.08)" : "rgba(217,119,6,0.1)",
-                            border:`1px solid ${isSpecial ? "rgba(124,58,237,0.22)" : "rgba(217,119,6,0.28)"}`,
-                            fontSize:"0.6rem", fontWeight:700,
-                            color: isSpecial ? "#7C3AED" : "#B45309",
-                            whiteSpace:"nowrap",
-                          }}>
-                          {isSpecial ? k : `Lớp ${k}`}
-                        </span>
-                      );
-                    })}
                   </div>
                 </div>
               );
@@ -927,6 +1009,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
   onSave: (f: FormState) => void;
 }) {
   const [form, setForm] = useState<FormState>(goiEdit ? {
+    ctHocIds: [],
     tenGoi: goiEdit.tenGoi, phanLoai: goiEdit.phanLoai,
     thoiLuongThuNghiem: String(goiEdit.thoiLuongThuNghiem),
     thoiLuongSuDung: String(goiEdit.thoiLuongSuDung),
@@ -1051,21 +1134,30 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
           {step === 1 && (
             <div className="px-7 py-6 space-y-5">
 
-              {/* Tiêu đề bước */}
-              <div className="flex items-center gap-3 pb-1" style={{ borderBottom:"2px solid #EEF0F4" }}>
-                <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background:"rgba(0,92,182,0.08)" }}>
-                  <Tags size={15} color="#005CB6"/>
+              {/* Chương trình học */}
+              <div>
+                <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Chương trình học <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <div style={{ border:"1.5px solid #E2E8F0", borderRadius:10, overflow:"hidden" }}>
+                  {/* Search inside */}
+                  <CtHocPicker
+                    value={form.ctHocIds}
+                    onChange={ids => set("ctHocIds", ids)}
+                  />
                 </div>
-                <div>
-                  <div style={{ fontSize:"0.92rem", fontWeight:800, color:"#0F172A" }}>Bước 1: Thông tin chung</div>
-                  <div style={{ fontSize:"0.68rem", color:"#94A3B8" }}>Điền thông tin cơ bản và liên kết mã gói cước BCCS</div>
-                </div>
+                {errors.ctHocIds && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <AlertCircle size={12} color="#D4183D"/>
+                    <p style={{ fontSize:"0.68rem", color:"#D4183D", fontWeight:600 }}>{errors.ctHocIds}</p>
+                  </div>
+                )}
               </div>
 
               {/* Tên gói */}
               <div>
                 <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-                  Tên gói nội dung <span style={{ color:"#D4183D" }}>*</span>
+                  Tên gói cước <span style={{ color:"#D4183D" }}>*</span>
                 </label>
                 <input type="text" value={form.tenGoi} onChange={e => set("tenGoi",e.target.value)}
                   placeholder="VD: Gói học tập Tiểu học 2025"
@@ -1134,25 +1226,6 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
                 )}
               </div>
 
-              {/* Hạn mức License */}
-              <div>
-                <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-                  <Hash size={11} style={{ display:"inline", marginRight:3, verticalAlign:"middle" }}/>
-                  Hạn mức License <span style={{ color:"#D4183D" }}>*</span>
-                  <span style={{ fontSize:"0.62rem", color:"#94A3B8", fontWeight:400, marginLeft:5 }}>Tự động từ BCCS</span>
-                </label>
-                <div className="relative">
-                  <input type="number" min="1" value={form.quotaToiDa} onChange={e=>set("quotaToiDa",e.target.value)}
-                    style={{ ...iStyle("quotaToiDa"), paddingRight:60 }}
-                    onFocus={e=>Object.assign(e.target.style,fcs)} onBlur={e=>Object.assign(e.target.style,blr("quotaToiDa"))}/>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.68rem", color:"#94A3B8", fontWeight:600 }}>license</span>
-                </div>
-                {errors.quotaToiDa && <p style={{ fontSize:"0.67rem", color:"#D4183D", marginTop:2 }}>{errors.quotaToiDa}</p>}
-                {form.quotaToiDa && Number(form.quotaToiDa) > 0 && !errors.quotaToiDa && (
-                  <p style={{ fontSize:"0.67rem", color:"#005CB6", marginTop:3, fontWeight:700 }}>✓ Tối đa {Number(form.quotaToiDa).toLocaleString("vi-VN")} license</p>
-                )}
-              </div>
-
               {/* Thời lượng */}
               <div className="grid grid-cols-1 gap-4">
                 <div>
@@ -1197,17 +1270,6 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
           {/* ── BƯỚC 2: CẤU HÌNH GIÁ VÀ ĐỐI TƯỢNG ── */}
           {step === 2 && (
             <div className="px-7 py-6 space-y-6">
-              {/* Tiêu đề */}
-              <div className="flex items-center gap-3 pb-1" style={{ borderBottom:"2px solid #EEF0F4" }}>
-                <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background:"rgba(0,92,182,0.08)" }}>
-                  <DollarSign size={15} color="#005CB6"/>
-                </div>
-                <div>
-                  <div style={{ fontSize:"0.92rem", fontWeight:800, color:"#0F172A" }}>Bước 2: Cấu hình giá và đối tượng</div>
-                  <div style={{ fontSize:"0.68rem", color:"#94A3B8" }}>Thiết lập lớp áp dụng, loại giá và hạn mức quota BCCS</div>
-                </div>
-              </div>
-
               {/* Summary from step 1 */}
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background:"rgba(0,92,182,0.06)", border:"1px solid rgba(0,92,182,0.18)" }}>
                 <Tags size={16} color="#005CB6"/>
@@ -1412,32 +1474,6 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
           {step === 3 && (
             <div className="px-7 py-6 space-y-5">
 
-              {/* Header */}
-              <div className="flex items-center gap-3 pb-1" style={{ borderBottom:"2px solid #EEF0F4" }}>
-                <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background:"rgba(0,92,182,0.08)" }}>
-                  <BookOpen size={15} color="#005CB6"/>
-                </div>
-                <div className="flex-1">
-                  <div style={{ fontSize:"0.92rem", fontWeight:800, color:"#0F172A" }}>Bước 3: Liên kết Môn học</div>
-                  <div style={{ fontSize:"0.68rem", color:"#94A3B8" }}>Chọn các môn học từ hệ thống K12Home để gán vào gói cước này</div>
-                </div>
-                {/* Quick summary */}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl" style={{ background:"rgba(0,92,182,0.06)", border:"1px solid rgba(0,92,182,0.18)" }}>
-                  <Tags size={12} color="#005CB6"/>
-                  <span style={{ fontSize:"0.7rem", fontWeight:700, color:"#005CB6" }}>{form.tenGoi.slice(0, 26)}{form.tenGoi.length>26?"…":""}</span>
-                </div>
-              </div>
-
-              {/* Instruction banner */}
-              <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl" style={{ background:"rgba(0,92,182,0.05)", border:"1px solid rgba(0,92,182,0.14)" }}>
-                <Info size={13} color="#005CB6" className="flex-shrink-0 mt-0.5"/>
-                <p style={{ fontSize:"0.71rem", color:"#005CB6", lineHeight:1.7, fontWeight:500 }}>
-                  Chọn các <strong>Môn học</strong> từ danh sách chuẩn K12Home để gán vào gói cước.
-                  Hệ thống tự động lọc môn học phù hợp với <strong>khối lớp đã chọn</strong> ở Bước 2.
-                  Nhấn vào hàng để chọn/bỏ chọn.
-                </p>
-              </div>
-
               {/* Table */}
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -1536,7 +1572,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
               {saving
                 ? <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"/>Đang kích hoạt…</>
                 : mode==="add"
-                  ? <><Rocket size={15}/> Hoàn tất &amp; Kích hoạt gói</>
+                  ? <><Rocket size={15}/> Tạo gói cước</>
                   : <><CheckCircle size={15}/> Lưu thay đổi</>}
             </button>
           )}

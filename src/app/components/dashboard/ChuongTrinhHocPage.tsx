@@ -16,7 +16,7 @@ interface ChuongTrinhHoc {
 
 // ── DỮ LIỆU MẪU (10 bản ghi) ──────────────────────────────────────────────────
 
-const SAMPLE_DATA: ChuongTrinhHoc[] = [
+export const SAMPLE_DATA: ChuongTrinhHoc[] = [
   { id: "ct-01", maChuongTrinh: "CT-TOAN-2026", tenChuongTrinh: "AI Book Toán 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An" },
   { id: "ct-02", maChuongTrinh: "CT-VAN-2026", tenChuongTrinh: "AI Book Văn học 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An" },
   { id: "ct-03", maChuongTrinh: "CT-ANH-2026", tenChuongTrinh: "AI Book Tiếng Anh 2026", ngayTao: "16/01/2026", nguoiTao: "Trần Thị Bình" },

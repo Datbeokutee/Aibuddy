@@ -82,13 +82,13 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     },
     {
       id: "chuong-trinh-hoc",
-      label: "Quản lý Nội dung học",
+      label: "Quản lý Chương trình học",
       icon: BookOpen,
       moTa: "Kho nội dung & gán gói cước",
     },
     {
       id: "goi-cuoc",
-      label: "Cấu hình Gói cước",
+      label: "Quản lý Gói cước",
       icon: Tags,
       moTa: "Mapping gói cước BCCS",
     },
@@ -97,6 +97,12 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       label: "Quản lý License & BCCS",
       icon: Key,
       moTa: "Đồng bộ license BCCS",
+    },
+    {
+      id: "dtnd-chuong-trinh",
+      label: "Quản lý Nội dung",
+      icon: GraduationCap,
+      moTa: "Danh mục nội dung",
     },
     {
       id: "account-management",
@@ -170,9 +176,9 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   "doi-tac-noi-dung": [
     {
       id: "dtnd-chuong-trinh",
-      label: "Nội dung học",
+      label: "Quản lý Nội dung",
       icon: GraduationCap,
-      moTa: "Danh mục nội dung học",
+      moTa: "Danh mục nội dung",
     },
     {
       id: "dtnd-bai-giang",
