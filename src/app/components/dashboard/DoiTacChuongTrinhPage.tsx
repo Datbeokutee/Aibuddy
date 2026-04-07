@@ -601,12 +601,6 @@ export default function DoiTacChuongTrinhPage() {
       )}
 
       <div style={{ padding: "20px 24px", maxWidth: 1300, margin: "0 auto" }}>
-        {/* Banner */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", borderRadius: 8, background: "#fff8e1", border: "1px solid #fde68a", marginBottom: 16, fontSize: 13, color: "#92400e" }}>
-          <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1, color: "#d97706" }} />
-          <span>Hiện tại đang trong thời gian của Học kỳ II trên hệ thống K12Online. Vui lòng chọn lại thời gian Học kỳ II để tiếp tục sử dụng (Thời gian Học kỳ II trên hệ thống của trường bắt đầu từ ngày 16/01/2025).</span>
-        </div>
-
         {/* Breadcrumb */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, fontSize: 13, color: "#6b7280" }}>
           <Home size={13} /><span>Trang chủ</span><ChevronRight size={13} />
