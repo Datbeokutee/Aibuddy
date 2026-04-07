@@ -93,16 +93,16 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       moTa: "Mapping gói cước BCCS",
     },
     {
-      id: "license-bccs",
-      label: "Quản lý License & BCCS",
-      icon: Key,
-      moTa: "Đồng bộ license BCCS",
-    },
-    {
       id: "dtnd-chuong-trinh",
       label: "Quản lý Nội dung",
       icon: GraduationCap,
       moTa: "Danh mục nội dung",
+    },
+    {
+      id: "license-bccs",
+      label: "Quản lý License & BCCS",
+      icon: Key,
+      moTa: "Đồng bộ license BCCS",
     },
     {
       id: "account-management",

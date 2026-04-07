@@ -525,7 +525,6 @@ const DS_MON_HOC = ["Toán","Tiếng Việt","Tiếng Anh","Đạo đức","Vậ
 
 export default function DoiTacChuongTrinhPage() {
   const [danhSach, setDanhSach] = useState<NoiDungHoc[]>(SAMPLE_TABLE);
-  const [activeTab, setActiveTab] = useState<"noi-dung" | "lich-su">("noi-dung");
   const [filterKhoi, setFilterKhoi] = useState("");
   const [filterMon, setFilterMon] = useState("");
   const [filterTen, setFilterTen] = useState("");
@@ -617,19 +616,7 @@ export default function DoiTacChuongTrinhPage() {
 
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: "0 0 16px" }}>Nội dung học</h1>
 
-        {/* Tabs */}
-        <div style={{ display: "flex", borderBottom: "2px solid #e5e7eb", marginBottom: 20 }}>
-          {([{ key: "noi-dung", label: "Nội dung học" }, { key: "lich-su", label: "Lịch sử chia sẻ" }] as const).map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: "10px 20px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: activeTab === tab.key ? "#005CB6" : "#6b7280", borderBottom: activeTab === tab.key ? "2px solid #005CB6" : "2px solid transparent", marginBottom: -2, transition: "all 0.15s", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === "lich-su" ? (
-          <div style={{ padding: 40, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>Chức năng lịch sử chia sẻ đang được phát triển.</div>
-        ) : (
-          <>
+        <>
             {/* Thanh bộ lọc */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
               <SelFilter value={filterKhoi} onChange={setFilterKhoi} options={DS_KHOI_LOP} placeholder="-- Chọn khối lớp --" />
@@ -725,7 +712,6 @@ export default function DoiTacChuongTrinhPage() {
               </div>
             </div>
           </>
-        )}
       </div>
 
       {/* Popup thêm mới / chỉnh sửa */}

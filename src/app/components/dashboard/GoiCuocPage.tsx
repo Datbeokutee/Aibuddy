@@ -7,7 +7,7 @@ import {
   Database, BookOpen, FlaskConical, Globe2, Palette,
   BadgePercent, DollarSign, Gift, Code2, Hash,
   Clock, Calendar, Timer, TrendingUp, ShieldCheck,
-  Link2, GraduationCap, BookMarked, Rocket, ListChecks,
+  Link2, GraduationCap, BookMarked, Rocket, ListChecks, Lock,
 } from "lucide-react";
 
 // ── KIỂU DỮ LIỆU ─────────────────────────────────────────────────────────────
@@ -1070,7 +1070,13 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
   const handleNext = () => {
     const e = step===1 ? validateStep1() : validateStep2();
     setErrors(e);
-    if (!Object.keys(e).length) setStep(s => (s+1) as 1|2|3);
+    if (!Object.keys(e).length) {
+      // Nếu sang bước 2 mà chưa chọn BCCS → tự động chuyển sang Free
+      if (step === 1 && !form.maBCSS.trim()) {
+        setForm(f => ({ ...f, loaiGia: "free" }));
+      }
+      setStep(s => (s+1) as 1|2|3);
+    }
   };
 
   const handleSubmit = () => {
@@ -1311,24 +1317,52 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
                   <span style={{ fontSize:"0.68rem", color:"#94A3B8", fontWeight:400 }}>Chọn loại giá và nhập mức giá áp dụng</span>
                 </div>
 
+                {/* Notice khi không có BCCS */}
+                {!form.maBCSS.trim() && (
+                  <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl" style={{ background:"rgba(217,119,6,0.06)", border:"1px solid rgba(217,119,6,0.22)" }}>
+                    <AlertCircle size={14} color="#D97706" style={{ flexShrink:0, marginTop:1 }}/>
+                    <p style={{ fontSize:"0.71rem", color:"#92400E", lineHeight:1.6, fontWeight:500, margin:0 }}>
+                      Bạn chưa liên kết mã <strong>BCCS</strong>. Gói cước chỉ có thể áp dụng kiểu{" "}
+                      <strong>Miễn phí</strong>. Quay lại Bước 1 để chọn mã BCCS nếu muốn cấu hình giá có phí.
+                    </p>
+                  </div>
+                )}
+
                 {/* 3 Radio cards */}
                 <div className="grid grid-cols-3 gap-2.5">
                   {DS_LG.map(lg => {
                     const c = LG_CFG[lg]; const Ic = c.icon; const sel = form.loaiGia === lg;
+                    const noBcss = !form.maBCSS.trim();
+                    const locked = noBcss && lg !== "free";
                     return (
-                      <button key={lg} type="button" onClick={() => set("loaiGia", lg)}
+                      <button key={lg} type="button"
+                        onClick={() => !locked && set("loaiGia", lg)}
+                        disabled={locked}
+                        title={locked ? "Yêu cầu liên kết mã BCCS ở Bước 1" : undefined}
                         className="relative flex flex-col items-center gap-2 p-3.5 rounded-xl transition-all"
-                        style={{ background: sel?c.bg:"#F8FAFB", border:`2px solid ${sel?c.color:"#E2E8F0"}`, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif", boxShadow: sel?`0 4px 14px ${c.color}22`:"none" }}>
-                        {sel && (
+                        style={{
+                          background: locked ? "#F1F5F9" : sel ? c.bg : "#F8FAFB",
+                          border: `2px solid ${locked ? "#E2E8F0" : sel ? c.color : "#E2E8F0"}`,
+                          cursor: locked ? "not-allowed" : "pointer",
+                          opacity: locked ? 0.5 : 1,
+                          fontFamily:"'Be Vietnam Pro',sans-serif",
+                          boxShadow: sel && !locked ? `0 4px 14px ${c.color}22` : "none",
+                        }}>
+                        {sel && !locked && (
                           <div className="absolute top-2 right-2 flex items-center justify-center w-4 h-4 rounded-full" style={{ background:c.color }}>
                             <Check size={9} color="#fff" strokeWidth={3}/>
                           </div>
                         )}
-                        <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: sel?c.color:"#E2E8F0" }}>
-                          <Ic size={17} color={sel?"#fff":"#94A3B8"}/>
+                        {locked && (
+                          <div className="absolute top-2 right-2">
+                            <Lock size={11} color="#94A3B8"/>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: sel && !locked ? c.color : "#E2E8F0" }}>
+                          <Ic size={17} color={sel && !locked ? "#fff" : "#94A3B8"}/>
                         </div>
-                        <span style={{ fontSize:"0.82rem", fontWeight:800, color: sel?c.color:"#374151" }}>{c.label}</span>
-                        <span style={{ fontSize:"0.62rem", color:"#94A3B8", textAlign:"center", lineHeight:1.4 }}>{c.desc}</span>
+                        <span style={{ fontSize:"0.82rem", fontWeight:800, color: sel && !locked ? c.color : locked ? "#94A3B8" : "#374151" }}>{c.label}</span>
+                        <span style={{ fontSize:"0.62rem", color:"#94A3B8", textAlign:"center", lineHeight:1.4 }}>{locked ? "Cần mã BCCS" : c.desc}</span>
                       </button>
                     );
                   })}
