@@ -17,6 +17,7 @@ import { ContentPackagePage } from "./ContentPackagePage";
 import { GoiCuocPage } from "./GoiCuocPage";
 import ChuongTrinhHocPage from "./ChuongTrinhHocPage";
 import DoiTacChuongTrinhPage from "./DoiTacChuongTrinhPage";
+import AdminNoiDungPage from "./AdminNoiDungPage";
 import HocSinhGoiPage from "./HocSinhGoiPage";
 import type { UserRole } from "../LoginScreen";
 
@@ -61,7 +62,7 @@ export function DashboardLayout({ userRole: initialRole, onLogout }: DashboardLa
       case "unit-management":   return <UnitManagementPage />;
       case "account-management":return <AccountManagementPage />;
       case "content-packages":  return <ContentPackagePage />;
-      case "goi-cuoc":          return <GoiCuocPage />;
+      case "goi-cuoc":          return <GoiCuocPage userRole={currentRole} />;
       case "chuong-trinh-hoc":  return <ChuongTrinhHocPage />;
       case "license-bccs":      return <LicenseBCCSPage />;
       case "bao-cao-doi-soat":  return <BaoCaoDoiSoatPage />;
@@ -70,6 +71,7 @@ export function DashboardLayout({ userRole: initialRole, onLogout }: DashboardLa
       case "duyet-chia-se":     return <DuyetChiaShePage />;
       case "bao-cao-don-vi":    return <BaoCaoDonViPage />;
       case "dtnd-chuong-trinh": return <DoiTacChuongTrinhPage />;
+      case "admin-noi-dung":    return <AdminNoiDungPage />;
       case "hs-danh-sach-goi":  return <HocSinhGoiPage />;
       default:                  return <PlaceholderPage page={activePage} />;
     }

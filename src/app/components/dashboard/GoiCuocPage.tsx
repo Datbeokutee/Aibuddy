@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import type { UserRole } from "../LoginScreen";
 import { SAMPLE_DATA as DS_CHUONG_TRINH_HOC_PAGE } from "./ChuongTrinhHocPage";
 import {
   Tags, Plus, Edit2, Eye, X, Check, AlertCircle, CheckCircle,
@@ -20,6 +21,21 @@ interface ChuongTrinh {
   nhom: "khtn" | "khxh" | "ngoai-ngu" | "nang-khieu";
 }
 
+interface DonViGan {
+  id: string;
+  tenDonVi: string;
+  tinhThanh: string;
+  capHoc: string;
+  soHocSinh: number;
+  soLicenseCapPhat: number;
+  soLicenseDaDung: number;
+  ngayKichHoat: string;
+  trangThai: "Đang dùng" | "Hết hạn" | "Chưa kích hoạt";
+  soMonDaHoc: number;
+  soTietDaHoc: number;
+  tiLeHoanThanh: number; // %
+}
+
 interface GoiCuoc {
   id: string;
   tenGoi: string;
@@ -37,6 +53,7 @@ interface GoiCuoc {
   trangThai: TrangThai;
   ghiChu: string;
   ngayTao: string;
+  donViGan: DonViGan[];
 }
 
 // ── CHƯƠNG TRÌNH HỌC (Curriculum Programs) ────────────────────────────────────
@@ -184,17 +201,63 @@ const DEMO_MA_BCSS: MaBCCSItem[] = [
 
 // ── DỮ LIỆU MẪU ──────────────────────────────────────────────────────────────
 
+// ── DỮ LIỆU ĐƠN VỊ GÁN MẪU ──────────────────────────────────────────────────
+
+const MOCK_DON_VI_GAN: Record<string, DonViGan[]> = {
+  "1": [
+    { id:"dv1", tenDonVi:"Trường TH Kim Liên",         tinhThanh:"Hà Nội",           capHoc:"Tiểu học", soHocSinh:620,  soLicenseCapPhat:580,  soLicenseDaDung:512, ngayKichHoat:"05/01/2025", trangThai:"Đang dùng",      soMonDaHoc:5,  soTietDaHoc:740,  tiLeHoanThanh:72 },
+    { id:"dv2", tenDonVi:"Trường TH Lê Văn Tám",       tinhThanh:"TP. Hồ Chí Minh", capHoc:"Tiểu học", soHocSinh:445,  soLicenseCapPhat:400,  soLicenseDaDung:387, ngayKichHoat:"10/01/2025", trangThai:"Đang dùng",      soMonDaHoc:5,  soTietDaHoc:610,  tiLeHoanThanh:65 },
+    { id:"dv3", tenDonVi:"Trường TH Lý Thường Kiệt",   tinhThanh:"Đà Nẵng",         capHoc:"Tiểu học", soHocSinh:310,  soLicenseCapPhat:310,  soLicenseDaDung:89,  ngayKichHoat:"01/03/2025", trangThai:"Đang dùng",      soMonDaHoc:3,  soTietDaHoc:210,  tiLeHoanThanh:28 },
+    { id:"dv4", tenDonVi:"Trường TH Hồng Bàng",        tinhThanh:"Hải Phòng",        capHoc:"Tiểu học", soHocSinh:280,  soLicenseCapPhat:280,  soLicenseDaDung:0,   ngayKichHoat:"—",          trangThai:"Chưa kích hoạt", soMonDaHoc:0,  soTietDaHoc:0,    tiLeHoanThanh:0  },
+  ],
+  "2": [
+    { id:"dv1", tenDonVi:"Trường THCS Nguyễn Du",      tinhThanh:"Hà Nội",           capHoc:"THCS",     soHocSinh:890,  soLicenseCapPhat:850,  soLicenseDaDung:798, ngayKichHoat:"03/01/2025", trangThai:"Đang dùng",      soMonDaHoc:3,  soTietDaHoc:1240, tiLeHoanThanh:83 },
+    { id:"dv2", tenDonVi:"Trường THCS Nguyễn Trãi",    tinhThanh:"TP. Hồ Chí Minh", capHoc:"THCS",     soHocSinh:650,  soLicenseCapPhat:620,  soLicenseDaDung:571, ngayKichHoat:"05/01/2025", trangThai:"Đang dùng",      soMonDaHoc:3,  soTietDaHoc:985,  tiLeHoanThanh:77 },
+  ],
+  "3": [
+    { id:"dv1", tenDonVi:"Trường THCS Trần Phú",       tinhThanh:"Đà Nẵng",         capHoc:"THCS",     soHocSinh:520,  soLicenseCapPhat:500,  soLicenseDaDung:432, ngayKichHoat:"20/01/2025", trangThai:"Đang dùng",      soMonDaHoc:4,  soTietDaHoc:890,  tiLeHoanThanh:68 },
+    { id:"dv2", tenDonVi:"Trường THCS Lê Hồng Phong",  tinhThanh:"Hải Phòng",        capHoc:"THCS",     soHocSinh:380,  soLicenseCapPhat:350,  soLicenseDaDung:120, ngayKichHoat:"01/02/2025", trangThai:"Đang dùng",      soMonDaHoc:2,  soTietDaHoc:340,  tiLeHoanThanh:32 },
+  ],
+  "4": [
+    { id:"dv1", tenDonVi:"Trường TH Bình Thuỷ",        tinhThanh:"Cần Thơ",          capHoc:"Tiểu học", soHocSinh:200,  soLicenseCapPhat:200,  soLicenseDaDung:185, ngayKichHoat:"10/02/2025", trangThai:"Đang dùng",      soMonDaHoc:2,  soTietDaHoc:220,  tiLeHoanThanh:55 },
+    { id:"dv2", tenDonVi:"Trường TH Kim Liên",         tinhThanh:"Hà Nội",           capHoc:"Tiểu học", soHocSinh:150,  soLicenseCapPhat:150,  soLicenseDaDung:102, ngayKichHoat:"12/02/2025", trangThai:"Hết hạn",        soMonDaHoc:2,  soTietDaHoc:145,  tiLeHoanThanh:41 },
+  ],
+  "5": [
+    { id:"dv1", tenDonVi:"Trường THPT Chu Văn An",     tinhThanh:"Hà Nội",           capHoc:"THPT",     soHocSinh:1200, soLicenseCapPhat:1100, soLicenseDaDung:987, ngayKichHoat:"01/01/2025", trangThai:"Đang dùng",      soMonDaHoc:11, soTietDaHoc:3200, tiLeHoanThanh:61 },
+    { id:"dv2", tenDonVi:"Trường THPT Lê Quý Đôn",     tinhThanh:"TP. Hồ Chí Minh", capHoc:"THPT",     soHocSinh:980,  soLicenseCapPhat:900,  soLicenseDaDung:754, ngayKichHoat:"03/01/2025", trangThai:"Đang dùng",      soMonDaHoc:9,  soTietDaHoc:2410, tiLeHoanThanh:55 },
+    { id:"dv3", tenDonVi:"Trường THPT Phan Châu Trinh", tinhThanh:"Đà Nẵng",         capHoc:"THPT",     soHocSinh:760,  soLicenseCapPhat:700,  soLicenseDaDung:142, ngayKichHoat:"15/02/2025", trangThai:"Đang dùng",      soMonDaHoc:4,  soTietDaHoc:620,  tiLeHoanThanh:18 },
+  ],
+  "6": [
+    { id:"dv1", tenDonVi:"Trường THPT Lê Quý Đôn",     tinhThanh:"TP. Hồ Chí Minh", capHoc:"THPT",     soHocSinh:560,  soLicenseCapPhat:500,  soLicenseDaDung:467, ngayKichHoat:"20/01/2025", trangThai:"Đang dùng",      soMonDaHoc:5,  soTietDaHoc:1340, tiLeHoanThanh:79 },
+    { id:"dv2", tenDonVi:"Trường THPT Chu Văn An",     tinhThanh:"Hà Nội",           capHoc:"THPT",     soHocSinh:420,  soLicenseCapPhat:400,  soLicenseDaDung:0,   ngayKichHoat:"—",          trangThai:"Chưa kích hoạt", soMonDaHoc:0,  soTietDaHoc:0,    tiLeHoanThanh:0  },
+  ],
+  "7": [
+    { id:"dv1", tenDonVi:"Trường THCS Châu Văn Liêm",  tinhThanh:"Cần Thơ",          capHoc:"THCS",     soHocSinh:340,  soLicenseCapPhat:320,  soLicenseDaDung:284, ngayKichHoat:"05/02/2025", trangThai:"Hết hạn",        soMonDaHoc:5,  soTietDaHoc:670,  tiLeHoanThanh:52 },
+  ],
+  "8": [
+    { id:"dv1", tenDonVi:"Trường THPT Chu Văn An",     tinhThanh:"Hà Nội",           capHoc:"THPT",     soHocSinh:420,  soLicenseCapPhat:400,  soLicenseDaDung:388, ngayKichHoat:"01/01/2025", trangThai:"Đang dùng",      soMonDaHoc:10, soTietDaHoc:1820, tiLeHoanThanh:88 },
+    { id:"dv2", tenDonVi:"Trường THPT Thái Phiên",     tinhThanh:"Hải Phòng",        capHoc:"THPT",     soHocSinh:280,  soLicenseCapPhat:250,  soLicenseDaDung:198, ngayKichHoat:"10/01/2025", trangThai:"Hết hạn",        soMonDaHoc:8,  soTietDaHoc:940,  tiLeHoanThanh:42 },
+  ],
+  "9": [
+    { id:"dv1", tenDonVi:"Trường THPT Chu Văn An",     tinhThanh:"Hà Nội",           capHoc:"THPT",     soHocSinh:350,  soLicenseCapPhat:320,  soLicenseDaDung:301, ngayKichHoat:"15/02/2025", trangThai:"Đang dùng",      soMonDaHoc:5,  soTietDaHoc:1540, tiLeHoanThanh:91 },
+    { id:"dv2", tenDonVi:"Trường THPT Phan Châu Trinh", tinhThanh:"Đà Nẵng",         capHoc:"THPT",     soHocSinh:290,  soLicenseCapPhat:280,  soLicenseDaDung:254, ngayKichHoat:"15/02/2025", trangThai:"Đang dùng",      soMonDaHoc:5,  soTietDaHoc:1280, tiLeHoanThanh:86 },
+  ],
+  "10": [
+    { id:"dv1", tenDonVi:"Trường THPT Phan Châu Trinh", tinhThanh:"Đà Nẵng",         capHoc:"THPT",     soHocSinh:180,  soLicenseCapPhat:150,  soLicenseDaDung:0,   ngayKichHoat:"—",          trangThai:"Chưa kích hoạt", soMonDaHoc:0,  soTietDaHoc:0,    tiLeHoanThanh:0  },
+  ],
+};
+
 const DU_LIEU_GOI_CUOC: GoiCuoc[] = [
-  { id: "1",  tenGoi: "Toàn diện Tiểu học",          maBCSS: "BCCS-TH-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 200000,  giaTo: 200000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","nvan","ta","sinh","tin"], monHocIds: ["01","02","03","04","08","09","13"], quotaToiDa: 5000,  soGoiNoiDungDaDung: 2, trangThai: "Đang hoạt động", ghiChu: "Gói toàn diện cho cấp Tiểu học.",             ngayTao: "01/01/2025" },
-  { id: "2",  tenGoi: "Cơ bản THCS",                 maBCSS: "BCCS-TC-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 250000,  giaTo: 250000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","nvan","ta"],               monHocIds: ["01","18","08"], quotaToiDa: 4000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói 3 môn nền tảng dành cho học sinh THCS.", ngayTao: "01/01/2025" },
-  { id: "3",  tenGoi: "Khoa học TN THCS",            maBCSS: "BCCS-TC-002",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 200000,  giaTo: 280000,  thoiLuongThuNghiem: 0,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh"],         monHocIds: ["01","17","16","15"], quotaToiDa: 3000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Nhóm môn KHTN khác giá theo khối lớp.",     ngayTao: "15/01/2025" },
-  { id: "4",  tenGoi: "Trải nghiệm Miễn phí",        maBCSS: "BCCS-FREE-001",phanLoai: "", loaiGia: "free",     giaFrom: 0,       giaTo: 0,       thoiLuongThuNghiem: 15, thoiLuongSuDung: 1,  chuongTrinhIds: ["toan","nvan"],                   monHocIds: ["01","02"], quotaToiDa: 99999, soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói dùng thử miễn phí, không giới hạn.",    ngayTao: "01/02/2025" },
-  { id: "5",  tenGoi: "Toàn diện K12",               maBCSS: "BCCS-K12-001", phanLoai: "", loaiGia: "dong-gia", giaFrom: 500000,  giaTo: 500000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin","nvan","su","dia","gdcd","ta","am"], monHocIds: ["01","17","16","15","09","18","12","14","19","08","06"], quotaToiDa: 3000, soGoiNoiDungDaDung: 3, trangThai: "Đang hoạt động", ghiChu: "Gói toàn diện tất cả 11 môn K12.",           ngayTao: "01/01/2025" },
-  { id: "6",  tenGoi: "Khoa học TN Nâng cao",        maBCSS: "BCCS-TP-002",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 550000,  giaTo: 550000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin"],   monHocIds: ["01","17","16","15","09"], quotaToiDa: 2500,  soGoiNoiDungDaDung: 2, trangThai: "Đang hoạt động", ghiChu: "KHTN nâng cao với bài tập mở rộng.",         ngayTao: "15/01/2025" },
-  { id: "7",  tenGoi: "Xã hội & Ngoại ngữ",          maBCSS: "BCCS-TC-003",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 400000,  giaTo: 550000,  thoiLuongThuNghiem: 0,  thoiLuongSuDung: 12, chuongTrinhIds: ["nvan","su","dia","gdcd","ta"],    monHocIds: [], quotaToiDa: 2000,  soGoiNoiDungDaDung: 0, trangThai: "Tạm dừng",       ghiChu: "Tạm dừng do cập nhật nội dung chương trình.", ngayTao: "01/02/2025" },
-  { id: "8",  tenGoi: "Chuyên sâu Luyện thi Toàn diện", maBCSS: "BCCS-TP-001",phanLoai: "", loaiGia: "dong-gia", giaFrom: 1000000, giaTo: 1000000, thoiLuongThuNghiem: 10, thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin","nvan","su","dia","gdcd","ta"], monHocIds: ["01","17","16","15","09","18","12","14","19","08"], quotaToiDa: 1500, soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói chuyên sâu luyện thi toàn diện 10 môn.", ngayTao: "01/01/2025" },
-  { id: "9",  tenGoi: "Luyện thi THPTQG",            maBCSS: "BCCS-TP-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 1200000, giaTo: 1200000, thoiLuongThuNghiem: 0,  thoiLuongSuDung: 6,  chuongTrinhIds: ["toan","ly","hoa","nvan","ta"],    monHocIds: ["01","17","16","18","08"], quotaToiDa: 1000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "5 môn thi THPTQG với mô phỏng đề thi AI.",  ngayTao: "15/02/2025" },
-  { id: "10", tenGoi: "Chuyên Toán Lý Hóa",          maBCSS: "BCCS-TP-003",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 800000,  giaTo: 1500000, thoiLuongThuNghiem: 0,  thoiLuongSuDung: 6,  chuongTrinhIds: ["toan","ly","hoa"],               monHocIds: [], quotaToiDa: 800,   soGoiNoiDungDaDung: 0, trangThai: "Tạm dừng",       ghiChu: "Tạm dừng chờ cập nhật nội dung lớp 10-12.",  ngayTao: "01/03/2025" },
+  { id: "1",  tenGoi: "Toàn diện Tiểu học",          maBCSS: "BCCS-TH-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 200000,  giaTo: 200000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","nvan","ta","sinh","tin"], monHocIds: ["01","02","03","04","08","09","13"], quotaToiDa: 5000,  soGoiNoiDungDaDung: 2, trangThai: "Đang hoạt động", ghiChu: "Gói toàn diện cho cấp Tiểu học.",             ngayTao: "01/01/2025", donViGan: MOCK_DON_VI_GAN["1"] },
+  { id: "2",  tenGoi: "Cơ bản THCS",                 maBCSS: "BCCS-TC-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 250000,  giaTo: 250000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","nvan","ta"],               monHocIds: ["01","18","08"], quotaToiDa: 4000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói 3 môn nền tảng dành cho học sinh THCS.", ngayTao: "01/01/2025", donViGan: MOCK_DON_VI_GAN["2"] },
+  { id: "3",  tenGoi: "Khoa học TN THCS",            maBCSS: "BCCS-TC-002",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 200000,  giaTo: 280000,  thoiLuongThuNghiem: 0,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh"],         monHocIds: ["01","17","16","15"], quotaToiDa: 3000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Nhóm môn KHTN khác giá theo khối lớp.",     ngayTao: "15/01/2025", donViGan: MOCK_DON_VI_GAN["3"] },
+  { id: "4",  tenGoi: "Trải nghiệm Miễn phí",        maBCSS: "BCCS-FREE-001",phanLoai: "", loaiGia: "free",     giaFrom: 0,       giaTo: 0,       thoiLuongThuNghiem: 15, thoiLuongSuDung: 1,  chuongTrinhIds: ["toan","nvan"],                   monHocIds: ["01","02"], quotaToiDa: 99999, soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói dùng thử miễn phí, không giới hạn.",    ngayTao: "01/02/2025", donViGan: MOCK_DON_VI_GAN["4"] },
+  { id: "5",  tenGoi: "Toàn diện K12",               maBCSS: "BCCS-K12-001", phanLoai: "", loaiGia: "dong-gia", giaFrom: 500000,  giaTo: 500000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin","nvan","su","dia","gdcd","ta","am"], monHocIds: ["01","17","16","15","09","18","12","14","19","08","06"], quotaToiDa: 3000, soGoiNoiDungDaDung: 3, trangThai: "Đang hoạt động", ghiChu: "Gói toàn diện tất cả 11 môn K12.",           ngayTao: "01/01/2025", donViGan: MOCK_DON_VI_GAN["5"] },
+  { id: "6",  tenGoi: "Khoa học TN Nâng cao",        maBCSS: "BCCS-TP-002",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 550000,  giaTo: 550000,  thoiLuongThuNghiem: 7,  thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin"],   monHocIds: ["01","17","16","15","09"], quotaToiDa: 2500,  soGoiNoiDungDaDung: 2, trangThai: "Đang hoạt động", ghiChu: "KHTN nâng cao với bài tập mở rộng.",         ngayTao: "15/01/2025", donViGan: MOCK_DON_VI_GAN["6"] },
+  { id: "7",  tenGoi: "Xã hội & Ngoại ngữ",          maBCSS: "BCCS-TC-003",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 400000,  giaTo: 550000,  thoiLuongThuNghiem: 0,  thoiLuongSuDung: 12, chuongTrinhIds: ["nvan","su","dia","gdcd","ta"],    monHocIds: [], quotaToiDa: 2000,  soGoiNoiDungDaDung: 0, trangThai: "Tạm dừng",       ghiChu: "Tạm dừng do cập nhật nội dung chương trình.", ngayTao: "01/02/2025", donViGan: MOCK_DON_VI_GAN["7"] },
+  { id: "8",  tenGoi: "Chuyên sâu Luyện thi Toàn diện", maBCSS: "BCCS-TP-001",phanLoai: "", loaiGia: "dong-gia", giaFrom: 1000000, giaTo: 1000000, thoiLuongThuNghiem: 10, thoiLuongSuDung: 12, chuongTrinhIds: ["toan","ly","hoa","sinh","tin","nvan","su","dia","gdcd","ta"], monHocIds: ["01","17","16","15","09","18","12","14","19","08"], quotaToiDa: 1500, soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "Gói chuyên sâu luyện thi toàn diện 10 môn.", ngayTao: "01/01/2025", donViGan: MOCK_DON_VI_GAN["8"] },
+  { id: "9",  tenGoi: "Luyện thi THPTQG",            maBCSS: "BCCS-TP-001",  phanLoai: "", loaiGia: "dong-gia", giaFrom: 1200000, giaTo: 1200000, thoiLuongThuNghiem: 0,  thoiLuongSuDung: 6,  chuongTrinhIds: ["toan","ly","hoa","nvan","ta"],    monHocIds: ["01","17","16","18","08"], quotaToiDa: 1000,  soGoiNoiDungDaDung: 1, trangThai: "Đang hoạt động", ghiChu: "5 môn thi THPTQG với mô phỏng đề thi AI.",  ngayTao: "15/02/2025", donViGan: MOCK_DON_VI_GAN["9"] },
+  { id: "10", tenGoi: "Chuyên Toán Lý Hóa",          maBCSS: "BCCS-TP-003",  phanLoai: "", loaiGia: "khac-gia", giaFrom: 800000,  giaTo: 1500000, thoiLuongThuNghiem: 0,  thoiLuongSuDung: 6,  chuongTrinhIds: ["toan","ly","hoa"],               monHocIds: [], quotaToiDa: 800,   soGoiNoiDungDaDung: 0, trangThai: "Tạm dừng",       ghiChu: "Tạm dừng chờ cập nhật nội dung lớp 10-12.",  ngayTao: "01/03/2025", donViGan: MOCK_DON_VI_GAN["10"] },
 ];
 
 // ── MÔN HỌC K12HOME ──────────────────────────────────────────────────────────
@@ -1003,10 +1066,11 @@ function MonHocTable({
 
 // ── MODAL FORM ────────────────────────────────────────────────────────────────
 
-function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
+function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
   mode: "add"|"edit"; goiEdit: GoiCuoc|null;
   allGoi: GoiCuoc[]; onClose: () => void;
   onSave: (f: FormState) => void;
+  userRole: UserRole;
 }) {
   const [form, setForm] = useState<FormState>(goiEdit ? {
     ctHocIds: [],
@@ -1619,15 +1683,31 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave }: {
 // ── DRAWER CHI TIẾT ───────────────────────────────────────────────────────────
 
 function DrawerChiTiet({ goi, onClose, onEdit }: { goi: GoiCuoc; onClose: ()=>void; onEdit: ()=>void }) {
+  const [tab, setTab] = useState<"tongquan"|"donvi"|"noidung">("tongquan");
+
   const cts = goi.chuongTrinhIds.map(id=>DS_CHUONG_TRINH.find(c=>c.id===id)).filter(Boolean) as ChuongTrinh[];
-  const nhomGroups = Object.keys(NHOM_CFG).map(nhom=>({ nhom, cfg:NHOM_CFG[nhom], items:cts.filter(c=>c.nhom===nhom) })).filter(g=>g.items.length>0);
+  const linkedMonHoc = (goi.monHocIds||[]).map(id=>DS_MON_HOC_K12.find(m=>m.id===id)).filter(Boolean) as MonHocK12[];
   const pct = Math.round((goi.soGoiNoiDungDaDung / Math.max(goi.quotaToiDa,1))*100);
+  const donViGan = goi.donViGan || [];
+
+  const tsTT = { "Đang dùng":{ color:"#0F766E", bg:"rgba(15,118,110,0.08)", dot:"#0F766E" }, "Hết hạn":{ color:"#D4183D", bg:"rgba(212,24,61,0.07)", dot:"#D4183D" }, "Chưa kích hoạt":{ color:"#9CA3AF", bg:"rgba(156,163,175,0.1)", dot:"#9CA3AF" } };
+
+  const tongHocSinh = donViGan.reduce((s,d)=>s+d.soHocSinh,0);
+  const tongLicense = donViGan.reduce((s,d)=>s+d.soLicenseDaDung,0);
+  const tongTiet = donViGan.reduce((s,d)=>s+d.soTietDaHoc,0);
+
+  const TABS = [
+    { key:"tongquan", label:"Tổng quan" },
+    { key:"donvi",    label:`Đơn vị (${donViGan.length})` },
+    { key:"noidung",  label:"Sử dụng nội dung" },
+  ] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" style={{ background:"rgba(15,23,42,0.42)", backdropFilter:"blur(3px)" }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
-      <div className="flex flex-col h-full" style={{ width:460, background:"#fff", boxShadow:"-8px 0 40px rgba(0,0,0,0.14)", fontFamily:"'Be Vietnam Pro',sans-serif", animation:"slideIn 0.22s ease" }}>
+      <div className="flex flex-col h-full" style={{ width:540, background:"#fff", boxShadow:"-8px 0 40px rgba(0,0,0,0.14)", fontFamily:"'Be Vietnam Pro',sans-serif", animation:"slideIn 0.22s ease" }}>
 
+        {/* ── Header ─────────────────────────────────────────────────────────── */}
         <div className="px-5 py-5 flex-shrink-0" style={{ background:"linear-gradient(135deg,#004A9B 0%,#005CB6 45%,#0074E4 100%)", color:"#fff" }}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -1635,127 +1715,313 @@ function DrawerChiTiet({ goi, onClose, onEdit }: { goi: GoiCuoc; onClose: ()=>vo
                 <Tags size={20} color="#fff"/>
               </div>
               <div>
-                <div style={{ fontSize:"0.62rem", fontWeight:700, letterSpacing:"0.1em", opacity:0.75, textTransform:"uppercase", marginBottom:2 }}>Gói cước BCCS</div>
-                <div style={{ fontSize:"1rem", fontWeight:800, lineHeight:1.3 }}>{goi.tenGoi}</div>
+                <div style={{ fontSize:"0.6rem", fontWeight:700, letterSpacing:"0.1em", opacity:0.72, textTransform:"uppercase", marginBottom:2 }}>Chi tiết Gói cước</div>
+                <div style={{ fontSize:"1.05rem", fontWeight:800, lineHeight:1.3 }}>{goi.tenGoi}</div>
+                <div style={{ fontSize:"0.72rem", opacity:0.75, marginTop:2, fontFamily:"monospace" }}>{goi.maBCSS}</div>
               </div>
             </div>
             <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background:"rgba(255,255,255,0.15)", border:"none", cursor:"pointer" }}><X size={15} color="#fff"/></button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-xl p-3" style={{ background:"rgba(255,255,255,0.12)" }}>
-              <div style={{ fontSize:"0.6rem", opacity:0.75, marginBottom:3 }}>Giá tiền</div>
-              <div style={{ fontSize:"0.95rem", fontWeight:900 }}>{goi.loaiGia==="free"?"Miễn phí":goi.loaiGia==="khac-gia"?`${fmtShort(goi.giaFrom)}–${fmtShort(goi.giaTo)}`:fmtShort(goi.giaFrom)}</div>
-            </div>
-            <div className="rounded-xl p-3" style={{ background:"rgba(255,255,255,0.12)" }}>
-              <div style={{ fontSize:"0.6rem", opacity:0.75, marginBottom:3 }}>Dùng thử</div>
-              <div style={{ fontSize:"0.95rem", fontWeight:900 }}>{goi.thoiLuongThuNghiem>0?`${goi.thoiLuongThuNghiem} ngày`:"Không có"}</div>
-            </div>
-            <div className="rounded-xl p-3" style={{ background:"rgba(255,255,255,0.12)" }}>
-              <div style={{ fontSize:"0.6rem", opacity:0.75, marginBottom:3 }}>Sử dụng</div>
-              <div style={{ fontSize:"0.95rem", fontWeight:900 }}>{goi.thoiLuongSuDung} tháng</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background:"rgba(0,92,182,0.05)", border:"1.5px solid rgba(0,92,182,0.18)" }}>
-            <div className="flex items-center gap-2">
-              <Database size={16} color="#005CB6"/>
-              <div>
-                <div style={{ fontSize:"0.68rem", color:"#94A3B8", marginBottom:2 }}>Mã gói BCCS</div>
-                <div style={{ fontSize:"1rem", fontWeight:900, color:"#005CB6", fontFamily:"monospace", letterSpacing:"0.04em" }}>{goi.maBCSS}</div>
-              </div>
-            </div>
-            <button onClick={()=>navigator.clipboard.writeText(goi.maBCSS)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg" style={{ background:"rgba(0,92,182,0.08)", border:"1px solid rgba(0,92,182,0.15)", cursor:"pointer" }}>
-              <Code2 size={11} color="#005CB6"/><span style={{ fontSize:"0.66rem", color:"#005CB6", fontWeight:600 }}>Sao chép</span>
-            </button>
-          </div>
-
-          <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Hạn mức Quota</span>
-              <span style={{ fontSize:"0.8rem", fontWeight:700, color: pct>=80?"#D4183D":"#005CB6" }}>{goi.soGoiNoiDungDaDung}/{goi.quotaToiDa} đã dùng</span>
-            </div>
-            <div className="w-full rounded-full overflow-hidden" style={{ height:8, background:"#E2E8F0" }}>
-              <div className="rounded-full" style={{ width:`${Math.min(pct,100)}%`, height:"100%", background: pct>=80?"#D4183D":"#005CB6", transition:"width 0.6s ease" }}/>
-            </div>
-            <div className="flex justify-between mt-2">
-              <span style={{ fontSize:"0.65rem", color:"#94A3B8" }}>Đã gắn: {goi.soGoiNoiDungDaDung}</span>
-              <span style={{ fontSize:"0.65rem", color:"#94A3B8" }}>Còn: {goi.quotaToiDa-goi.soGoiNoiDungDaDung}</span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-4 space-y-3" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
-            <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Thông tin gói</p>
+          <div className="grid grid-cols-4 gap-2">
             {[
-              { label:"Mã gói BCCS",        val:goi.maBCSS || "—",   color:"#005CB6" },
-              { label:"Loại giá",          val:LG_CFG[goi.loaiGia].label, color:LG_CFG[goi.loaiGia].color },
-              { label:"Thời lượng dùng thử", val:goi.thoiLuongThuNghiem>0?`${goi.thoiLuongThuNghiem} ngày`:"Không có", color:"#64748B" },
-              { label:"Thời lượng sử dụng", val:`${goi.thoiLuongSuDung} tháng`, color:"#005CB6" },
-              { label:"Ngày tạo",          val:goi.ngayTao,         color:"#64748B" },
-              { label:"Trạng thái",        val:goi.trangThai,       color:TS_CFG[goi.trangThai].color },
-            ].map(it=>(
-              <div key={it.label} className="flex items-center justify-between">
-                <span style={{ fontSize:"0.73rem", color:"#94A3B8" }}>{it.label}</span>
-                <span style={{ fontSize:"0.82rem", fontWeight:700, color:it.color }}>{it.val}</span>
+              { label:"Giá tiền",   val: goi.loaiGia==="free"?"Miễn phí":goi.loaiGia==="khac-gia"?`${fmtShort(goi.giaFrom)}–${fmtShort(goi.giaTo)}`:fmtShort(goi.giaFrom) },
+              { label:"Dùng thử",  val: goi.thoiLuongThuNghiem>0?`${goi.thoiLuongThuNghiem} ngày`:"Không có" },
+              { label:"Sử dụng",   val: `${goi.thoiLuongSuDung} tháng` },
+              { label:"Đơn vị",    val: `${donViGan.length} trường` },
+            ].map(c=>(
+              <div key={c.label} className="rounded-xl p-2.5" style={{ background:"rgba(255,255,255,0.12)" }}>
+                <div style={{ fontSize:"0.58rem", opacity:0.72, marginBottom:3 }}>{c.label}</div>
+                <div style={{ fontSize:"0.88rem", fontWeight:800 }}>{c.val}</div>
               </div>
             ))}
           </div>
-
-          {/* Linked Môn học */}
-          {(() => {
-            const linkedMonHoc = (goi.monHocIds || [])
-              .map(id => DS_MON_HOC_K12.find(m => m.id === id))
-              .filter(Boolean) as MonHocK12[];
-            return (
-              <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <BookOpen size={13} color="#005CB6"/>
-                    <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>
-                      Môn học liên kết
-                    </p>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full" style={{ background:"rgba(0,92,182,0.1)", fontSize:"0.65rem", fontWeight:800, color:"#005CB6" }}>
-                    {linkedMonHoc.length} môn
-                  </span>
-                </div>
-                {linkedMonHoc.length === 0 ? (
-                  <div className="flex items-center gap-2 py-2">
-                    <BookMarked size={14} color="#CBD5E1"/>
-                    <span style={{ fontSize:"0.73rem", color:"#94A3B8" }}>Chưa liên kết môn học nào</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {linkedMonHoc.map(mon => (
-                      <div key={mon.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg"
-                        style={{ background:"#fff", border:"1px solid rgba(0,92,182,0.15)" }}>
-                        <span style={{ fontFamily:"monospace", fontSize:"0.62rem", fontWeight:800, color:"#005CB6",
-                          background:"rgba(0,92,182,0.08)", padding:"1px 5px", borderRadius:4 }}>
-                          {mon.ma}
-                        </span>
-                        <span style={{ fontSize:"0.75rem", fontWeight:600, color:"#0F172A" }}>
-                          {mon.ten}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {goi.ghiChu && (
-            <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
-              <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:8 }}>Ghi chú</p>
-              <p style={{ fontSize:"0.8rem", color:"#374151", lineHeight:1.7 }}>{goi.ghiChu}</p>
-            </div>
-          )}
         </div>
 
+        {/* ── Tabs ───────────────────────────────────────────────────────────── */}
+        <div className="flex flex-shrink-0" style={{ borderBottom:"2px solid #EEF0F4", background:"#fff" }}>
+          {TABS.map(t=>(
+            <button key={t.key} onClick={()=>setTab(t.key)}
+              style={{ flex:1, padding:"11px 8px", border:"none", background:"transparent", cursor:"pointer",
+                fontSize:"0.78rem", fontWeight: tab===t.key?700:500,
+                color: tab===t.key?"#005CB6":"#64748B",
+                borderBottom: tab===t.key?"2.5px solid #005CB6":"2.5px solid transparent",
+                marginBottom:-2, transition:"all 0.15s", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Nội dung tab ───────────────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+
+          {/* ===== TAB: TỔNG QUAN ===== */}
+          {tab==="tongquan" && <>
+            {/* Trạng thái + mã */}
+            <div className="flex items-center justify-between p-4 rounded-2xl" style={{ background:"rgba(0,92,182,0.05)", border:"1.5px solid rgba(0,92,182,0.18)" }}>
+              <div className="flex items-center gap-2">
+                <Database size={15} color="#005CB6"/>
+                <div>
+                  <div style={{ fontSize:"0.65rem", color:"#94A3B8", marginBottom:1 }}>Mã gói BCCS</div>
+                  <div style={{ fontSize:"0.95rem", fontWeight:900, color:"#005CB6", fontFamily:"monospace" }}>{goi.maBCSS}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:20,
+                  background:TS_CFG[goi.trangThai].bg, fontSize:"0.72rem", fontWeight:700, color:TS_CFG[goi.trangThai].color }}>
+                  <span style={{ width:6, height:6, borderRadius:"50%", background:TS_CFG[goi.trangThai].dot, display:"inline-block" }}/>
+                  {goi.trangThai}
+                </span>
+                <button onClick={()=>navigator.clipboard.writeText(goi.maBCSS)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg"
+                  style={{ background:"rgba(0,92,182,0.08)", border:"1px solid rgba(0,92,182,0.15)", cursor:"pointer" }}>
+                  <Code2 size={11} color="#005CB6"/><span style={{ fontSize:"0.64rem", color:"#005CB6", fontWeight:600 }}>Copy</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quota bar */}
+            <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
+              <div className="flex items-center justify-between mb-2">
+                <span style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Hạn mức Quota</span>
+                <span style={{ fontSize:"0.78rem", fontWeight:700, color: pct>=80?"#D4183D":"#005CB6" }}>{pct}% đã dùng</span>
+              </div>
+              <div className="w-full rounded-full overflow-hidden" style={{ height:8, background:"#E2E8F0" }}>
+                <div className="rounded-full" style={{ width:`${Math.min(pct,100)}%`, height:"100%", background:pct>=80?"#D4183D":"#005CB6", transition:"width 0.6s ease" }}/>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span style={{ fontSize:"0.65rem", color:"#94A3B8" }}>Đã gắn: {goi.soGoiNoiDungDaDung.toLocaleString()}</span>
+                <span style={{ fontSize:"0.65rem", color:"#94A3B8" }}>Tổng: {goi.quotaToiDa.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Thông tin chi tiết */}
+            <div className="rounded-2xl p-4 space-y-3" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
+              <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Thông tin gói</p>
+              {[
+                { label:"Loại giá",            val:LG_CFG[goi.loaiGia].label, color:LG_CFG[goi.loaiGia].color },
+                { label:"Thời lượng dùng thử", val:goi.thoiLuongThuNghiem>0?`${goi.thoiLuongThuNghiem} ngày`:"Không có", color:"#64748B" },
+                { label:"Thời lượng sử dụng",  val:`${goi.thoiLuongSuDung} tháng`, color:"#005CB6" },
+                { label:"Ngày tạo",            val:goi.ngayTao, color:"#64748B" },
+              ].map(it=>(
+                <div key={it.label} className="flex items-center justify-between">
+                  <span style={{ fontSize:"0.73rem", color:"#94A3B8" }}>{it.label}</span>
+                  <span style={{ fontSize:"0.82rem", fontWeight:700, color:it.color }}>{it.val}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Môn học liên kết */}
+            <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen size={13} color="#005CB6"/>
+                  <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Môn học liên kết</p>
+                </div>
+                <span className="px-2 py-0.5 rounded-full" style={{ background:"rgba(0,92,182,0.1)", fontSize:"0.65rem", fontWeight:800, color:"#005CB6" }}>{linkedMonHoc.length} môn</span>
+              </div>
+              {linkedMonHoc.length===0 ? (
+                <div className="flex items-center gap-2 py-1"><BookMarked size={14} color="#CBD5E1"/><span style={{ fontSize:"0.73rem", color:"#94A3B8" }}>Chưa liên kết môn học nào</span></div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {linkedMonHoc.map(mon=>(
+                    <div key={mon.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background:"#fff", border:"1px solid rgba(0,92,182,0.15)" }}>
+                      <span style={{ fontFamily:"monospace", fontSize:"0.62rem", fontWeight:800, color:"#005CB6", background:"rgba(0,92,182,0.08)", padding:"1px 5px", borderRadius:4 }}>{mon.ma}</span>
+                      <span style={{ fontSize:"0.75rem", fontWeight:600, color:"#0F172A" }}>{mon.ten}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Chương trình */}
+            {cts.length>0 && (
+              <div className="rounded-2xl p-4" style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <GraduationCap size={13} color="#005CB6"/>
+                  <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#94A3B8", letterSpacing:"0.1em", textTransform:"uppercase" }}>Chương trình áp dụng</p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {cts.map(c=>(
+                    <span key={c.id} style={{ padding:"3px 10px", borderRadius:6, background:NHOM_CFG[c.nhom].bg, color:NHOM_CFG[c.nhom].color, fontSize:"0.72rem", fontWeight:700 }}>{c.kyHieu}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {goi.ghiChu && (
+              <div className="rounded-2xl p-4" style={{ background:"#FFFBEB", border:"1px solid #FDE68A" }}>
+                <p style={{ fontSize:"0.67rem", fontWeight:800, color:"#92400E", letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:6 }}>Ghi chú</p>
+                <p style={{ fontSize:"0.8rem", color:"#78350F", lineHeight:1.7 }}>{goi.ghiChu}</p>
+              </div>
+            )}
+          </>}
+
+          {/* ===== TAB: ĐƠN VỊ ĐƯỢC GÁN ===== */}
+          {tab==="donvi" && (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+              {/* Tổng quan nhanh — 3 thẻ */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+                <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                  <GraduationCap size={16} color="#005CB6" style={{ margin:"0 auto 4px" }}/>
+                  <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#005CB6" }}>{tongHocSinh.toLocaleString()}</div>
+                  <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>Tổng học sinh</div>
+                </div>
+                <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                  <ShieldCheck size={16} color="#0F766E" style={{ margin:"0 auto 4px" }}/>
+                  <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#0F766E" }}>{tongLicense.toLocaleString()}</div>
+                  <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>License đã dùng</div>
+                </div>
+                <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                  <CheckCircle size={16} color="#7C3AED" style={{ margin:"0 auto 4px" }}/>
+                  <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#7C3AED" }}>{donViGan.filter(d=>d.trangThai==="Đang dùng").length}</div>
+                  <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>Đơn vị hoạt động</div>
+                </div>
+              </div>
+
+              {/* Danh sách đơn vị */}
+              {donViGan.length===0 ? (
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 0", gap:12 }}>
+                  <Lock size={32} color="#CBD5E1"/>
+                  <p style={{ fontSize:"0.8rem", color:"#94A3B8" }}>Chưa có đơn vị nào được gán cho gói này</p>
+                </div>
+              ) : (
+                donViGan.map(dv => {
+                  const dotColor = dv.trangThai==="Đang dùng" ? "#0F766E" : dv.trangThai==="Hết hạn" ? "#D4183D" : "#9CA3AF";
+                  const tagBg   = dv.trangThai==="Đang dùng" ? "rgba(15,118,110,0.08)" : dv.trangThai==="Hết hạn" ? "rgba(212,24,61,0.07)" : "rgba(156,163,175,0.1)";
+                  const usePct  = Math.round((dv.soLicenseDaDung / Math.max(dv.soLicenseCapPhat, 1)) * 100);
+                  return (
+                    <div key={dv.id} style={{ background:"#fff", border:"1px solid #EEF0F4", borderRadius:16, padding:16, boxShadow:"0 1px 4px rgba(0,0,0,0.05)" }}>
+                      {/* Header */}
+                      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:12 }}>
+                        <div>
+                          <div style={{ fontSize:"0.85rem", fontWeight:700, color:"#0F172A" }}>{dv.tenDonVi}</div>
+                          <div style={{ fontSize:"0.7rem", color:"#94A3B8", marginTop:2 }}>{dv.tinhThanh} · {dv.capHoc}</div>
+                        </div>
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"3px 9px", borderRadius:20, background:tagBg, fontSize:"0.68rem", fontWeight:700, color:dotColor, whiteSpace:"nowrap" }}>
+                          <span style={{ width:5, height:5, borderRadius:"50%", background:dotColor, display:"inline-block" }}/>
+                          {dv.trangThai}
+                        </span>
+                      </div>
+                      {/* Stats */}
+                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:12 }}>
+                        <div style={{ background:"#F8FAFB", borderRadius:8, padding:"6px 10px" }}>
+                          <div style={{ fontSize:"0.6rem", color:"#94A3B8", marginBottom:2 }}>Học sinh</div>
+                          <div style={{ fontSize:"0.8rem", fontWeight:700, color:"#0F172A" }}>{dv.soHocSinh.toLocaleString()}</div>
+                        </div>
+                        <div style={{ background:"#F8FAFB", borderRadius:8, padding:"6px 10px" }}>
+                          <div style={{ fontSize:"0.6rem", color:"#94A3B8", marginBottom:2 }}>License cấp</div>
+                          <div style={{ fontSize:"0.8rem", fontWeight:700, color:"#0F172A" }}>{dv.soLicenseCapPhat.toLocaleString()}</div>
+                        </div>
+                        <div style={{ background:"#F8FAFB", borderRadius:8, padding:"6px 10px" }}>
+                          <div style={{ fontSize:"0.6rem", color:"#94A3B8", marginBottom:2 }}>Kích hoạt</div>
+                          <div style={{ fontSize:"0.8rem", fontWeight:700, color:"#0F172A" }}>{dv.ngayKichHoat}</div>
+                        </div>
+                      </div>
+                      {/* License bar */}
+                      <div>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                          <span style={{ fontSize:"0.62rem", color:"#94A3B8" }}>License đã dùng</span>
+                          <span style={{ fontSize:"0.62rem", fontWeight:700, color: usePct>=80?"#D4183D":"#0F766E" }}>{dv.soLicenseDaDung}/{dv.soLicenseCapPhat} ({usePct}%)</span>
+                        </div>
+                        <div style={{ height:5, background:"#E2E8F0", borderRadius:4, overflow:"hidden" }}>
+                          <div style={{ width:`${Math.min(usePct,100)}%`, height:"100%", background: usePct>=80?"#D4183D":"#0F766E", borderRadius:4 }}/>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* ===== TAB: SỬ DỤNG NỘI DUNG ===== */}
+          {tab==="noidung" && (
+            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            {/* Summary cards */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+              <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                <BookOpen size={16} color="#005CB6" style={{ margin:"0 auto 4px" }}/>
+                <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#005CB6" }}>{tongTiet.toLocaleString()}</div>
+                <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>Tổng tiết đã học</div>
+              </div>
+              <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                <TrendingUp size={16} color="#0F766E" style={{ margin:"0 auto 4px" }}/>
+                <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#0F766E" }}>{donViGan.length>0?`${Math.round(donViGan.reduce((s,d)=>s+d.tiLeHoanThanh,0)/donViGan.length)}%`:"—"}</div>
+                <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>TB hoàn thành</div>
+              </div>
+              <div style={{ background:"#F8FAFB", border:"1px solid #EEF0F4", borderRadius:16, padding:"12px 8px", textAlign:"center" }}>
+                <ListChecks size={16} color="#7C3AED" style={{ margin:"0 auto 4px" }}/>
+                <div style={{ fontSize:"1.1rem", fontWeight:900, color:"#7C3AED" }}>{linkedMonHoc.length}</div>
+                <div style={{ fontSize:"0.62rem", color:"#94A3B8", marginTop:2 }}>Môn đang học</div>
+              </div>
+            </div>
+
+            {/* Per-unit content usage */}
+            {donViGan.length===0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <BookMarked size={32} color="#CBD5E1"/>
+                <p style={{ fontSize:"0.8rem", color:"#94A3B8" }}>Chưa có dữ liệu sử dụng nội dung</p>
+              </div>
+            ) : (
+              <div className="rounded-2xl overflow-hidden" style={{ border:"1px solid #EEF0F4" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:"0.75rem" }}>
+                  <thead>
+                    <tr style={{ background:"rgba(0,92,182,0.06)" }}>
+                      {["Đơn vị","Môn đã học","Tiết đã học","Hoàn thành"].map((h,i)=>(
+                        <th key={i} style={{ padding:"10px 12px", textAlign: i===0?"left":"center", fontWeight:700, color:"#005CB6", fontSize:"0.66rem", letterSpacing:"0.05em", whiteSpace:"nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {donViGan.map((dv,i)=>(
+                      <tr key={dv.id} style={{ borderTop:"1px solid #F1F5F9", background: i%2===0?"#fff":"#FAFBFC" }}>
+                        <td style={{ padding:"10px 12px" }}>
+                          <div style={{ fontWeight:600, color:"#0F172A" }}>{dv.tenDonVi}</div>
+                          <div style={{ fontSize:"0.65rem", color:"#94A3B8" }}>{dv.tinhThanh}</div>
+                        </td>
+                        <td style={{ padding:"10px 12px", textAlign:"center", fontWeight:700, color:"#005CB6" }}>{dv.soMonDaHoc}</td>
+                        <td style={{ padding:"10px 12px", textAlign:"center", fontWeight:700, color:"#0F172A" }}>{dv.soTietDaHoc.toLocaleString()}</td>
+                        <td style={{ padding:"10px 12px", textAlign:"center" }}>
+                          <div style={{ display:"inline-flex", flexDirection:"column", alignItems:"center", gap:3, minWidth:64 }}>
+                            <span style={{ fontWeight:800, fontSize:"0.82rem", color: dv.tiLeHoanThanh>=70?"#0F766E":dv.tiLeHoanThanh>=40?"#D97706":"#D4183D" }}>{dv.tiLeHoanThanh}%</span>
+                            <div style={{ width:60, height:4, background:"#E2E8F0", borderRadius:4, overflow:"hidden" }}>
+                              <div style={{ width:`${dv.tiLeHoanThanh}%`, height:"100%", borderRadius:4, background: dv.tiLeHoanThanh>=70?"#0F766E":dv.tiLeHoanThanh>=40?"#D97706":"#D4183D" }}/>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Linked subjects usage hint */}
+            {linkedMonHoc.length>0 && (
+              <div className="rounded-2xl p-4" style={{ background:"rgba(0,92,182,0.04)", border:"1px dashed rgba(0,92,182,0.25)" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Info size={13} color="#005CB6"/>
+                  <span style={{ fontSize:"0.67rem", fontWeight:700, color:"#005CB6" }}>Môn học trong gói</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {linkedMonHoc.map(mon=>(
+                    <span key={mon.id} style={{ padding:"2px 8px", borderRadius:6, background:"rgba(0,92,182,0.08)", color:"#005CB6", fontSize:"0.7rem", fontWeight:600 }}>{mon.ten}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            </div>
+          )}
+
+        </div>
+
+        {/* ── Footer ─────────────────────────────────────────────────────────── */}
         <div className="px-5 py-4 flex gap-3 flex-shrink-0" style={{ borderTop:"1px solid #EEF0F4" }}>
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl" style={{ background:"#F1F5F9", border:"1.5px solid #E2E8F0", color:"#64748B", fontSize:"0.84rem", fontWeight:600, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif" }}>Đóng</button>
-          <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background:"linear-gradient(135deg,#005CB6,#0074E4)", border:"none", color:"#fff", fontSize:"0.84rem", fontWeight:700, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif", boxShadow:"0 4px 14px rgba(0,92,182,0.38)" }}>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl"
+            style={{ background:"#F1F5F9", border:"1.5px solid #E2E8F0", color:"#64748B", fontSize:"0.84rem", fontWeight:600, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+            Đóng
+          </button>
+          <button onClick={onEdit} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl"
+            style={{ background:"linear-gradient(135deg,#005CB6,#0074E4)", border:"none", color:"#fff", fontSize:"0.84rem", fontWeight:700, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif", boxShadow:"0 4px 14px rgba(0,92,182,0.38)" }}>
             <Edit2 size={14}/> Chỉnh sửa
           </button>
         </div>
@@ -1769,11 +2035,10 @@ function DrawerChiTiet({ goi, onClose, onEdit }: { goi: GoiCuoc; onClose: ()=>vo
 type SortF = "tenGoi" | "giaFrom" | "thoiLuongSuDung";
 type SortD = "asc" | "desc";
 
-export function GoiCuocPage() {
+export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const [list, setList]         = useState<GoiCuoc[]>(DU_LIEU_GOI_CUOC);
   const [modalMode, setModal]   = useState<"add"|"edit"|null>(null);
   const [editTarget, setEdit]   = useState<GoiCuoc|null>(null);
-  const [viewTarget, setView]   = useState<GoiCuoc|null>(null);
   const [toast, setToast]       = useState<{msg:string;type:"success"|"error"|"info"}|null>(null);
   const [search, setSearch]     = useState("");
 
@@ -1853,8 +2118,7 @@ export function GoiCuocPage() {
       `}</style>
 
       {toast && <Toast msg={toast.msg} type={toast.type} onDone={()=>setToast(null)}/>}
-      {modalMode && <ModalGoiCuoc mode={modalMode} goiEdit={editTarget} allGoi={list} onClose={()=>{setModal(null);setEdit(null);}} onSave={handleSave}/>}
-      {viewTarget && <DrawerChiTiet goi={viewTarget} onClose={()=>setView(null)} onEdit={()=>{setEdit(viewTarget);setModal("edit");setView(null);}}/>}
+      {modalMode && <ModalGoiCuoc mode={modalMode} goiEdit={editTarget} allGoi={list} onClose={()=>{setModal(null);setEdit(null);}} onSave={handleSave} userRole={userRole}/>}
 
       <div className="p-6">
         {/* Header */}
@@ -1981,7 +2245,6 @@ export function GoiCuocPage() {
                       <td style={{ padding:"12px 14px" }}><TrangThaiBadge ts={g.trangThai}/></td>
                       <td style={{ padding:"12px 14px", textAlign:"center" }}>
                         <div className="flex items-center justify-center gap-1.5">
-                          <button title="Xem chi tiết" onClick={()=>setView(g)} className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background:"rgba(0,92,182,0.07)", border:"none", cursor:"pointer" }} onMouseEnter={e=>(e.currentTarget.style.background="rgba(0,92,182,0.14)")} onMouseLeave={e=>(e.currentTarget.style.background="rgba(0,92,182,0.07)")}><Eye size={13} color="#005CB6"/></button>
                           <button title="Chỉnh sửa" onClick={()=>{setEdit(g);setModal("edit");}} className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background:"rgba(124,58,237,0.07)", border:"none", cursor:"pointer" }} onMouseEnter={e=>(e.currentTarget.style.background="rgba(124,58,237,0.14)")} onMouseLeave={e=>(e.currentTarget.style.background="rgba(124,58,237,0.07)")}><Edit2 size={13} color="#7C3AED"/></button>
                         </div>
                       </td>

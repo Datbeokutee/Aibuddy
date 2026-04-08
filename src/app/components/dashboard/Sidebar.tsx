@@ -53,7 +53,9 @@ export type ActivePage =
   | "dtnd-tai-lieu"
   // Học sinh
   | "hs-danh-sach-goi"
-  | "hs-lich-su-thanh-toan";
+  | "hs-lich-su-thanh-toan"
+  // Admin nội dung
+  | "admin-noi-dung";
 
 interface NavItem {
   id: ActivePage;
@@ -82,7 +84,7 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     },
     {
       id: "chuong-trinh-hoc",
-      label: "Quản lý Chương trình học",
+      label: "Danh mục Chương trình",
       icon: BookOpen,
       moTa: "Kho nội dung & gán gói cước",
     },
@@ -93,10 +95,10 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       moTa: "Mapping gói cước BCCS",
     },
     {
-      id: "dtnd-chuong-trinh",
+      id: "admin-noi-dung",
       label: "Quản lý Nội dung",
       icon: GraduationCap,
-      moTa: "Danh mục nội dung",
+      moTa: "Phê duyệt nội dung đối tác",
     },
     {
       id: "license-bccs",
