@@ -80,7 +80,6 @@ export default function ChuongTrinhHocPage() {
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  console.log('test');
   // ── Danh sách người tạo duy nhất (cho dropdown filter) ────────────────────
   const danhSachNguoiTao = Array.from(new Set(danhSach.map((ct) => ct.nguoiTao)));
 
