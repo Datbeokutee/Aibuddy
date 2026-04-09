@@ -1,27 +1,23 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   BookOpen, Plus, Pencil, Trash2, Search, X, Check,
   AlertTriangle,
 } from "lucide-react";
 
-// ── DỮ LIỆU TỈNH THÀNH / CẤP HỌC / TRƯỜNG (mẫu) ────────────────────────────
+// ── DANH SÁCH ĐỐI TÁC (mẫu) ──────────────────────────────────────────────────
 
-const TINH_THANH = ["Hà Nội", "TP. Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ"];
-const CAP_HOC = ["Tiểu học", "THCS", "THPT"];
-const TRUONG_MAP: Record<string, string[]> = {
-  "Hà Nội": ["Trường TH Kim Liên", "Trường THCS Nguyễn Du", "Trường THPT Chu Văn An"],
-  "TP. Hồ Chí Minh": ["Trường TH Lê Văn Tám", "Trường THCS Nguyễn Trãi", "Trường THPT Lê Quý Đôn"],
-  "Đà Nẵng": ["Trường TH Lý Thường Kiệt", "Trường THCS Trần Phú", "Trường THPT Phan Châu Trinh"],
-  "Hải Phòng": ["Trường TH Hồng Bàng", "Trường THCS Lê Hồng Phong", "Trường THPT Thái Phiên"],
-  "Cần Thơ": ["Trường TH Bình Thuỷ", "Trường THCS Châu Văn Liêm", "Trường THPT Châu Văn Liêm"],
-};
-
-interface DonViRow {
-  id: string;
-  tinhThanh: string;
-  capHoc: string;
-  truong: string;
-}
+const DANH_SACH_DOI_TAC = [
+  "AI Book",
+  "Viettel Study",
+  "Ôn luyện",
+  "HOCMAI",
+  "Tuyensinh247",
+  "VioEdu",
+  "Kiến Guru",
+  "Luyện thi 123",
+  "Educa",
+  "Marathon Education",
+];
 
 // ── KIỂU DỮ LIỆU ──────────────────────────────────────────────────────────────
 
@@ -31,22 +27,22 @@ interface ChuongTrinhHoc {
   tenChuongTrinh: string;
   ngayTao: string;
   nguoiTao: string;
-  donViApDung: DonViRow[];
+  doiTac: string[];
 }
 
 // ── DỮ LIỆU MẪU (10 bản ghi) ──────────────────────────────────────────────────
 
 export const SAMPLE_DATA: ChuongTrinhHoc[] = [
-  { id: "ct-01", maChuongTrinh: "CT-TOAN-2026", tenChuongTrinh: "AI Book Toán 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", donViApDung: [{ id: "r1", tinhThanh: "Hà Nội", capHoc: "THPT", truong: "Trường THPT Chu Văn An" }] },
-  { id: "ct-02", maChuongTrinh: "CT-VAN-2026", tenChuongTrinh: "AI Book Văn học 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", donViApDung: [{ id: "r1", tinhThanh: "Hà Nội", capHoc: "THCS", truong: "" }, { id: "r2", tinhThanh: "Đà Nẵng", capHoc: "THPT", truong: "" }] },
-  { id: "ct-03", maChuongTrinh: "CT-ANH-2026", tenChuongTrinh: "AI Book Tiếng Anh 2026", ngayTao: "16/01/2026", nguoiTao: "Trần Thị Bình", donViApDung: [] },
-  { id: "ct-04", maChuongTrinh: "CT-LY-2026", tenChuongTrinh: "AI Book Vật lý 2026", ngayTao: "18/01/2026", nguoiTao: "Trần Thị Bình", donViApDung: [{ id: "r1", tinhThanh: "TP. Hồ Chí Minh", capHoc: "THPT", truong: "Trường THPT Lê Quý Đôn" }] },
-  { id: "ct-05", maChuongTrinh: "CT-HOA-2026", tenChuongTrinh: "AI Book Hóa học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", donViApDung: [] },
-  { id: "ct-06", maChuongTrinh: "CT-SINH-2026", tenChuongTrinh: "AI Book Sinh học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", donViApDung: [{ id: "r1", tinhThanh: "Cần Thơ", capHoc: "THCS", truong: "" }] },
-  { id: "ct-07", maChuongTrinh: "CT-KNM-2026", tenChuongTrinh: "Khóa học Kỹ năng mềm", ngayTao: "22/01/2026", nguoiTao: "Phạm Đức Dũng", donViApDung: [] },
-  { id: "ct-08", maChuongTrinh: "CT-TIN-2026", tenChuongTrinh: "AI Book Tin học 2026", ngayTao: "25/01/2026", nguoiTao: "Phạm Đức Dũng", donViApDung: [{ id: "r1", tinhThanh: "Hải Phòng", capHoc: "Tiểu học", truong: "Trường TH Hồng Bàng" }] },
-  { id: "ct-09", maChuongTrinh: "CT-SU-2026", tenChuongTrinh: "AI Book Lịch sử 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", donViApDung: [] },
-  { id: "ct-10", maChuongTrinh: "CT-DIA-2026", tenChuongTrinh: "AI Book Địa lý 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", donViApDung: [{ id: "r1", tinhThanh: "Hà Nội", capHoc: "THPT", truong: "" }, { id: "r2", tinhThanh: "TP. Hồ Chí Minh", capHoc: "THPT", truong: "" }] },
+  { id: "ct-01", maChuongTrinh: "CT-TOAN-2026", tenChuongTrinh: "AI Book Toán 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["AI Book", "Viettel Study"] },
+  { id: "ct-02", maChuongTrinh: "CT-VAN-2026", tenChuongTrinh: "AI Book Văn học 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["HOCMAI"] },
+  { id: "ct-03", maChuongTrinh: "CT-ANH-2026", tenChuongTrinh: "AI Book Tiếng Anh 2026", ngayTao: "16/01/2026", nguoiTao: "Trần Thị Bình", doiTac: ["Ôn luyện", "Kiến Guru"] },
+  { id: "ct-04", maChuongTrinh: "CT-LY-2026", tenChuongTrinh: "AI Book Vật lý 2026", ngayTao: "18/01/2026", nguoiTao: "Trần Thị Bình", doiTac: [] },
+  { id: "ct-05", maChuongTrinh: "CT-HOA-2026", tenChuongTrinh: "AI Book Hóa học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: [] },
+  { id: "ct-06", maChuongTrinh: "CT-SINH-2026", tenChuongTrinh: "AI Book Sinh học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: ["VioEdu"] },
+  { id: "ct-07", maChuongTrinh: "CT-KNM-2026", tenChuongTrinh: "Khóa học Kỹ năng mềm", ngayTao: "22/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Marathon Education", "Educa"] },
+  { id: "ct-08", maChuongTrinh: "CT-TIN-2026", tenChuongTrinh: "AI Book Tin học 2026", ngayTao: "25/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Tuyensinh247"] },
+  { id: "ct-09", maChuongTrinh: "CT-SU-2026", tenChuongTrinh: "AI Book Lịch sử 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", doiTac: [] },
+  { id: "ct-10", maChuongTrinh: "CT-DIA-2026", tenChuongTrinh: "AI Book Địa lý 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", doiTac: ["Luyện thi 123", "HOCMAI"] },
 ];
 
 // ── STYLE CONSTANTS ─────────────────────────────────────────────────────────────
@@ -60,8 +56,7 @@ const PRIMARY_LIGHT = "#E8F0FE";
 export default function ChuongTrinhHocPage() {
   const [danhSach, setDanhSach] = useState<ChuongTrinhHoc[]>(SAMPLE_DATA);
   const [tuKhoa, setTuKhoa] = useState("");
-  const [filterTinh, setFilterTinh] = useState("");
-  const [filterCap, setFilterCap] = useState("");
+  const [filterDoiTac, setFilterDoiTac] = useState("");
   const [filterNguoiTao, setFilterNguoiTao] = useState("");
 
   // Form state
@@ -71,12 +66,25 @@ export default function ChuongTrinhHocPage() {
   const [formTen, setFormTen] = useState("");
   const [formError, setFormError] = useState("");
 
-  // Đơn vị áp dụng state
-  const [donViMode, setDonViMode] = useState<"chon" | "nhap">("chon");
-  const [donViRows, setDonViRows] = useState<DonViRow[]>([
-    { id: "row-1", tinhThanh: "", capHoc: "", truong: "" },
-  ]);
-  const [maTruongNhap, setMaTruongNhap] = useState("");
+  // Đối tác state
+  const [selectedDoiTac, setSelectedDoiTac] = useState<string[]>([]);
+  const [doiTacOpen, setDoiTacOpen] = useState(false);
+  const doiTacTriggerRef = useRef<HTMLButtonElement>(null);
+  const doiTacDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!doiTacOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        doiTacTriggerRef.current && !doiTacTriggerRef.current.contains(e.target as Node) &&
+        doiTacDropdownRef.current && !doiTacDropdownRef.current.contains(e.target as Node)
+      ) {
+        setDoiTacOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [doiTacOpen]);
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -89,46 +97,22 @@ export default function ChuongTrinhHocPage() {
     const matchKw =
       ct.tenChuongTrinh.toLowerCase().includes(kw) ||
       ct.maChuongTrinh.toLowerCase().includes(kw);
-    const matchTinh = !filterTinh || ct.donViApDung.some((dv) => dv.tinhThanh === filterTinh);
-    const matchCap = !filterCap || ct.donViApDung.some((dv) => dv.capHoc === filterCap);
+    const matchDoiTac = !filterDoiTac || ct.doiTac.includes(filterDoiTac);
     const matchNguoi = !filterNguoiTao || ct.nguoiTao === filterNguoiTao;
-    return matchKw && matchTinh && matchCap && matchNguoi;
+    return matchKw && matchDoiTac && matchNguoi;
   });
 
-  const hasFilter = filterTinh || filterCap || filterNguoiTao;
+  const hasFilter = filterDoiTac || filterNguoiTao;
   const handleResetFilter = () => {
-    setFilterTinh("");
-    setFilterCap("");
+    setFilterDoiTac("");
     setFilterNguoiTao("");
     setTuKhoa("");
   };
 
-  // ── Helpers đơn vị ─────────────────────────────────────────────────────────
-  const resetDonVi = () => {
-    setDonViMode("chon");
-    setDonViRows([{ id: "row-1", tinhThanh: "", capHoc: "", truong: "" }]);
-    setMaTruongNhap("");
-  };
-
-  const themDonViRow = () => {
-    setDonViRows((prev) => [
-      ...prev,
-      { id: `row-${Date.now()}`, tinhThanh: "", capHoc: "", truong: "" },
-    ]);
-  };
-
-  const xoaDonViRow = (id: string) => {
-    setDonViRows((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const updateDonViRow = (id: string, field: keyof DonViRow, value: string) => {
-    setDonViRows((prev) =>
-      prev.map((r) => {
-        if (r.id !== id) return r;
-        const updated = { ...r, [field]: value };
-        if (field === "tinhThanh") updated.truong = "";
-        return updated;
-      })
+  // ── Helpers đối tác ────────────────────────────────────────────────────────
+  const toggleDoiTac = (ten: string) => {
+    setSelectedDoiTac((prev) =>
+      prev.includes(ten) ? prev.filter((t) => t !== ten) : [...prev, ten]
     );
   };
 
@@ -138,7 +122,8 @@ export default function ChuongTrinhHocPage() {
     setFormMa("");
     setFormTen("");
     setFormError("");
-    resetDonVi();
+    setSelectedDoiTac([]);
+    setDoiTacOpen(false);
     setShowForm(true);
   };
 
@@ -148,9 +133,8 @@ export default function ChuongTrinhHocPage() {
     setFormMa(ct.maChuongTrinh);
     setFormTen(ct.tenChuongTrinh);
     setFormError("");
-    setDonViMode("chon");
-    setDonViRows(ct.donViApDung.length > 0 ? ct.donViApDung : [{ id: "row-1", tinhThanh: "", capHoc: "", truong: "" }]);
-    setMaTruongNhap("");
+    setSelectedDoiTac(ct.doiTac);
+    setDoiTacOpen(false);
     setShowForm(true);
   };
 
@@ -174,15 +158,12 @@ export default function ChuongTrinhHocPage() {
     }
 
     if (editId) {
-      // Cập nhật
-      const savedDonVi = donViMode === "chon" ? donViRows.filter((r) => r.tinhThanh) : [];
       setDanhSach((prev) =>
         prev.map((ct) =>
-          ct.id === editId ? { ...ct, maChuongTrinh: ma, tenChuongTrinh: ten, donViApDung: savedDonVi } : ct
+          ct.id === editId ? { ...ct, maChuongTrinh: ma, tenChuongTrinh: ten, doiTac: selectedDoiTac } : ct
         )
       );
     } else {
-      // Thêm mới
       const now = new Date();
       const ngay = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
       const newItem: ChuongTrinhHoc = {
@@ -191,7 +172,7 @@ export default function ChuongTrinhHocPage() {
         tenChuongTrinh: ten,
         ngayTao: ngay,
         nguoiTao: "Admin VTS",
-        donViApDung: donViMode === "chon" ? donViRows.filter((r) => r.tinhThanh) : [],
+        doiTac: selectedDoiTac,
       };
       setDanhSach((prev) => [newItem, ...prev]);
     }
@@ -264,34 +245,19 @@ export default function ChuongTrinhHocPage() {
           {tuKhoa && <X size={14} color="#9ca3af" style={{ cursor: "pointer" }} onClick={() => setTuKhoa("")} />}
         </div>
 
-        {/* Filter: Tỉnh thành */}
+        {/* Filter: Đối tác */}
         <select
-          value={filterTinh}
-          onChange={(e) => setFilterTinh(e.target.value)}
+          value={filterDoiTac}
+          onChange={(e) => setFilterDoiTac(e.target.value)}
           style={{
             padding: "9px 12px", borderRadius: 8, border: "1px solid #d1d5db",
-            fontSize: 13, background: "#fff", color: filterTinh ? "#1a1a2e" : "#9ca3af",
-            outline: "none", cursor: "pointer", minWidth: 150,
-            borderColor: filterTinh ? PRIMARY : "#d1d5db",
+            fontSize: 13, background: "#fff", color: filterDoiTac ? "#1a1a2e" : "#9ca3af",
+            outline: "none", cursor: "pointer", minWidth: 180,
+            borderColor: filterDoiTac ? PRIMARY : "#d1d5db",
           }}
         >
-          <option value="">Tất cả tỉnh thành</option>
-          {TINH_THANH.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-
-        {/* Filter: Cấp học */}
-        <select
-          value={filterCap}
-          onChange={(e) => setFilterCap(e.target.value)}
-          style={{
-            padding: "9px 12px", borderRadius: 8, border: "1px solid #d1d5db",
-            fontSize: 13, background: "#fff", color: filterCap ? "#1a1a2e" : "#9ca3af",
-            outline: "none", cursor: "pointer", minWidth: 130,
-            borderColor: filterCap ? PRIMARY : "#d1d5db",
-          }}
-        >
-          <option value="">Tất cả cấp học</option>
-          {CAP_HOC.map((c) => <option key={c} value={c}>{c}</option>)}
+          <option value="">Tất cả đối tác</option>
+          {DANH_SACH_DOI_TAC.map((dt) => <option key={dt} value={dt}>{dt}</option>)}
         </select>
 
         {/* Filter: Người tạo */}
@@ -336,7 +302,7 @@ export default function ChuongTrinhHocPage() {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: PRIMARY_LIGHT }}>
-              {["STT", "Mã chương trình", "Tên chương trình", "Đơn vị áp dụng", "Ngày tạo", "Người tạo", "Thao tác"].map((h, i) => (
+              {["STT", "Mã chương trình", "Tên chương trình", "Đối tác", "Ngày tạo", "Người tạo", "Thao tác"].map((h, i) => (
                 <th key={i} style={{
                   padding: "12px 16px", textAlign: "left", fontSize: 13,
                   fontWeight: 600, color: PRIMARY, borderBottom: `2px solid ${PRIMARY}`,
@@ -380,17 +346,17 @@ export default function ChuongTrinhHocPage() {
                     {ct.tenChuongTrinh}
                   </td>
                   <td style={{ padding: "12px 16px" }}>
-                    {ct.donViApDung.length === 0 ? (
+                    {ct.doiTac.length === 0 ? (
                       <span style={{ fontSize: 12, color: "#9ca3af", fontStyle: "italic" }}>Chưa gán</span>
                     ) : (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                        {ct.donViApDung.map((dv, i) => (
+                        {ct.doiTac.map((dt, i) => (
                           <span key={i} style={{
                             display: "inline-block", padding: "2px 8px", borderRadius: 12,
                             background: "#f0fdf4", border: "1px solid #bbf7d0",
                             fontSize: 12, color: "#16a34a", whiteSpace: "nowrap",
                           }}>
-                            {dv.tinhThanh}{dv.capHoc ? ` · ${dv.capHoc}` : ""}
+                            {dt}
                           </span>
                         ))}
                       </div>
@@ -546,121 +512,97 @@ export default function ChuongTrinhHocPage() {
               />
             </div>
 
-            {/* ── Đơn vị áp dụng ─────────────────────────────────────────────── */}
+            {/* ── Đối tác ────────────────────────────────────────────────────── */}
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 10 }}>
-                Đơn vị áp dụng
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+                Đối tác áp dụng
               </div>
 
-              {/* Radio chọn mode */}
-              <div style={{ display: "flex", gap: 20, marginBottom: 14 }}>
-                {(["chon", "nhap"] as const).map((mode) => (
-                  <label key={mode} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, color: "#374151" }}>
-                    <input
-                      type="radio"
-                      name="donViMode"
-                      checked={donViMode === mode}
-                      onChange={() => setDonViMode(mode)}
-                      style={{ accentColor: PRIMARY, width: 15, height: 15 }}
-                    />
-                    {mode === "chon" ? "Chọn đơn vị" : "Nhập danh sách mã trường"}
-                  </label>
-                ))}
-              </div>
+              {/* Trigger button */}
+              <button
+                ref={doiTacTriggerRef}
+                type="button"
+                onClick={() => setDoiTacOpen((o) => !o)}
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 8, textAlign: "left",
+                  border: `1.5px solid ${doiTacOpen ? PRIMARY : "#d1d5db"}`,
+                  background: "#fff", fontSize: 13, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  boxSizing: "border-box",
+                }}
+              >
+                <span style={{ color: selectedDoiTac.length === 0 ? "#9ca3af" : "#1a1a2e" }}>
+                  {selectedDoiTac.length === 0 ? "Chọn đối tác..." : `Đã chọn ${selectedDoiTac.length} đối tác`}
+                </span>
+                <span style={{ fontSize: 10, color: "#6b7280" }}>{doiTacOpen ? "▲" : "▼"}</span>
+              </button>
 
-              {donViMode === "chon" ? (
-                <div>
-                  {donViRows.map((row, idx) => (
-                    <div key={row.id} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-                      {/* Tỉnh thành */}
-                      <select
-                        value={row.tinhThanh}
-                        onChange={(e) => updateDonViRow(row.id, "tinhThanh", e.target.value)}
-                        style={{
-                          flex: 1, padding: "8px 10px", borderRadius: 6,
-                          border: "1px solid #d1d5db", fontSize: 13, outline: "none",
-                          background: "#fff", color: row.tinhThanh ? "#1a1a2e" : "#9ca3af",
-                        }}
-                      >
-                        <option value="">Tỉnh thành *</option>
-                        {TINH_THANH.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
-
-                      {/* Cấp học */}
-                      <select
-                        value={row.capHoc}
-                        onChange={(e) => updateDonViRow(row.id, "capHoc", e.target.value)}
-                        style={{
-                          flex: 1, padding: "8px 10px", borderRadius: 6,
-                          border: "1px solid #d1d5db", fontSize: 13, outline: "none",
-                          background: "#fff", color: row.capHoc ? "#1a1a2e" : "#9ca3af",
-                        }}
-                      >
-                        <option value="">Cấp học</option>
-                        {CAP_HOC.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-
-                      {/* Trường */}
-                      <select
-                        value={row.truong}
-                        onChange={(e) => updateDonViRow(row.id, "truong", e.target.value)}
-                        style={{
-                          flex: 1, padding: "8px 10px", borderRadius: 6,
-                          border: "1px solid #d1d5db", fontSize: 13, outline: "none",
-                          background: "#fff", color: row.truong ? "#1a1a2e" : "#9ca3af",
-                        }}
-                      >
-                        <option value="">Trường</option>
-                        {(TRUONG_MAP[row.tinhThanh] || []).map((tr) => (
-                          <option key={tr} value={tr}>{tr}</option>
-                        ))}
-                      </select>
-
-                      {/* Xóa row */}
-                      <button
-                        onClick={() => xoaDonViRow(row.id)}
-                        disabled={donViRows.length === 1 && idx === 0}
-                        style={{
-                          width: 30, height: 30, borderRadius: 6, border: "1px solid #fecaca",
-                          background: donViRows.length === 1 ? "#f9fafb" : "#fef2f2",
-                          cursor: donViRows.length === 1 ? "not-allowed" : "pointer",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Trash2 size={13} color={donViRows.length === 1 ? "#d1d5db" : "#ef4444"} />
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Thêm row */}
-                  <button
-                    onClick={themDonViRow}
+              {/* Dropdown dùng position fixed – không bị clip bởi overflow của dialog */}
+              {doiTacOpen && (() => {
+                const rect = doiTacTriggerRef.current?.getBoundingClientRect();
+                return (
+                  <div
+                    ref={doiTacDropdownRef}
                     style={{
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "7px 14px", borderRadius: 6, border: `1.5px dashed ${PRIMARY}`,
-                      background: PRIMARY_LIGHT, color: PRIMARY,
-                      fontSize: 13, fontWeight: 500, cursor: "pointer", marginTop: 4,
+                      position: "fixed",
+                      top: rect ? rect.bottom + 4 : 0,
+                      left: rect ? rect.left : 0,
+                      width: rect ? rect.width : 300,
+                      zIndex: 2000,
+                      background: "#fff",
+                      border: "1.5px solid #d1d5db",
+                      borderRadius: 8,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                      maxHeight: 220,
+                      overflowY: "auto",
                     }}
                   >
-                    <Plus size={14} />
-                    Thêm
-                  </button>
+                    {DANH_SACH_DOI_TAC.map((dt, i) => {
+                      const checked = selectedDoiTac.includes(dt);
+                      return (
+                        <label
+                          key={dt}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 10,
+                            padding: "9px 14px", cursor: "pointer", fontSize: 13,
+                            background: checked ? PRIMARY_LIGHT : "transparent",
+                            color: checked ? PRIMARY : "#374151",
+                            borderBottom: i < DANH_SACH_DOI_TAC.length - 1 ? "1px solid #f3f4f6" : "none",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleDoiTac(dt)}
+                            style={{ accentColor: PRIMARY, width: 15, height: 15, flexShrink: 0 }}
+                          />
+                          {dt}
+                          {checked && <Check size={13} color={PRIMARY} style={{ marginLeft: "auto" }} />}
+                        </label>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {/* Tags đã chọn */}
+              {selectedDoiTac.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                  {selectedDoiTac.map((dt) => (
+                    <span
+                      key={dt}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "3px 10px", borderRadius: 20,
+                        background: PRIMARY_LIGHT, border: `1px solid ${PRIMARY}`,
+                        fontSize: 12, color: PRIMARY, fontWeight: 500,
+                      }}
+                    >
+                      {dt}
+                      <X size={11} style={{ cursor: "pointer", flexShrink: 0 }} onClick={() => toggleDoiTac(dt)} />
+                    </span>
+                  ))}
                 </div>
-              ) : (
-                <textarea
-                  value={maTruongNhap}
-                  onChange={(e) => setMaTruongNhap(e.target.value)}
-                  placeholder="Nhập danh sách mã trường, mỗi mã một dòng..."
-                  rows={4}
-                  style={{
-                    width: "100%", padding: "10px 12px", borderRadius: 8,
-                    border: "1.5px solid #d1d5db", outline: "none", fontSize: 13,
-                    boxSizing: "border-box", resize: "vertical",
-                  }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = PRIMARY)}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "#d1d5db")}
-                />
               )}
             </div>
 
