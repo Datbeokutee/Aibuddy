@@ -35,8 +35,15 @@ interface NoiDungHoc {
 
 // ── DATA MASTER ───────────────────────────────────────────────────────────────
 
+type LoaiGiaND = "dong-gia" | "khac-gia" | "free";
+
 interface GoiCuocInfo {
-  id: string; ten: string; gia: number; thoiLuong: string;
+  id: string; ten: string;
+  loaiGia: LoaiGiaND;
+  gia: number; giaTo?: number;
+  giaTheoKhoi?: Record<string, number>;
+  sdStart: string; sdEnd: string;       // Ngày bắt đầu / kết thúc gói (DD/MM/YYYY)
+  tnStart?: string; tnEnd?: string;     // Ngày bắt đầu / kết thúc dùng thử (DD/MM/YYYY)
   khoiLop: string[]; monHoc: string[];
 }
 interface ChuongTrinhMaster {
@@ -47,51 +54,51 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
   {
     id: "m01", ten: "AI Book 2026",
     danhSachGoi: [
-      { id: "g01", ten: "BASIC Tiểu học",  gia: 200,  thoiLuong: "12 tháng", khoiLop: ["Lớp 1","Lớp 2"],   monHoc: ["Toán"] },
-      { id: "g02", ten: "PLUS Tiểu học",   gia: 500,  thoiLuong: "12 tháng", khoiLop: ["Lớp 3","Lớp 4"],   monHoc: ["Tiếng Anh"] },
-      { id: "g09", ten: "BASIC THPT",      gia: 400,  thoiLuong: "12 tháng", khoiLop: ["Lớp 10","Lớp 11"], monHoc: ["Lịch sử"] },
+      { id: "g01", ten: "BASIC Tiểu học",  loaiGia: "dong-gia", gia: 200,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 1","Lớp 2"],   monHoc: ["Toán"] },
+      { id: "g02", ten: "PLUS Tiểu học",   loaiGia: "khac-gia", gia: 400, giaTo: 500, giaTheoKhoi: { "Lớp 3": 400, "Lớp 4": 500 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 3","Lớp 4"], monHoc: ["Tiếng Anh"] },
+      { id: "g09", ten: "BASIC THPT",      loaiGia: "khac-gia", gia: 350, giaTo: 450, giaTheoKhoi: { "Lớp 10": 350, "Lớp 11": 450 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 10","Lớp 11"], monHoc: ["Lịch sử"] },
     ],
   },
   {
     id: "m02", ten: "Kỹ năng sống Pro",
     danhSachGoi: [
-      { id: "g03", ten: "Gói Hè Miễn Phí", gia: 0,   thoiLuong: "3 tháng",  khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5"], monHoc: ["Kỹ năng sống"] },
+      { id: "g03", ten: "Gói Hè Miễn Phí", loaiGia: "free", gia: 0, sdStart: "01/06/2026", sdEnd: "31/08/2026", tnStart: "01/06/2026", tnEnd: "15/06/2026", khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5"], monHoc: ["Kỹ năng sống"] },
     ],
   },
   {
     id: "m03", ten: "Luyện thi THPT",
     danhSachGoi: [
-      { id: "g04", ten: "Gói Cấp tốc",    gia: 1000, thoiLuong: "6 tháng",  khoiLop: ["Lớp 12"],           monHoc: ["Vật lí","Hóa học"] },
+      { id: "g04", ten: "Gói Cấp tốc",    loaiGia: "dong-gia", gia: 1000, sdStart: "01/01/2026", sdEnd: "30/06/2026", khoiLop: ["Lớp 12"], monHoc: ["Vật lí","Hóa học"] },
     ],
   },
   {
     id: "m04", ten: "AI Book Ngữ Văn",
     danhSachGoi: [
-      { id: "g05", ten: "BASIC THCS",      gia: 300,  thoiLuong: "12 tháng", khoiLop: ["Lớp 6","Lớp 7"],   monHoc: ["Ngữ văn"] },
+      { id: "g05", ten: "BASIC THCS",      loaiGia: "dong-gia", gia: 300,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 6","Lớp 7"], monHoc: ["Ngữ văn"] },
     ],
   },
   {
     id: "m05", ten: "AI Book Toán",
     danhSachGoi: [
-      { id: "g06", ten: "PLUS THCS",       gia: 600,  thoiLuong: "12 tháng", khoiLop: ["Lớp 8","Lớp 9"],   monHoc: ["Toán"] },
+      { id: "g06", ten: "PLUS THCS",       loaiGia: "khac-gia", gia: 500, giaTo: 600, giaTheoKhoi: { "Lớp 8": 500, "Lớp 9": 600 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 8","Lớp 9"], monHoc: ["Toán"] },
     ],
   },
   {
     id: "m06", ten: "Tiếng Anh Giao tiếp",
     danhSachGoi: [
-      { id: "g07", ten: "Gói VIP 1 kèm 1", gia: 2000, thoiLuong: "12 tháng", khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5","Lớp 6","Lớp 7","Lớp 8","Lớp 9","Lớp 10","Lớp 11","Lớp 12"], monHoc: ["Tiếng Anh"] },
+      { id: "g07", ten: "Gói VIP 1 kèm 1", loaiGia: "dong-gia", gia: 2000, sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5","Lớp 6","Lớp 7","Lớp 8","Lớp 9","Lớp 10","Lớp 11","Lớp 12"], monHoc: ["Tiếng Anh"] },
     ],
   },
   {
     id: "m07", ten: "STEM Robotics",
     danhSachGoi: [
-      { id: "g08", ten: "Gói Trải nghiệm", gia: 50,   thoiLuong: "1 tháng",  khoiLop: ["Lớp 3","Lớp 4","Lớp 5"], monHoc: ["Tin học"] },
+      { id: "g08", ten: "Gói Trải nghiệm", loaiGia: "free", gia: 0, sdStart: "01/04/2026", sdEnd: "30/04/2026", tnStart: "01/04/2026", tnEnd: "07/04/2026", khoiLop: ["Lớp 3","Lớp 4","Lớp 5"], monHoc: ["Tin học"] },
     ],
   },
   {
     id: "m08", ten: "Ôn thi vào 10",
     danhSachGoi: [
-      { id: "g10", ten: "Gói Tổng ôn",     gia: 800,  thoiLuong: "6 tháng",  khoiLop: ["Lớp 9"],            monHoc: ["Toán","Ngữ văn","Tiếng Anh"] },
+      { id: "g10", ten: "Gói Tổng ôn",     loaiGia: "dong-gia", gia: 800,  sdStart: "01/01/2026", sdEnd: "30/06/2026", khoiLop: ["Lớp 9"], monHoc: ["Toán","Ngữ văn","Tiếng Anh"] },
     ],
   },
 ];
@@ -248,8 +255,20 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
                           {checked && <Check size={10} color="#fff" strokeWidth={3} />}
                         </div>
                         <span style={{ flex: 1, fontSize: 13, fontWeight: checked ? 600 : 400, color: checked ? "#005CB6" : "#1a1a2e" }}>{g.ten}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: g.gia === 0 ? "#059669" : "#005CB6", background: g.gia === 0 ? "#ecfdf5" : "#eff6ff", padding: "2px 8px", borderRadius: 20 }}>{formatGia(g.gia)}</span>
-                        <span style={{ fontSize: 12, color: "#6b7280", minWidth: 64, textAlign: "right" }}>{g.thoiLuong}</span>
+                        {g.loaiGia === "free" && (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#dcfce7", padding: "2px 8px", borderRadius: 20 }}>Miễn phí</span>
+                        )}
+                        {g.loaiGia === "dong-gia" && (
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#005CB6", background: "#eff6ff", padding: "2px 8px", borderRadius: 20 }}>{formatGia(g.gia)}</span>
+                        )}
+                        {g.loaiGia === "khac-gia" && (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#d97706", background: "rgba(217,119,6,0.08)", padding: "2px 8px", borderRadius: 20 }}>{formatGia(g.gia)} – {formatGia(g.giaTo ?? g.gia)}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 3 }}>theo khối</span></span>
+                        )}
+                        <div style={{ textAlign: "right", minWidth: 80 }}>
+                          <div style={{ fontSize: 11, color: "#374151" }}>{g.sdStart} →</div>
+                          <div style={{ fontSize: 11, color: "#374151" }}>{g.sdEnd}</div>
+                          {g.tnStart && <div style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>Thử: {g.tnStart} → {g.tnEnd}</div>}
+                        </div>
                       </div>
                     );
                   })}
@@ -259,30 +278,83 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
             </div>
 
             {goiChonList.length > 0 && (
-              <div style={{ borderRadius: 8, border: "1px solid #bfdbfe", overflow: "hidden", background: "#eff6ff" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderBottom: "1px solid #bfdbfe", fontSize: 12, color: "#1d4ed8", fontWeight: 600 }}>
-                  <AlertCircle size={13} />Thông tin giá & thời gian do Admin VTS cấu hình — chỉ đọc
+              <div style={{ borderRadius: 8, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: "#f8fafc", borderBottom: "1px solid #e5e7eb", fontSize: 12, color: "#374151", fontWeight: 600 }}>
+                  <AlertCircle size={13} color="#005CB6" />Thông tin giá & thời gian do Admin VTS cấu hình — chỉ đọc
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ background: "#dbeafe" }}>
-                      {["Tên gói","Giá","Thời lượng","Khối lớp","Môn học"].map((h) => (
-                        <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#1e40af" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {goiChonList.map((g) => (
-                      <tr key={g.id} style={{ borderTop: "1px solid #bfdbfe" }}>
-                        <td style={{ padding: "8px 12px", fontSize: 12, fontWeight: 600, color: "#1a1a2e" }}>{g.ten}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "#005CB6", fontWeight: 600 }}>{formatGia(g.gia)}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "#374151" }}>{g.thoiLuong}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "#374151" }}>{g.khoiLop.join(", ")}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12, color: "#374151" }}>{g.monHoc.join(", ")}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div>
+                  {goiChonList.map((g, idx) => {
+                    const isLast = idx === goiChonList.length - 1;
+
+                    /* ── MIỄN PHÍ ── */
+                    if (g.loaiGia === "free") return (
+                      <div key={g.id} style={{ padding: "12px 14px", borderBottom: isLast ? "none" : "1px solid #d1fae5", background: "#f0fdf4" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: "#1a1a2e" }}>{g.ten}</span>
+                          <span style={{ background: "#dcfce7", color: "#15803d", fontWeight: 700, fontSize: 12, padding: "3px 12px", borderRadius: 20, border: "1px solid #bbf7d0" }}>Miễn phí</span>
+                        </div>
+                        <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", gap: "2px 16px", fontSize: 12, color: "#374151" }}>
+                          <span>📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong></span>
+                          {g.tnStart ? <span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
+                          <span>Khối lớp: {g.khoiLop.join(", ")} &nbsp;·&nbsp; Môn: {g.monHoc.join(", ")}</span>
+                        </div>
+                      </div>
+                    );
+
+                    /* ── KHÁC GIÁ THEO KHỐI ── */
+                    if (g.loaiGia === "khac-gia") return (
+                      <div key={g.id} style={{ padding: "12px 14px", borderBottom: isLast ? "none" : "1px solid #fed7aa", background: "#fff7ed" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: "#1a1a2e" }}>{g.ten}</span>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontWeight: 700, fontSize: 12, color: "#d97706" }}>{formatGia(g.gia)} – {formatGia(g.giaTo ?? g.gia)}</div>
+                            <div style={{ fontSize: 10, color: "#9ca3af" }}>Dao động theo từng khối</div>
+                          </div>
+                        </div>
+                        <div style={{ borderRadius: 6, overflow: "hidden", border: "1px solid #fed7aa" }}>
+                          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <thead>
+                              <tr style={{ background: "#fde68a" }}>
+                                <th style={{ padding: "5px 10px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#92400e" }}>Khối lớp</th>
+                                <th style={{ padding: "5px 10px", textAlign: "right", fontSize: 11, fontWeight: 700, color: "#92400e" }}>Giá</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {g.khoiLop.map((k) => (
+                                <tr key={k} style={{ borderTop: "1px solid #fde68a" }}>
+                                  <td style={{ padding: "5px 10px", fontSize: 12, color: "#374151" }}>{k}</td>
+                                  <td style={{ padding: "5px 10px", fontSize: 12, fontWeight: 700, color: "#d97706", textAlign: "right" }}>
+                                    {g.giaTheoKhoi?.[k] != null ? formatGia(g.giaTheoKhoi[k]) : "—"}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", gap: "2px 16px", fontSize: 11, color: "#78716c" }}>
+                          <span>📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong></span>
+                          {g.tnStart ? <span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
+                          <span>Môn: {g.monHoc.join(", ")}</span>
+                        </div>
+                      </div>
+                    );
+
+                    /* ── ĐỒNG GIÁ ── */
+                    return (
+                      <div key={g.id} style={{ padding: "12px 14px", borderBottom: isLast ? "none" : "1px solid #bfdbfe", background: idx % 2 === 0 ? "#eff6ff" : "#fff" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontWeight: 600, fontSize: 13, color: "#1a1a2e" }}>{g.ten}</span>
+                          <span style={{ fontWeight: 700, fontSize: 13, color: "#005CB6" }}>{formatGia(g.gia)}</span>
+                        </div>
+                        <div style={{ marginTop: 5, fontSize: 12, color: "#374151" }}>
+                          📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong>
+                          {g.tnStart ? <>&nbsp;·&nbsp;<span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span></> : <>&nbsp;·&nbsp;<span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span></>}
+                          &nbsp;·&nbsp; Khối lớp: {g.khoiLop.join(", ")} &nbsp;·&nbsp; Môn: {g.monHoc.join(", ")}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

@@ -160,7 +160,7 @@ type CapHoc = "tieuhoc" | "thcs" | "thpt";
 
 const DS_LOP = Array.from({ length: 12 }, (_, i) => ({
   id: `lop${i + 1}`,
-  ten: `Lớp ${i + 1}`,
+  ten: `Khối ${i + 1}`,
   so: i + 1,
   cap: (i < 5 ? "tieuhoc" : i < 9 ? "thcs" : "thpt") as CapHoc,
 }));
@@ -430,7 +430,7 @@ function LopSelector({ value, onChange }: { value: string[]; onChange: (v: strin
           {value.length === 12 && <Check size={10} color="#fff" strokeWidth={3} />}
           {value.length > 0 && value.length < 12 && <div style={{ width: 6, height: 2, background: "#005CB6", borderRadius: 2 }} />}
         </div>
-        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: value.length > 0 ? "#005CB6" : "#374151" }}>Tất cả lớp (1–12)</span>
+        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: value.length > 0 ? "#005CB6" : "#374151" }}>Tất cả khối lớp (1–12)</span>
         <span className="ml-auto px-2 py-0.5 rounded-full" style={{ background: "rgba(0,92,182,0.08)", fontSize: "0.62rem", fontWeight: 800, color: "#005CB6" }}>{value.length}/12</span>
       </button>
 
@@ -451,7 +451,7 @@ function LopSelector({ value, onChange }: { value: string[]; onChange: (v: strin
                 {someIn && <div style={{ width: 6, height: 2, background: cfg.color, borderRadius: 2 }} />}
               </div>
               <span style={{ fontSize: "0.76rem", fontWeight: 700, color: allIn || someIn ? cfg.color : "#374151" }}>{cfg.label}</span>
-              <span style={{ fontSize: "0.62rem", color: "#94A3B8" }}>Lớp {cfg.range}</span>
+              <span style={{ fontSize: "0.62rem", color: "#94A3B8" }}>Khối {cfg.range}</span>
               <span className="px-2 py-0.5 rounded-full" style={{ background: allIn || someIn ? cfg.bg : "#F1F5F9", fontSize: "0.6rem", fontWeight: 800, color: allIn || someIn ? cfg.color : "#94A3B8" }}>{count}/{lopsCap.length}</span>
             </button>
           );
@@ -467,7 +467,7 @@ function LopSelector({ value, onChange }: { value: string[]; onChange: (v: strin
             <div key={cap} style={{ borderTop: ci > 0 ? "1px solid #EEF0F4" : "none" }}>
               <div className="flex items-center gap-2 px-3.5 py-2" style={{ background: cfg.bg }}>
                 <span style={{ fontSize: "0.68rem", fontWeight: 800, color: cfg.color, letterSpacing: "0.03em" }}>
-                  {cfg.label} · Lớp {cfg.range}
+                  {cfg.label} · Khối {cfg.range}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 px-3.5 pb-3 pt-2.5" style={{ background: "#fff" }}>
@@ -503,6 +503,10 @@ interface FormState {
   phanLoai: string;
   thoiLuongThuNghiem: string;
   thoiLuongSuDung: string;
+  sdStart: string;                 // Ngày bắt đầu gói cước (DD/MM/YYYY)
+  sdEnd: string;                   // Ngày kết thúc gói cước (DD/MM/YYYY)
+  tnStart: string;                 // Ngày bắt đầu dùng thử (DD/MM/YYYY)
+  tnEnd: string;                   // Ngày kết thúc dùng thử (DD/MM/YYYY)
   // step 2
   maBCSS: string;
   lopIds: string[];                               // Lớp được áp dụng
@@ -523,6 +527,7 @@ interface FormState {
 const FORM_RONG: FormState = {
   ctHocIds: [],
   tenGoi: "", phanLoai: "", thoiLuongThuNghiem: "7", thoiLuongSuDung: "12",
+  sdStart: "", sdEnd: "", tnStart: "", tnEnd: "",
   maBCSS: "", lopIds: [], loaiGia: "dong-gia",
   giaGoc: "", giaFrom: "", giaTo: "",
   khacGiaData: {}, quotaToiDa: "1000", trangThai: "Đang hoạt động", ghiChu: "",
@@ -538,6 +543,238 @@ const STEPS = [
   { label: "Cấu hình giá & đối tượng", icon: DollarSign  },
   { label: "Danh sách Môn học",        icon: BookOpen    },
 ];
+
+// ── DATE RANGE PICKER ──────────────────────────────────────────────────────────
+
+const MONTH_VI = ["Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12"];
+const DAY_VI   = ["T2","T3","T4","T5","T6","T7","CN"];
+
+function parseDMY(s: string): Date | null {
+  if (!s) return null;
+  const [d, m, y] = s.split("/").map(Number);
+  if (!d || !m || !y) return null;
+  return new Date(y, m - 1, d);
+}
+function fmtDMY(d: Date): string {
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+}
+
+function CalendarMonth({
+  year, month, onMonthChange, onYearChange,
+  start, end, hovered,
+  onDayClick, onDayHover,
+  showNavLeft, showNavRight, onNavLeft, onNavRight,
+}: {
+  year: number; month: number;
+  onMonthChange: (m: number) => void; onYearChange: (y: number) => void;
+  start: Date|null; end: Date|null; hovered: Date|null;
+  onDayClick: (d: Date) => void; onDayHover: (d: Date|null) => void;
+  showNavLeft: boolean; showNavRight: boolean;
+  onNavLeft: () => void; onNavRight: () => void;
+}) {
+  const PRIMARY = "#005CB6";
+  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i);
+
+  const firstDay = new Date(year, month, 1);
+  const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const cells: { date: Date; current: boolean }[] = [];
+  for (let i = startDow - 1; i >= 0; i--)
+    cells.push({ date: new Date(year, month - 1, prevMonthDays - i), current: false });
+  for (let d = 1; d <= daysInMonth; d++)
+    cells.push({ date: new Date(year, month, d), current: true });
+  const rem = 42 - cells.length;
+  for (let d = 1; d <= rem; d++)
+    cells.push({ date: new Date(year, month + 1, d), current: false });
+
+  const rangeEnd = end ?? hovered;
+  const lo = start && rangeEnd ? (start <= rangeEnd ? start : rangeEnd) : null;
+  const hi = start && rangeEnd ? (start <= rangeEnd ? rangeEnd : start) : null;
+
+  return (
+    <div style={{ width: 220 }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom: 8 }}>
+        {showNavLeft
+          ? <button onClick={onNavLeft} style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", fontSize:14, color:"#374151" }}>{"<"}</button>
+          : <span style={{ width: 28 }} />}
+        <div style={{ display:"flex", gap: 4 }}>
+          <select value={month} onChange={e => onMonthChange(Number(e.target.value))}
+            style={{ fontSize:"0.72rem", fontWeight:700, border:"1px solid #e2e8f0", borderRadius:4, padding:"2px 4px", cursor:"pointer" }}>
+            {MONTH_VI.map((m, i) => <option key={i} value={i}>{m}</option>)}
+          </select>
+          <select value={year} onChange={e => onYearChange(Number(e.target.value))}
+            style={{ fontSize:"0.72rem", fontWeight:700, border:"1px solid #e2e8f0", borderRadius:4, padding:"2px 4px", cursor:"pointer" }}>
+            {years.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        {showNavRight
+          ? <button onClick={onNavRight} style={{ background:"none", border:"none", cursor:"pointer", padding:"2px 6px", fontSize:14, color:"#374151" }}>{">"}</button>
+          : <span style={{ width: 28 }} />}
+      </div>
+      {/* Day headers */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", textAlign:"center", marginBottom:2 }}>
+        {DAY_VI.map(d => <div key={d} style={{ fontSize:"0.65rem", fontWeight:700, color:"#94A3B8", padding:"2px 0" }}>{d}</div>)}
+      </div>
+      {/* Cells */}
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)" }}>
+        {cells.map((c, i) => {
+          const isStart = start && c.date.toDateString() === start.toDateString();
+          const isEnd   = end   && c.date.toDateString() === end.toDateString();
+          const inRange = lo && hi && c.date > lo && c.date < hi;
+          const today   = c.date.toDateString() === new Date().toDateString();
+          return (
+            <div key={i}
+              onClick={() => c.current && onDayClick(c.date)}
+              onMouseEnter={() => c.current && onDayHover(c.date)}
+              onMouseLeave={() => onDayHover(null)}
+              style={{
+                textAlign:"center", padding:"4px 0", fontSize:"0.72rem", cursor: c.current ? "pointer" : "default",
+                color: !c.current ? "#CBD5E1" : (isStart || isEnd) ? "#fff" : today ? PRIMARY : "#1e293b",
+                fontWeight: (isStart || isEnd || today) ? 700 : 400,
+                background: (isStart || isEnd) ? PRIMARY : inRange ? "rgba(0,92,182,0.1)" : "transparent",
+                borderRadius: isStart ? "50% 0 0 50%" : isEnd ? "0 50% 50% 0" : 0,
+                ...(isStart && isEnd ? { borderRadius:"50%" } : {}),
+              }}
+            >
+              <span style={{
+                display:"inline-flex", alignItems:"center", justifyContent:"center",
+                width: 24, height: 24, borderRadius:"50%",
+                border: today && !isStart && !isEnd ? `1.5px solid ${PRIMARY}` : "none",
+              }}>
+                {c.date.getDate()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DateRangePicker({
+  label, required,
+  startValue, endValue,
+  onStartChange, onEndChange,
+  error,
+}: {
+  label: string; required?: boolean;
+  startValue: string; endValue: string;
+  onStartChange: (v: string) => void; onEndChange: (v: string) => void;
+  error?: string;
+}) {
+  const PRIMARY = "#005CB6";
+  const [open, setOpen] = useState(false);
+  const [selecting, setSelecting] = useState<"start"|"end">("start");
+  const [hovered, setHovered] = useState<Date|null>(null);
+  const now = new Date();
+  const [leftYear,  setLeftYear]  = useState(now.getFullYear());
+  const [leftMonth, setLeftMonth] = useState(now.getMonth());
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropRef    = useRef<HTMLDivElement>(null);
+
+  const rightMonth = leftMonth === 11 ? 0 : leftMonth + 1;
+  const rightYear  = leftMonth === 11 ? leftYear + 1 : leftYear;
+
+  const start = parseDMY(startValue);
+  const end   = parseDMY(endValue);
+
+  useEffect(() => {
+    if (!open) return;
+    const fn = (e: MouseEvent) => {
+      if (!triggerRef.current?.contains(e.target as Node) && !dropRef.current?.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
+  }, [open]);
+
+  const handleDayClick = (d: Date) => {
+    if (selecting === "start" || !start) {
+      onStartChange(fmtDMY(d));
+      onEndChange("");
+      setSelecting("end");
+    } else {
+      if (d < start) { onStartChange(fmtDMY(d)); onEndChange(""); setSelecting("end"); }
+      else { onEndChange(fmtDMY(d)); setSelecting("start"); setOpen(false); setHovered(null); }
+    }
+  };
+
+  const navLeft  = () => { if (leftMonth === 0) { setLeftMonth(11); setLeftYear(y => y-1); } else setLeftMonth(m => m-1); };
+  const navRight = () => { if (leftMonth === 11) { setLeftMonth(0); setLeftYear(y => y+1); } else setLeftMonth(m => m+1); };
+
+  const display = startValue && endValue ? `${startValue} → ${endValue}` : startValue ? `${startValue} → ...` : "";
+
+  return (
+    <div>
+      <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+        <Calendar size={11} style={{ display:"inline", marginRight:4, verticalAlign:"middle" }}/>
+        {label} {required && <span style={{ color:"#D4183D" }}>*</span>}
+      </label>
+      <div ref={triggerRef} className="relative">
+        <input
+          readOnly
+          value={display}
+          onClick={() => { setOpen(o => !o); }}
+          placeholder="Chọn khoảng thời gian..."
+          style={{
+            width:"100%", padding:"10px 40px 10px 12px", borderRadius:8,
+            border:`1.5px solid ${error ? "#D4183D" : open ? PRIMARY : "#d1d5db"}`,
+            fontSize:"0.8rem", cursor:"pointer", boxSizing:"border-box",
+            background:"#fff", outline:"none", color: display ? "#1e293b" : "#94A3B8",
+          }}
+        />
+        <Calendar size={14} color="#94A3B8" style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}/>
+      </div>
+      {error && <div className="flex items-center gap-1 mt-1"><AlertCircle size={11} color="#D4183D"/><p style={{ fontSize:"0.67rem", color:"#D4183D", fontWeight:600 }}>{error}</p></div>}
+
+      {/* Dropdown calendar – position:fixed để không bị clip */}
+      {open && (() => {
+        const rect = triggerRef.current?.getBoundingClientRect();
+        const POPUP_H = 320;
+        const spaceBelow = rect ? window.innerHeight - rect.bottom : 0;
+        const openUp = spaceBelow < POPUP_H + 8;
+        return (
+          <div ref={dropRef} style={{
+            position:"fixed",
+            ...(openUp
+              ? { bottom: rect ? window.innerHeight - rect.top + 4 : 0 }
+              : { top: rect ? rect.bottom + 4 : 0 }),
+            left: rect ? Math.min(rect.left, window.innerWidth - 490) : 0,
+            zIndex: 3000,
+            background:"#fff",
+            border:"1.5px solid #e2e8f0",
+            borderRadius:12,
+            boxShadow:"0 12px 40px rgba(0,0,0,0.15)",
+            padding:16,
+          }}>
+            <div style={{ display:"flex", gap:24, alignItems:"flex-start" }}>
+              <CalendarMonth
+                year={leftYear} month={leftMonth}
+                onMonthChange={m => { setLeftMonth(m); }} onYearChange={y => setLeftYear(y)}
+                start={start} end={end} hovered={hovered}
+                onDayClick={handleDayClick} onDayHover={setHovered}
+                showNavLeft showNavRight={false} onNavLeft={navLeft} onNavRight={navRight}
+              />
+              <CalendarMonth
+                year={rightYear} month={rightMonth}
+                onMonthChange={m => { setLeftMonth(m === 0 ? 11 : m - 1); if (m === 0) setLeftYear(y => y - 1); }}
+                onYearChange={y => setLeftYear(y)}
+                start={start} end={end} hovered={hovered}
+                onDayClick={handleDayClick} onDayHover={setHovered}
+                showNavLeft={false} showNavRight onNavLeft={navLeft} onNavRight={navRight}
+              />
+            </div>
+            <div style={{ marginTop:10, fontSize:"0.7rem", color:"#94A3B8", textAlign:"center" }}>
+              {selecting === "start" ? "Chọn ngày bắt đầu" : "Chọn ngày kết thúc"}
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
 
 // ── Chọn Chương trình học (multi-select từ ChuongTrinhHocPage) ────────────────
 
@@ -798,7 +1035,6 @@ function MaBCSSSelect({
             ) : (
               filtered.map((item, idx) => {
                 const isSelected = item.ma === value;
-                const isUsed     = item.trangThai === "Đang dùng";
                 return (
                   <div key={item.ma}
                     onClick={() => { onChange(item.ma); setQ(""); setOpen(false); }}
@@ -821,14 +1057,6 @@ function MaBCSSSelect({
                     <span style={{ fontSize:"0.7rem", color:"#64748B", flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                       {item.moTa}
                     </span>
-                    <span style={{
-                      fontSize:"0.62rem", fontWeight:700, padding:"2px 7px", borderRadius:20, flexShrink:0,
-                      background: isUsed ? "rgba(212,24,61,0.08)" : "rgba(15,118,110,0.09)",
-                      color:       isUsed ? "#D4183D"              : "#0F766E",
-                      border:     `1px solid ${isUsed ? "rgba(212,24,61,0.2)" : "rgba(15,118,110,0.2)"}`,
-                    }}>
-                      {item.trangThai}
-                    </span>
                   </div>
                 );
               })
@@ -839,7 +1067,7 @@ function MaBCSSSelect({
           <div style={{ padding:"8px 14px", borderTop:"1px solid #F1F5F9", background:"#FAFBFC", display:"flex", alignItems:"center", gap:6 }}>
             <div style={{ width:6, height:6, borderRadius:"50%", background:"#22C55E", animation:"pulse 2s ease infinite" }}/>
             <span style={{ fontSize:"0.62rem", color:"#94A3B8" }}>
-              API BCCS · {DEMO_MA_BCSS.filter(m => m.trangThai==="Khả dụng").length} mã khả dụng · {DEMO_MA_BCSS.filter(m => m.trangThai==="Đang dùng").length} đang dùng
+              API BCCS · {DEMO_MA_BCSS.length} mã gói
             </span>
           </div>
         </div>
@@ -943,7 +1171,7 @@ function MonHocTable({
           <ListChecks size={14} color="#005CB6"/>
           <span style={{ fontSize:"0.74rem", color:"#64748B" }}>
             Hiển thị <strong style={{ color:"#0F172A" }}>{filtered.length}</strong> môn học
-            {selectedLopIds.length > 0 && <span style={{ color:"#D97706", fontWeight:600, marginLeft:4 }}>· lọc theo lớp đã chọn</span>}
+            {selectedLopIds.length > 0 && <span style={{ color:"#D97706", fontWeight:600, marginLeft:4 }}>· lọc theo khối lớp đã chọn</span>}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -1077,6 +1305,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
     tenGoi: goiEdit.tenGoi, phanLoai: goiEdit.phanLoai,
     thoiLuongThuNghiem: String(goiEdit.thoiLuongThuNghiem),
     thoiLuongSuDung: String(goiEdit.thoiLuongSuDung),
+    sdStart: "", sdEnd: "", tnStart: "", tnEnd: "",
     maBCSS: goiEdit.maBCSS, loaiGia: goiEdit.loaiGia,
     lopIds: [], giaGoc: "", khacGiaData: {},
     giaFrom: String(goiEdit.giaFrom), giaTo: String(goiEdit.giaTo),
@@ -1099,26 +1328,27 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
       const dup = allGoi.find(g => g.tenGoi.trim().toLowerCase() === form.tenGoi.trim().toLowerCase() && g.id !== goiEdit?.id);
       if (dup) e.tenGoi = "Tên gói đã tồn tại, vui lòng chọn tên khác";
     }
-    const tn = Number(form.thoiLuongThuNghiem);
-    const sd = Number(form.thoiLuongSuDung);
-    if (isNaN(tn) || tn < 0)   e.thoiLuongThuNghiem = "Số ngày phải ≥ 0";
-    if (!form.thoiLuongSuDung || isNaN(sd) || sd <= 0) e.thoiLuongSuDung = "Số tháng phải > 0";
-    if (!e.thoiLuongThuNghiem && !e.thoiLuongSuDung && tn > sd * 30)
-      e.thoiLuongThuNghiem = `Dùng thử (${tn} ngày) vượt quá thời lượng sử dụng (${sd*30} ngày)`;
+    if (!form.sdStart || !form.sdEnd) e.sdStart = "Vui lòng chọn thời lượng sử dụng";
+    if (form.tnStart && !form.tnEnd) e.tnStart = "Vui lòng chọn ngày kết thúc dùng thử";
+    // Tính thoiLuongSuDung / ThuNghiem để các logic sau dùng
+    const sdS = parseDMY(form.sdStart), sdE = parseDMY(form.sdEnd);
+    const tnS = parseDMY(form.tnStart), tnE = parseDMY(form.tnEnd);
+    if (!e.sdStart && sdS && sdE && tnS && tnE && tnE > sdE)
+      e.tnStart = "Ngày kết thúc dùng thử không được vượt quá ngày kết thúc gói cước";
     if (!form.quotaToiDa || Number(form.quotaToiDa) <= 0) e.quotaToiDa = "Hạn mức phải > 0";
     return e;
   };
 
   const validateStep2 = () => {
     const e: Record<string,string> = {};
-    if (form.lopIds.length === 0) e.lopIds = "Vui lòng chọn ít nhất 1 lớp áp dụng";
+    if (form.lopIds.length === 0) e.lopIds = "Vui lòng chọn ít nhất 1 khối lớp áp dụng";
     if (form.maBCSS.trim() && allGoi.find(g => g.maBCSS===form.maBCSS.trim() && g.id!==goiEdit?.id)) e.maBCSS = "Mã BCCS đã tồn tại";
     if (form.loaiGia === "dong-gia") {
       if (!form.giaFrom || Number(form.giaFrom) <= 0) e.giaFrom = "Giá bán không hợp lệ";
     } else if (form.loaiGia === "khac-gia") {
       const missing = form.lopIds.some(id => !form.khacGiaData[id]?.giaBan || Number(form.khacGiaData[id].giaBan) <= 0);
-      if (form.lopIds.length === 0) e.khacGia = "Vui lòng chọn lớp trước";
-      else if (missing) e.khacGia = "Vui lòng nhập giá bán cho tất cả các lớp đã chọn";
+      if (form.lopIds.length === 0) e.khacGia = "Vui lòng chọn khối lớp trước";
+      else if (missing) e.khacGia = "Vui lòng nhập giá bán cho tất cả các khối lớp đã chọn";
     }
     return e;
   };
@@ -1270,14 +1500,6 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                             background:"rgba(0,92,182,0.1)", padding:"2px 8px", borderRadius:6, letterSpacing:"0.04em" }}>
                             {form.maBCSS}
                           </code>
-                          {pkg && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg"
-                              style={{ background: pkg.trangThai==="Khả dụng" ? "rgba(15,118,110,0.09)" : "rgba(212,24,61,0.08)",
-                                border: `1px solid ${pkg.trangThai==="Khả dụng" ? "rgba(15,118,110,0.2)" : "rgba(212,24,61,0.2)"}`,
-                                fontSize:"0.62rem", fontWeight:700, color: pkg.trangThai==="Khả dụng" ? "#0F766E" : "#D4183D" }}>
-                              {pkg.trangThai}
-                            </span>
-                          )}
                         </div>
                         <p style={{ fontSize:"0.71rem", color:"#005CB6", lineHeight:1.65, fontWeight:500 }}>
                           {pkg?.moTa} — Khi lưu, hệ thống BCCS sẽ tự động ghi nhận và trừ 1 quota cho gói này.
@@ -1298,37 +1520,30 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
 
               {/* Thời lượng */}
               <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-                    <Calendar size={11} style={{ display:"inline", marginRight:4, verticalAlign:"middle" }}/>
-                    Thời lượng sử dụng <span style={{ color:"#D4183D" }}>*</span>
-                  </label>
-                  <div className="relative">
-                    <input type="number" min="1" value={form.thoiLuongSuDung}
-                      onChange={e => set("thoiLuongSuDung",e.target.value)}
-                      style={{ ...iStyle("thoiLuongSuDung"), paddingRight:60 }}
-                      onFocus={e => Object.assign(e.target.style, fcs)}
-                      onBlur={e  => Object.assign(e.target.style, blr("thoiLuongSuDung"))}
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.72rem", color:"#94A3B8", fontWeight:700 }}>tháng</span>
-                  </div>
-                  {errors.thoiLuongSuDung
-                    ? <div className="flex items-center gap-1 mt-1"><AlertCircle size={11} color="#D4183D"/><p style={{ fontSize:"0.67rem", color:"#D4183D", fontWeight:600 }}>{errors.thoiLuongSuDung}</p></div>
-                    : Number(form.thoiLuongSuDung) > 0 && <p style={{ fontSize:"0.67rem", color:"#005CB6", marginTop:3, fontWeight:600 }}>→ {Number(form.thoiLuongSuDung) >= 12 ? `${form.thoiLuongSuDung} tháng (${(Number(form.thoiLuongSuDung)/12).toFixed(1)} năm)` : `${form.thoiLuongSuDung} tháng sử dụng`}</p>
-                  }
-                </div>
+                <DateRangePicker
+                  label="Thời lượng sử dụng" required
+                  startValue={form.sdStart} endValue={form.sdEnd}
+                  onStartChange={v => set("sdStart", v)} onEndChange={v => set("sdEnd", v)}
+                  error={errors.sdStart}
+                />
+                <DateRangePicker
+                  label="Thời gian sử dụng thử"
+                  startValue={form.tnStart} endValue={form.tnEnd}
+                  onStartChange={v => set("tnStart", v)} onEndChange={v => set("tnEnd", v)}
+                  error={errors.tnStart}
+                />
               </div>
 
               {/* Preview tóm tắt */}
-              {form.tenGoi && Number(form.thoiLuongSuDung) > 0 && (
+              {form.tenGoi && form.sdStart && form.sdEnd && (
                 <div className="rounded-2xl p-4 flex items-center gap-3" style={{ background:"#F8FAFB", border:"1.5px solid #EEF0F4" }}>
                   <Tags size={16} color="#005CB6"/>
                   <div className="flex-1 min-w-0">
                     <div style={{ fontSize:"0.82rem", fontWeight:700, color:"#0F172A", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{form.tenGoi}</div>
                     <div style={{ fontSize:"0.67rem", color:"#64748B", marginTop:2 }}>
                       {form.maBCSS && <span className="inline-flex items-center gap-1 mr-3" style={{ color:"#005CB6", fontWeight:700, fontFamily:"monospace" }}>{form.maBCSS}</span>}
-                      {Number(form.thoiLuongThuNghiem) > 0 && <span className="mr-3">🎁 Thử {form.thoiLuongThuNghiem} ngày</span>}
-                      <span>📅 {form.thoiLuongSuDung} tháng sử dụng</span>
+                      {form.tnStart && form.tnEnd && <span className="mr-3">🎁 Dùng thử: {form.tnStart} → {form.tnEnd}</span>}
+                      <span>📅 {form.sdStart} → {form.sdEnd}</span>
                     </div>
                   </div>
                   <CheckCircle size={16} color="#059669"/>
@@ -1345,7 +1560,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                 <Tags size={16} color="#005CB6"/>
                 <div className="flex-1">
                   <div style={{ fontSize:"0.82rem", fontWeight:700, color:"#005CB6" }}>{form.tenGoi}</div>
-                  <div style={{ fontSize:"0.67rem", color:"#64748B" }}>{form.maBCSS && <span style={{ fontFamily:"monospace", marginRight:6 }}>{form.maBCSS}</span>}{form.thoiLuongSuDung} tháng{Number(form.thoiLuongThuNghiem)>0?` · Thử ${form.thoiLuongThuNghiem} ngày`:""}</div>
+                  <div style={{ fontSize:"0.67rem", color:"#64748B" }}>{form.maBCSS && <span style={{ fontFamily:"monospace", marginRight:6 }}>{form.maBCSS}</span>}{form.sdStart && form.sdEnd ? `${form.sdStart} → ${form.sdEnd}` : ""}{form.tnStart && form.tnEnd ? ` · Thử: ${form.tnStart} → ${form.tnEnd}` : ""}</div>
                 </div>
               </div>
 
@@ -1356,9 +1571,9 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                     <span style={{ fontSize:"0.6rem", fontWeight:900, color:"#005CB6" }}>1</span>
                   </div>
                   <label style={{ fontSize:"0.82rem", fontWeight:800, color:"#0F172A" }}>
-                    Cấu hình Lớp <span style={{ color:"#D4183D" }}>*</span>
+                    Cấu hình Khối lớp <span style={{ color:"#D4183D" }}>*</span>
                   </label>
-                  <span style={{ fontSize:"0.68rem", color:"#94A3B8", fontWeight:400 }}>Chọn các lớp được áp dụng gói cước này</span>
+                  <span style={{ fontSize:"0.68rem", color:"#94A3B8", fontWeight:400 }}>Chọn các khối lớp được áp dụng gói cước này</span>
                 </div>
                 <LopSelector value={form.lopIds} onChange={v => set("lopIds", v)}/>
                 {errors.lopIds && (
@@ -1438,7 +1653,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                     <Gift size={15} color="#0F766E"/>
                     <div>
                       <div style={{ fontSize:"0.8rem", fontWeight:700, color:"#0F766E" }}>Gói miễn phí — không thu phí</div>
-                      <div style={{ fontSize:"0.67rem", color:"#0F766E", opacity:0.8 }}>Áp dụng đồng đều cho tất cả {form.lopIds.length > 0 ? `${form.lopIds.length} lớp đã chọn` : "các lớp được chọn"}</div>
+                      <div style={{ fontSize:"0.67rem", color:"#0F766E", opacity:0.8 }}>Áp dụng đồng đều cho tất cả {form.lopIds.length > 0 ? `${form.lopIds.length} khối lớp đã chọn` : "các khối lớp được chọn"}</div>
                     </div>
                   </div>
                 )}
@@ -1449,7 +1664,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                     <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg" style={{ background:"rgba(0,92,182,0.05)", border:"1px solid rgba(0,92,182,0.12)" }}>
                       <Info size={12} color="#005CB6" className="flex-shrink-0 mt-0.5"/>
                       <span style={{ fontSize:"0.68rem", color:"#005CB6", fontWeight:500 }}>
-                        Một mức giá áp dụng đồng đều cho <strong>tất cả {form.lopIds.length > 0 ? `${form.lopIds.length} l��p` : "các lớp"}</strong> đã chọn bên trên.
+                        Một mức giá áp dụng đồng đều cho <strong>tất cả {form.lopIds.length > 0 ? `${form.lopIds.length} khối lớp` : "các khối lớp"}</strong> đã chọn bên trên.
                       </span>
                     </div>
                     {/* Giá bán */}
@@ -1487,7 +1702,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
                     {form.lopIds.length === 0 ? (
                       <div className="flex items-center gap-2.5 p-4 rounded-xl" style={{ background:"rgba(251,191,36,0.07)", border:"1.5px dashed rgba(217,119,6,0.3)" }}>
                         <AlertCircle size={16} color="#D97706"/>
-                        <span style={{ fontSize:"0.78rem", color:"#D97706", fontWeight:600 }}>Vui lòng chọn lớp ở Phần 1 trước khi nhập giá</span>
+                        <span style={{ fontSize:"0.78rem", color:"#D97706", fontWeight:600 }}>Vui lòng chọn khối lớp ở Phần 1 trước khi nhập giá</span>
                       </div>
                     ) : (
                       <div className="rounded-xl overflow-hidden" style={{ border:"1.5px solid #E2E8F0" }}>
@@ -2076,22 +2291,27 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
       return { giaFrom: bans.length ? Math.min(...bans) : 0, giaTo: bans.length ? Math.max(...bans) : 0 };
     };
     const { giaFrom, giaTo } = computeGia();
+    // Tính thoiLuong từ date range
+    const sdS = parseDMY(f.sdStart), sdE = parseDMY(f.sdEnd);
+    const tnS = parseDMY(f.tnStart), tnE = parseDMY(f.tnEnd);
+    const thoiLuongSuDung = sdS && sdE ? Math.round((sdE.getTime() - sdS.getTime()) / (1000*60*60*24*30)) : 0;
+    const thoiLuongThuNghiem = tnS && tnE ? Math.round((tnE.getTime() - tnS.getTime()) / (1000*60*60*24)) : 0;
     if (modalMode==="add") {
       const ng: GoiCuoc = {
         id: String(Date.now()), tenGoi:f.tenGoi.trim(), maBCSS:f.maBCSS.trim(),
         phanLoai:f.phanLoai, loaiGia:f.loaiGia, giaFrom, giaTo,
-        thoiLuongThuNghiem:Number(f.thoiLuongThuNghiem), thoiLuongSuDung:Number(f.thoiLuongSuDung),
+        thoiLuongThuNghiem, thoiLuongSuDung,
         chuongTrinhIds:f.chuongTrinhIds, monHocIds:f.monHocIds,
         quotaToiDa:Number(f.quotaToiDa), soGoiNoiDungDaDung:0,
         trangThai:f.trangThai, ghiChu:f.ghiChu, ngayTao:new Date().toLocaleDateString("vi-VN"),
+        donViGan: [],
       };
       setList(prev=>[ng,...prev]);
       showToast(`Tạo gói cước "${ng.tenGoi}" thành công!`, "success");
     } else if (editTarget) {
       setList(prev=>prev.map(g=>g.id!==editTarget.id?g:{
         ...g, tenGoi:f.tenGoi.trim(), maBCSS:f.maBCSS.trim(), phanLoai:f.phanLoai, loaiGia:f.loaiGia,
-        giaFrom, giaTo,
-        thoiLuongThuNghiem:Number(f.thoiLuongThuNghiem), thoiLuongSuDung:Number(f.thoiLuongSuDung),
+        giaFrom, giaTo, thoiLuongThuNghiem, thoiLuongSuDung,
         chuongTrinhIds:f.chuongTrinhIds, monHocIds:f.monHocIds,
         quotaToiDa:Number(f.quotaToiDa), trangThai:f.trangThai, ghiChu:f.ghiChu,
       }));
@@ -2201,7 +2421,6 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
                 <tr style={{ borderBottom:"2px solid #EEF0F4" }}>
                   <th style={{ ...thS, width:44, textAlign:"center" }}>#</th>
                   <th style={thS}><button onClick={()=>handleSort("tenGoi")} className="flex items-center gap-1.5 cursor-pointer" style={{ background:"none", border:"none", fontFamily:"'Be Vietnam Pro',sans-serif", fontWeight:700, color:"#64748B", fontSize:"0.71rem" }}>Tên gói cước <SI f="tenGoi"/></button></th>
-                  <th style={thS}>Phân loại BCCS</th>
                   <th style={thS}>Loại giá</th>
                   <th style={thS}><button onClick={()=>handleSort("giaFrom")} className="flex items-center gap-1.5 cursor-pointer" style={{ background:"none", border:"none", fontFamily:"'Be Vietnam Pro',sans-serif", fontWeight:700, color:"#64748B", fontSize:"0.71rem" }}>Giá tiền <SI f="giaFrom"/></button></th>
                   <th style={thS}><button onClick={()=>handleSort("thoiLuongSuDung")} className="flex items-center gap-1.5 cursor-pointer" style={{ background:"none", border:"none", fontFamily:"'Be Vietnam Pro',sans-serif", fontWeight:700, color:"#64748B", fontSize:"0.71rem" }}>Thời lượng <SI f="thoiLuongSuDung"/></button></th>
@@ -2212,7 +2431,7 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
               </thead>
               <tbody>
                 {filtered.length===0 ? (
-                  <tr><td colSpan={9} style={{ padding:"52px 24px", textAlign:"center" }}>
+                  <tr><td colSpan={8} style={{ padding:"52px 24px", textAlign:"center" }}>
                     <Tags size={32} color="#CBD5E1" style={{ margin:"0 auto 12px" }}/>
                     <p style={{ color:"#94A3B8", fontSize:"0.85rem" }}>Không tìm thấy gói cước phù hợp</p>
                   </td></tr>
@@ -2226,7 +2445,6 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
                         <div style={{ fontSize:"0.84rem", fontWeight:700, color:"#0F172A", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{g.tenGoi}</div>
                         <div style={{ fontSize:"0.65rem", color:"#94A3B8", fontFamily:"monospace", marginTop:1 }}>{g.maBCSS}</div>
                       </td>
-                      <td style={{ padding:"12px 14px" }}><PhanLoaiBadge pl={g.phanLoai}/></td>
                       <td style={{ padding:"12px 14px" }}><LoaiGiaBadge lg={g.loaiGia}/></td>
                       <td style={{ padding:"12px 14px" }}><HienThiGia goi={g}/></td>
                       <td style={{ padding:"12px 14px" }}>
