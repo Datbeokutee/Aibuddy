@@ -2255,6 +2255,8 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const [modalMode, setModal]   = useState<"add"|"edit"|null>(null);
   const [editTarget, setEdit]   = useState<GoiCuoc|null>(null);
   const [toast, setToast]       = useState<{msg:string;type:"success"|"error"|"info"}|null>(null);
+  const [showEditDaysModal, setShowEditDaysModal] = useState(false);
+  const [editDaysValue, setEditDaysValue] = useState("");
   const [search, setSearch]     = useState("");
 
   const [filterLG, setFilterLG] = useState<LoaiGia|"">("");
@@ -2263,6 +2265,15 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const [sortD, setSortD]       = useState<SortD>("asc");
 
   const showToast = (msg:string, type:"success"|"error"|"info"="success") => setToast({msg,type});
+   const handleSaveEditDays = () => {
+    if (editDaysValue && Number(editDaysValue) > 0) {
+      showToast(`Cập nhật thời gian sửa môn: ${editDaysValue} ngày`, "success");
+      setShowEditDaysModal(false);
+      setEditDaysValue("");
+    } else {
+      showToast("Vui lòng nhập số ngày hợp lệ (> 0)", "error");
+    }
+  };
 
   const handleSort = (f: SortF) => {
     if (sortF===f) setSortD(d=>d==="asc"?"desc":"asc");
@@ -2403,6 +2414,12 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
               {f.opts.map(o=><option key={o} value={o}>{f.map?f.map(o):o}</option>)}
             </select>
           ))}
+          <button 
+            onClick={() => setShowEditDaysModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
+            style={{ border:"1.5px solid #E2E8F0", background:"#fff", cursor:"pointer", fontSize:"0.78rem", color:"#64748B", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+            <Calendar size={12}/> Số ngày sửa môn
+          </button>
           {(search||filterLG||filterTS) && (
             <button onClick={()=>{setSearch("");setFilterLG("");setFilterTS("");}}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
@@ -2474,6 +2491,103 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
           </div>
         </div>
       </div>
+      {showEditDaysModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center"
+          style={{ background:"rgba(15,23,42,0.58)", backdropFilter:"blur(6px)" }}
+          onClick={e => { if(e.target===e.currentTarget) setShowEditDaysModal(false); }}>
+          <div className="flex flex-col rounded-2xl overflow-hidden"
+            style={{ width: 420, background:"#fff", boxShadow:"0 32px 80px rgba(0,0,0,0.28)", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+            
+            {/* Header */}
+            <div className="flex-shrink-0 px-6 pt-5 pb-4"
+              style={{ background:"linear-gradient(135deg,#004A9B 0%,#005CB6 45%,#0074E4 100%)" }}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-2xl" style={{ background:"rgba(255,255,255,0.15)" }}>
+                    <Clock size={18} color="#fff"/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:"0.95rem", fontWeight:800, color:"#fff" }}>Thời gian sửa môn</div>
+                    <div style={{ fontSize:"0.68rem", color:"rgba(255,255,255,0.72)", marginTop:2 }}>Cài đặt số ngày được phép sửa môn học</div>
+                  </div>
+                </div>
+                <button onClick={() => setShowEditDaysModal(false)}
+                  className="flex items-center justify-center w-8 h-8 rounded-xl transition-colors"
+                  style={{ background:"rgba(255,255,255,0.12)", border:"none", cursor:"pointer" }}>
+                  <X size={16} color="#fff"/>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Thời gian được phép sửa môn <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    min="1"
+                    value={editDaysValue} 
+                    onChange={e => setEditDaysValue(e.target.value)}
+                    placeholder="Nhập số ngày..."
+                    style={{
+                      width:"100%",
+                      border:`1.5px solid ${editDaysValue ? "#005CB6" : "#E2E8F0"}`,
+                      padding:"11px 40px 11px 14px",
+                      fontSize:"0.85rem",
+                      background:"#F8F9FA",
+                      borderRadius:12,
+                      outline:"none",
+                      fontFamily:"'Be Vietnam Pro',sans-serif",
+                      transition:"all 0.2s ease"
+                    }}
+                    onFocus={e => {
+                      e.target.style.borderColor = "#005CB6";
+                      e.target.style.background = "#fff";
+                      e.target.style.boxShadow = "0 0 0 3px rgba(0,92,182,0.08)";
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = editDaysValue ? "#005CB6" : "#E2E8F0";
+                      e.target.style.background = "#F8F9FA";
+                      e.target.style.boxShadow = "none";
+                    }}
+                    onKeyDown={e => {
+                      if(e.key === "Enter") handleSaveEditDays();
+                    }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.75rem", color:"#94A3B8", fontWeight:600, pointerEvents:"none" }}>ngày</span>
+                </div>
+              </div>
+
+              {editDaysValue && Number(editDaysValue) > 0 && (
+                <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg" style={{ background:"rgba(0,92,182,0.06)", border:"1px solid rgba(0,92,182,0.18)" }}>
+                  <Info size={13} color="#005CB6" className="flex-shrink-0 mt-0.5"/>
+                  <span style={{ fontSize:"0.72rem", color:"#005CB6", lineHeight:1.5 }}>
+                    Học sinh có thể sửa đổi môn học trong vòng <strong>{editDaysValue} ngày</strong>
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between gap-3 px-6 py-4 flex-shrink-0" style={{ borderTop:"1px solid #EEF0F4", background:"#FAFBFC" }}>
+              <button onClick={() => setShowEditDaysModal(false)}
+                className="flex-1 py-2.5 rounded-xl"
+                style={{ background:"#F1F5F9", border:"1.5px solid #E2E8F0", color:"#64748B", fontSize:"0.84rem", fontWeight:600, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+                Hủy bỏ
+              </button>
+              <button onClick={handleSaveEditDays}
+                disabled={!editDaysValue || Number(editDaysValue) <= 0}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl"
+                style={{ background: !editDaysValue || Number(editDaysValue) <= 0 ? "#CBD5E1" : "linear-gradient(135deg,#005CB6,#0074E4)", border:"none", color:"#fff", fontSize:"0.84rem", fontWeight:700, cursor: !editDaysValue || Number(editDaysValue) <= 0 ? "not-allowed" : "pointer", fontFamily:"'Be Vietnam Pro',sans-serif", boxShadow: !editDaysValue || Number(editDaysValue) <= 0 ? "none" : "0 4px 14px rgba(0,92,182,0.35)" }}>
+                <CheckCircle size={14}/> Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

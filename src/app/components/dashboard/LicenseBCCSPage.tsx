@@ -4,12 +4,11 @@ import {
   ChevronDown, AlertCircle, CheckCircle, Info,
   Database, Edit2, Plus, Minus, Clock, History,
   ShieldCheck, TrendingUp, TrendingDown, Hash,
-  ChevronRight, FileText, Layers, Sparkles, Gift, Zap,
+  ChevronRight,
 } from "lucide-react";
 
 // ── KIỂU DỮ LIỆU ──────────────────────────────────────────────────────────────
 
-type PhanLoaiBCSS = "BASIC" | "PLUS" | "ADVAN" | "FREE";
 type LoaiDieuChinh = "cap-moi" | "dieu-chinh-giam";
 
 interface LichSuDieuChinh {
@@ -27,41 +26,31 @@ interface LicenseGoi {
   id: string;
   tenGoi: string;
   maBCSS: string;
-  phanLoai: PhanLoaiBCSS;
   tongLicense: number;
   licenseGan: number;
   ngayCapNhat: string;
   lichSu: LichSuDieuChinh[];
 }
 
-// ── CẤU HÌNH PHÂN LOẠI ────────────────────────────────────────────────────────
-
-const PL_CFG: Record<PhanLoaiBCSS, { label: string; color: string; bg: string; border: string; icon: React.ElementType }> = {
-  BASIC: { label: "BASIC", color: "#0284C7", bg: "rgba(2,132,199,0.08)",   border: "rgba(2,132,199,0.22)",   icon: Layers    },
-  PLUS:  { label: "PLUS",  color: "#7C3AED", bg: "rgba(124,58,237,0.08)",  border: "rgba(124,58,237,0.22)",  icon: Sparkles  },
-  ADVAN: { label: "ADVAN", color: "#D97706", bg: "rgba(217,119,6,0.08)",   border: "rgba(217,119,6,0.22)",   icon: Zap       },
-  FREE:  { label: "FREE",  color: "#059669", bg: "rgba(5,150,105,0.08)",   border: "rgba(5,150,105,0.22)",   icon: Gift      },
-};
-
 // ── DỮ LIỆU MẪU ──────────────────────────────────────────────────────────────
 
 const DU_LIEU_INIT: LicenseGoi[] = [
   {
-    id: "1", tenGoi: "Toàn diện Tiểu học", maBCSS: "BCCS-TH-001", phanLoai: "BASIC",
+    id: "1", tenGoi: "Toàn diện Tiểu học", maBCSS: "BCCS-TH-001",
     tongLicense: 5000, licenseGan: 4800, ngayCapNhat: "05/04/2026",
     lichSu: [
       { id:"h1a", loai:"cap-moi",        soLuong:5000, maTrx:"TRX_20260101_001", ghiChu:"Cấp ban đầu theo hợp đồng Q1/2026",   nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 08:30", tongSauDieuChinh:5000 },
     ],
   },
   {
-    id: "2", tenGoi: "Cơ bản THCS", maBCSS: "BCCS-TC-001", phanLoai: "BASIC",
+    id: "2", tenGoi: "Cơ bản THCS", maBCSS: "BCCS-TC-001",
     tongLicense: 3000, licenseGan: 1500, ngayCapNhat: "01/04/2026",
     lichSu: [
       { id:"h2a", loai:"cap-moi",        soLuong:3000, maTrx:"TRX_20260101_002", ghiChu:"Cấp ban đầu theo hợp đồng Q1/2026",   nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 08:31", tongSauDieuChinh:3000 },
     ],
   },
   {
-    id: "3", tenGoi: "Luyện thi THPTQG", maBCSS: "BCCS-TP-001", phanLoai: "ADVAN",
+    id: "3", tenGoi: "Luyện thi THPTQG", maBCSS: "BCCS-TP-001",
     tongLicense: 500, licenseGan: 490, ngayCapNhat: "05/04/2026",
     lichSu: [
       { id:"h3a", loai:"cap-moi",        soLuong:500,  maTrx:"TRX_20260101_003", ghiChu:"Cấp ban đầu theo hợp đồng Q1/2026",   nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 08:32", tongSauDieuChinh:500  },
@@ -69,14 +58,14 @@ const DU_LIEU_INIT: LicenseGoi[] = [
     ],
   },
   {
-    id: "4", tenGoi: "Trải nghiệm Miễn phí", maBCSS: "BCCS-FREE-001", phanLoai: "FREE",
+    id: "4", tenGoi: "Trải nghiệm Miễn phí", maBCSS: "BCCS-FREE-001",
     tongLicense: 99999, licenseGan: 45000, ngayCapNhat: "01/01/2026",
     lichSu: [
       { id:"h4a", loai:"cap-moi",        soLuong:99999,maTrx:"",                 ghiChu:"Gói miễn phí, không giới hạn",         nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 08:00", tongSauDieuChinh:99999},
     ],
   },
   {
-    id: "5", tenGoi: "Toàn diện K12", maBCSS: "BCCS-K12-001", phanLoai: "PLUS",
+    id: "5", tenGoi: "Toàn diện K12", maBCSS: "BCCS-K12-001",
     tongLicense: 3000, licenseGan: 2800, ngayCapNhat: "03/04/2026",
     lichSu: [
       { id:"h5a", loai:"cap-moi",        soLuong:2000, maTrx:"TRX_20260101_005", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:00", tongSauDieuChinh:2000 },
@@ -84,7 +73,7 @@ const DU_LIEU_INIT: LicenseGoi[] = [
     ],
   },
   {
-    id: "6", tenGoi: "Khoa học TN Nâng cao", maBCSS: "BCCS-TP-002", phanLoai: "ADVAN",
+    id: "6", tenGoi: "Khoa học TN Nâng cao", maBCSS: "BCCS-TP-002",
     tongLicense: 2500, licenseGan: 1200, ngayCapNhat: "02/04/2026",
     lichSu: [
       { id:"h6a", loai:"cap-moi",        soLuong:3000, maTrx:"TRX_20260101_006", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:05", tongSauDieuChinh:3000 },
@@ -92,14 +81,14 @@ const DU_LIEU_INIT: LicenseGoi[] = [
     ],
   },
   {
-    id: "7", tenGoi: "Xã hội & Ngoại ngữ", maBCSS: "BCCS-TC-003", phanLoai: "BASIC",
+    id: "7", tenGoi: "Xã hội & Ngoại ngữ", maBCSS: "BCCS-TC-003",
     tongLicense: 2000, licenseGan: 2000, ngayCapNhat: "01/04/2026",
     lichSu: [
       { id:"h7a", loai:"cap-moi",        soLuong:2000, maTrx:"TRX_20260101_007", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:10", tongSauDieuChinh:2000 },
     ],
   },
   {
-    id: "8", tenGoi: "Chuyên sâu Luyện thi", maBCSS: "BCCS-TP-001B", phanLoai: "ADVAN",
+    id: "8", tenGoi: "Chuyên sâu Luyện thi", maBCSS: "BCCS-TP-001B",
     tongLicense: 1500, licenseGan: 800, ngayCapNhat: "04/04/2026",
     lichSu: [
       { id:"h8a", loai:"cap-moi",        soLuong:1000, maTrx:"TRX_20260101_008", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:15", tongSauDieuChinh:1000 },
@@ -107,14 +96,14 @@ const DU_LIEU_INIT: LicenseGoi[] = [
     ],
   },
   {
-    id: "9", tenGoi: "Khoa học TN THCS", maBCSS: "BCCS-TC-002", phanLoai: "BASIC",
+    id: "9", tenGoi: "Khoa học TN THCS", maBCSS: "BCCS-TC-002",
     tongLicense: 3000, licenseGan: 1800, ngayCapNhat: "01/03/2026",
     lichSu: [
       { id:"h9a", loai:"cap-moi",        soLuong:3000, maTrx:"TRX_20260101_009", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:20", tongSauDieuChinh:3000 },
     ],
   },
   {
-    id: "10", tenGoi: "Chuyên Toán Lý Hóa", maBCSS: "BCCS-TP-003", phanLoai: "ADVAN",
+    id: "10", tenGoi: "Chuyên Toán Lý Hóa", maBCSS: "BCCS-TP-003",
     tongLicense: 800, licenseGan: 800, ngayCapNhat: "01/02/2026",
     lichSu: [
       { id:"h10a", loai:"cap-moi",        soLuong:1000,maTrx:"TRX_20260101_010", ghiChu:"Cấp ban đầu Q1/2026",                  nguoiThuc:"admin@k12.vn", thoiGian:"01/01/2026 09:25", tongSauDieuChinh:1000 },
@@ -146,19 +135,6 @@ function Toast({ msg, type, onDone }: { msg: string; type: "success" | "error" |
       <span style={{ fontSize:"0.84rem", fontWeight:600, color:"#1E293B" }}>{msg}</span>
       <button onClick={onDone} style={{ marginLeft:"auto", background:"none", border:"none", cursor:"pointer", opacity:0.5 }}><X size={13}/></button>
     </div>
-  );
-}
-
-// ── BADGE PHÂN LOẠI ───────────────────────────────────────────────────────────
-
-function PLBadge({ pl }: { pl: PhanLoaiBCSS }) {
-  const cfg = PL_CFG[pl];
-  const Ic = cfg.icon;
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
-      style={{ background:cfg.bg, border:`1px solid ${cfg.border}`, fontSize:"0.7rem", fontWeight:800, color:cfg.color }}>
-      <Ic size={10}/>{cfg.label}
-    </span>
   );
 }
 
@@ -326,10 +302,6 @@ function DrawerDieuChinh({
                   <div>
                     <p style={{ fontSize:"0.65rem", color:"#94A3B8", marginBottom:2 }}>Mã gói BCCS</p>
                     <p style={{ fontSize:"0.82rem", fontWeight:700, color:"#005CB6", fontFamily:"monospace" }}>{goi.maBCSS}</p>
-                  </div>
-                  <div>
-                    <p style={{ fontSize:"0.65rem", color:"#94A3B8", marginBottom:4 }}>Phân loại BCCS</p>
-                    <PLBadge pl={goi.phanLoai}/>
                   </div>
                   <div>
                     <p style={{ fontSize:"0.65rem", color:"#94A3B8", marginBottom:2 }}>Cập nhật lần cuối</p>
@@ -586,7 +558,6 @@ function DrawerDieuChinh({
 export function LicenseBCCSPage() {
   const [list, setList] = useState<LicenseGoi[]>(DU_LIEU_INIT);
   const [search, setSearch] = useState("");
-  const [filterPL, setFilterPL] = useState<PhanLoaiBCSS | "">("");
   const [filterTT, setFilterTT] = useState<"" | "day" | "thap" | "het">("");
   const [sortCol, setSortCol] = useState<"tongLicense"|"licenseGan"|"conLai"|"">("");
   const [sortDir, setSortDir] = useState<"asc"|"desc">("desc");
@@ -603,7 +574,6 @@ export function LicenseBCCSPage() {
   const filtered = list
     .filter(g => {
       if (search && !g.tenGoi.toLowerCase().includes(search.toLowerCase()) && !g.maBCSS.toLowerCase().includes(search.toLowerCase())) return false;
-      if (filterPL && g.phanLoai !== filterPL) return false;
       if (filterTT === "het")  return (g.tongLicense - g.licenseGan) === 0;
       if (filterTT === "thap") return (g.tongLicense - g.licenseGan) > 0 && (g.tongLicense - g.licenseGan) / (g.tongLicense||1) < 0.1;
       if (filterTT === "day")  return (g.tongLicense - g.licenseGan) / (g.tongLicense||1) >= 0.1;
@@ -718,20 +688,6 @@ export function LicenseBCCSPage() {
               {search && <button onClick={()=>setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full" style={{ background:"#E2E8F0", border:"none", cursor:"pointer" }}><X size={10} color="#64748B"/></button>}
             </div>
 
-            {/* Phân loại */}
-            <div className="relative">
-              <select value={filterPL} onChange={e=>setFilterPL(e.target.value as PhanLoaiBCSS|"")}
-                className="outline-none rounded-xl appearance-none pr-8"
-                style={{ border:"1.5px solid #E2E8F0", padding:"9px 14px", fontSize:"0.82rem", background:"#fff", cursor:"pointer", color:filterPL?"#0F172A":"#94A3B8", fontFamily:"'Be Vietnam Pro',sans-serif", minWidth:160 }}>
-                <option value="">Tất cả phân loại BCCS</option>
-                <option value="BASIC">BASIC</option>
-                <option value="PLUS">PLUS</option>
-                <option value="ADVAN">ADVAN</option>
-                <option value="FREE">FREE</option>
-              </select>
-              <ChevronDown size={13} color="#94A3B8" className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
-            </div>
-
             {/* Trạng thái hạn mức */}
             <div className="relative">
               <select value={filterTT} onChange={e=>setFilterTT(e.target.value as typeof filterTT)}
@@ -745,8 +701,8 @@ export function LicenseBCCSPage() {
               <ChevronDown size={13} color="#94A3B8" className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
             </div>
 
-            {(search || filterPL || filterTT) && (
-              <button onClick={()=>{ setSearch(""); setFilterPL(""); setFilterTT(""); }}
+            {(search || filterTT) && (
+              <button onClick={()=>{ setSearch(""); setFilterTT(""); }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
                 style={{ border:"1.5px solid #E2E8F0", background:"#fff", cursor:"pointer", fontSize:"0.78rem", color:"#64748B", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
                 <RefreshCw size={12}/> Xóa lọc
@@ -760,8 +716,8 @@ export function LicenseBCCSPage() {
               <thead>
                 <tr style={{ background:"#F8FAFC", borderBottom:"1.5px solid #EEF0F4" }}>
                   <th style={{ ...thS, textAlign:"center", width:44 }}>STT</th>
-                  <th style={{ ...thS }}>Tên gói cước</th>
-                  <th style={{ ...thS, textAlign:"center" }}>Phân loại BCCS</th>
+                  <th style={{ ...thS }}>Tên chương trình</th>
+                  <th style={{ ...thS }}>Gói cước</th>
                   <th style={{ ...thS, textAlign:"right", cursor:"pointer" }} onClick={()=>toggleSort("tongLicense")}>
                     <span className="flex items-center justify-end gap-1">Tổng License cấp <ChevronDown size={11} style={{ transform: sortCol==="tongLicense" && sortDir==="asc" ? "rotate(180deg)":"rotate(0deg)", opacity:sortCol==="tongLicense"?1:0.4 }}/></span>
                   </th>
@@ -779,7 +735,7 @@ export function LicenseBCCSPage() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ padding:"52px 24px", textAlign:"center" }}>
+                    <td colSpan={8} style={{ padding:"52px 24px", textAlign:"center" }}>
                       <Key size={32} color="#CBD5E1" style={{ margin:"0 auto 12px" }}/>
                       <p style={{ color:"#94A3B8", fontSize:"0.85rem" }}>Không tìm thấy gói cước phù hợp</p>
                     </td>
@@ -799,14 +755,13 @@ export function LicenseBCCSPage() {
                         <td style={{ padding:"12px 14px", textAlign:"center" }}>
                           <span style={{ fontSize:"0.74rem", color:"#94A3B8", fontWeight:600 }}>{idx+1}</span>
                         </td>
-                        {/* Tên gói */}
+                        {/* Tên chương trình */}
                         <td style={{ padding:"12px 14px", maxWidth:220 }}>
                           <div style={{ fontSize:"0.84rem", fontWeight:700, color:"#0F172A", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{g.tenGoi}</div>
-                          <div style={{ fontSize:"0.65rem", color:"#94A3B8", fontFamily:"monospace", marginTop:2 }}>{g.maBCSS}</div>
                         </td>
-                        {/* Phân loại */}
-                        <td style={{ padding:"12px 14px", textAlign:"center" }}>
-                          <PLBadge pl={g.phanLoai}/>
+                        {/* Mã BCCS */}
+                        <td style={{ padding:"12px 14px" }}>
+                          <div style={{ fontSize:"0.72rem", fontFamily:"monospace", fontWeight:700, color:"#005CB6" }}>{g.maBCSS}</div>
                         </td>
                         {/* Tổng */}
                         <td style={{ padding:"12px 14px", textAlign:"right" }}>
@@ -868,18 +823,7 @@ export function LicenseBCCSPage() {
             <span style={{ fontSize:"0.75rem", color:"#94A3B8" }}>
               Hiển thị {filtered.length}/{list.length} gói cước
             </span>
-            <div className="flex items-center gap-4">
-              {(["BASIC","PLUS","ADVAN","FREE"] as PhanLoaiBCSS[]).map(pl => {
-                const cnt = list.filter(g=>g.phanLoai===pl).length;
-                if (cnt===0) return null;
-                const cfg = PL_CFG[pl];
-                return (
-                  <span key={pl} className="flex items-center gap-1.5" style={{ fontSize:"0.71rem", fontWeight:600, color:cfg.color }}>
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background:cfg.color }}/>{pl}: {cnt}
-                  </span>
-                );
-              })}
-            </div>
+            <div />
           </div>
         </div>
 
