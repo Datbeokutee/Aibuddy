@@ -20,6 +20,7 @@ const PLACEHOLDER_IMGS = [
 interface GoiCuoc {
   id: string;
   ten: string;
+  tenLoai: string;            // Tên loại gói: BASIC, PLUS, PREMIUM, etc.
   gia: number;
   moTa?: string;
   thoiGian: string;           // Thời gian dùng: từ - đến (VD: "01/09/2025 — 31/08/2026")
@@ -48,8 +49,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 17/02/2026 – 08:40, 20/03/2026",
     daMua: true, img: PLACEHOLDER_IMGS[0],
     goiCuoc: [
-      { id: "gc01-1", ten: "1 tháng", gia: 200000, thoiGian: "17/02/2026 — 20/03/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
-      { id: "gc01-3", ten: "3 tháng", gia: 450000, thoiGian: "17/02/2026 — 20/05/2026" },
+      { id: "gc01-1", ten: "1 tháng", tenLoai: "BASIC", gia: 200000, thoiGian: "17/02/2026 — 20/03/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
+      { id: "gc01-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 450000, thoiGian: "17/02/2026 — 20/05/2026" },
     ],
   },
   {
@@ -60,9 +61,9 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: false, img: PLACEHOLDER_IMGS[1],
     goiCuoc: [
-      { id: "gc02-1", ten: "1 tháng", gia: 500000, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc02-3", ten: "3 tháng", gia: 1200000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 15/02/2026" },
-      { id: "gc02-6", ten: "6 tháng", gia: 2200000, thoiGian: "01/02/2026 — 31/07/2026" },
+      { id: "gc02-1", ten: "1 tháng", tenLoai: "BASIC", gia: 500000, thoiGian: "01/02/2026 — 29/02/2026" },
+      { id: "gc02-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1200000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 15/02/2026" },
+      { id: "gc02-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 2200000, thoiGian: "01/02/2026 — 31/07/2026" },
     ],
   },
   {
@@ -73,8 +74,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/03/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[2],
     goiCuoc: [
-      { id: "gc03-1", ten: "1 tháng", gia: 350000, thoiGian: "01/03/2026 — 31/03/2026", thoiGianDungThu: "01/03/2026 — 10/03/2026" },
-      { id: "gc03-6", ten: "6 tháng", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
+      { id: "gc03-1", ten: "1 tháng", tenLoai: "BASIC", gia: 350000, thoiGian: "01/03/2026 — 31/03/2026", thoiGianDungThu: "01/03/2026 — 10/03/2026" },
+      { id: "gc03-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
     ],
   },
   {
@@ -85,8 +86,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/03/2026 – 08:40, 30/05/2026",
     daMua: false, img: PLACEHOLDER_IMGS[3],
     goiCuoc: [
-      { id: "gc04-1", ten: "1 tháng", gia: 800000, thoiGian: "01/03/2026 — 31/03/2026" },
-      { id: "gc04-3", ten: "3 tháng", gia: 2100000, thoiGian: "01/03/2026 — 30/05/2026", thoiGianDungThu: "01/03/2026 — 15/03/2026" },
+      { id: "gc04-1", ten: "1 tháng", tenLoai: "BASIC", gia: 800000, thoiGian: "01/03/2026 — 31/03/2026" },
+      { id: "gc04-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 2100000, thoiGian: "01/03/2026 — 30/05/2026", thoiGianDungThu: "01/03/2026 — 15/03/2026" },
     ],
   },
   {
@@ -97,8 +98,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: true, img: PLACEHOLDER_IMGS[4],
     goiCuoc: [
-      { id: "gc05-1", ten: "1 tháng", gia: 450000, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc05-3", ten: "3 tháng", gia: 1100000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026" },
+      { id: "gc05-1", ten: "1 tháng", tenLoai: "BASIC", gia: 450000, thoiGian: "01/02/2026 — 29/02/2026" },
+      { id: "gc05-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1100000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026" },
     ],
   },
   {
@@ -109,8 +110,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 5, thoiGian: "08:40, 01/06/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[0],
     goiCuoc: [
-      { id: "gc06-1", ten: "Miễn phí", gia: 0, thoiGian: "01/06/2026 — 31/08/2026", thoiGianDungThu: "01/06/2026 — 15/06/2026" },
-      { id: "gc06-3", ten: "3 tháng", gia: 300000, thoiGian: "01/06/2026 — 31/08/2026" },
+      { id: "gc06-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/06/2026 — 31/08/2026", thoiGianDungThu: "01/06/2026 — 15/06/2026" },
+      { id: "gc06-3", ten: "Premium", tenLoai: "PLUS", gia: 300000, thoiGian: "01/06/2026 — 31/08/2026" },
     ],
   },
   {
@@ -121,8 +122,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 5, thoiGian: "08:40, 01/03/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[1],
     goiCuoc: [
-      { id: "gc07-3", ten: "3 tháng", gia: 1000000, thoiGian: "01/03/2026 — 31/05/2026", thoiGianDungThu: "01/03/2026 — 20/03/2026" },
-      { id: "gc07-6", ten: "6 tháng", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
+      { id: "gc07-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1000000, thoiGian: "01/03/2026 — 31/05/2026", thoiGianDungThu: "01/03/2026 — 20/03/2026" },
+      { id: "gc07-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
     ],
   },
   {
@@ -133,8 +134,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 4, thoiGian: "08:40, 01/04/2026 – 08:40, 30/06/2026",
     daMua: false, img: PLACEHOLDER_IMGS[2],
     goiCuoc: [
-      { id: "gc08-1", ten: "1 tháng", gia: 1200000, thoiGian: "01/04/2026 — 30/04/2026" },
-      { id: "gc08-3", ten: "3 tháng", gia: 3000000, thoiGian: "01/04/2026 — 30/06/2026", thoiGianDungThu: "01/04/2026 — 15/04/2026" },
+      { id: "gc08-1", ten: "1 tháng", tenLoai: "BASIC", gia: 1200000, thoiGian: "01/04/2026 — 30/04/2026" },
+      { id: "gc08-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 3000000, thoiGian: "01/04/2026 — 30/06/2026", thoiGianDungThu: "01/04/2026 — 15/04/2026" },
     ],
   },
   {
@@ -145,8 +146,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 1, thoiGian: "08:40, 17/02/2026 – 08:40, 20/03/2026",
     daMua: false, img: PLACEHOLDER_IMGS[3],
     goiCuoc: [
-      { id: "gc09-1", ten: "1 tháng", gia: 2000000, thoiGian: "17/02/2026 — 20/03/2026" },
-      { id: "gc09-3", ten: "3 tháng", gia: 5500000, thoiGian: "17/02/2026 — 20/05/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
+      { id: "gc09-1", ten: "VIP BASIC", tenLoai: "VIP BASIC", gia: 2000000, thoiGian: "17/02/2026 — 20/03/2026" },
+      { id: "gc09-3", ten: "VIP PREMIUM", tenLoai: "VIP PREMIUM", gia: 5500000, thoiGian: "17/02/2026 — 20/05/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
     ],
   },
   {
@@ -157,8 +158,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: true, img: PLACEHOLDER_IMGS[4],
     goiCuoc: [
-      { id: "gc10-1", ten: "1 tháng", gia: 300000, thoiGian: "01/02/2026 — 29/02/2026", thoiGianDungThu: "01/02/2026 — 07/02/2026" },
-      { id: "gc10-3", ten: "3 tháng", gia: 750000, thoiGian: "01/02/2026 — 30/04/2026" },
+      { id: "gc10-1", ten: "BASIC", tenLoai: "BASIC", gia: 300000, thoiGian: "01/02/2026 — 29/02/2026", thoiGianDungThu: "01/02/2026 — 07/02/2026" },
+      { id: "gc10-3", ten: "PLUS", tenLoai: "PLUS", gia: 750000, thoiGian: "01/02/2026 — 30/04/2026" },
     ],
   },
 ];
@@ -404,7 +405,7 @@ function ChonGoiCuocPopup({
               <GoiCuocCheckRow
                 key={g.id}
                 id={g.id}
-                label={g.ten}
+                label={g.tenLoai}
                 gia={g.gia}
                 checked={isChon}
                 onClick={() => toggle(g.id)}
@@ -592,7 +593,7 @@ function XacNhanThanhToanPopup({
               {goiCuocChon.map((g) => (
                 <div key={g.id} style={{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 10, borderBottom: "1px solid #e5e7eb" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{g.ten}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{g.tenLoai}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#005CB6" }}>{formatGia(g.gia)}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280" }}>
@@ -831,7 +832,7 @@ function CongThanhToanPopup({
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 12 }}>
                   {goiCuocChon.map((g) => (
                     <div key={g.id} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "8px 12px", borderRadius: 8, background: "#dbeafe", border: "1px solid #bfdbfe" }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1d4ed8" }}>{g.ten}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1d4ed8" }}>{g.tenLoai}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" }}>
                         <Clock size={11} />
                         {g.thoiGian}
@@ -1214,14 +1215,15 @@ function GoiCuocCheckRow({ id, label, gia, checked, onClick, thoiGian, thoiGianD
         {checked && <Check size={12} strokeWidth={3} color="#fff" />}
       </div>
       <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 14, fontWeight: checked ? 600 : 400, color: checked ? "#005CB6" : "#374151", marginBottom: 6 }}>{label}</div>
         {thoiGian && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: checked ? 600 : 400, color: checked ? "#005CB6" : "#374151", marginBottom: 4 }}>
-            <Clock size={14} />
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280" }}>
+            <Clock size={12} />
             {thoiGian}
           </div>
         )}
         {thoiGianDungThu && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500, marginTop: 4 }}>
             🎁 Dùng thử: {thoiGianDungThu}
           </div>
         )}
