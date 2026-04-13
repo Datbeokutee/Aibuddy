@@ -162,10 +162,50 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
       { id: "gc10-3", ten: "PLUS", tenLoai: "PLUS", gia: 750000, thoiGian: "01/02/2026 — 30/04/2026" },
     ],
   },
+  {
+    id: "g11", ten: "Gói Anh văn Biểu diễn",
+    moTa: "Luyện kỹ năng Anh văn biểu diễn với các bài tập tương tác.",
+    khoiLop: ["Khối 7","Khối 8","Khối 9","Khối 10","Khối 11","Khối 12"],
+    monHoc: ["Tiếng Anh"],
+    maxMon: 1, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
+    daMua: false, img: PLACEHOLDER_IMGS[2],
+    goiCuoc: [
+      { id: "gc11-1", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 29/02/2026" },
+      { id: "gc11-3", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026" },
+      { id: "gc11-6", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 31/07/2026" },
+    ],
+  },
+  {
+    id: "g12", ten: "Gói Âm nhạc & Mỹ thuật",
+    moTa: "Khám phá âm nhạc và mỹ thuật với các bài học sáng tạo.",
+    khoiLop: ["Khối 1","Khối 2","Khối 3","Khối 4","Khối 5","Khối 6"],
+    monHoc: ["Âm nhạc","Mỹ thuật"],
+    maxMon: 2, thoiGian: "08:40, 01/05/2026 – 08:40, 30/09/2026",
+    daMua: false, img: PLACEHOLDER_IMGS[3],
+    goiCuoc: [
+      { id: "gc12-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/05/2026 — 31/05/2026", thoiGianDungThu: "01/05/2026 — 15/05/2026" },
+    ],
+  },
+  {
+    id: "g13", ten: "Gói Kỹ năng Số",
+    moTa: "Phát triển kỹ năng sử dụng công nghệ số cho học sinh hiện đại.",
+    khoiLop: ["Khối 4","Khối 5","Khối 6","Khối 7","Khối 8","Khối 9"],
+    monHoc: ["Tin học","Kỹ năng sống"],
+    maxMon: 2, thoiGian: "08:40, 01/02/2026 – 08:40, 31/05/2026",
+    daMua: false, img: PLACEHOLDER_IMGS[1],
+    goiCuoc: [
+      { id: "gc13-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/02/2026 — 29/02/2026" },
+      { id: "gc13-2", ten: "PLUS", tenLoai: "PLUS", gia: 400000, thoiGian: "01/02/2026 — 31/05/2026" },
+    ],
+  },
 ];
 
 const DS_KHOI = ["Khối 1","Khối 2","Khối 3","Khối 4","Khối 5","Khối 6","Khối 7","Khối 8","Khối 9","Khối 10","Khối 11","Khối 12"];
 const DS_MON  = ["Toán","Tiếng Việt","Tiếng Anh","Ngữ văn","Vật lí","Hóa học","Sinh học","Lịch sử","Địa lý","Tin học","Kỹ năng sống"];
+const DS_TRANG_THAI = [
+  { value: "da-mua", label: "Đã mua" },
+  { value: "chua-mua", label: "Chưa mua" },
+];
 
 const formatGia = (gia: number) =>
   gia === 0 ? "Miễn phí" : `${gia.toLocaleString("vi-VN")}đ`;
@@ -191,6 +231,7 @@ export default function HocSinhGoiPage() {
   const [filterKhoi, setFilterKhoi] = useState("");
   const [filterMon,  setFilterMon]  = useState("");
   const [filterTen,  setFilterTen]  = useState("");
+  const [filterTrangThai, setFilterTrangThai] = useState("");
   const [danhSach, setDanhSach]     = useState<GoiChuongTrinh[]>(DANH_SACH_GOI);
   const [toastMsg, setToastMsg]     = useState<string | null>(null);
 
@@ -204,7 +245,10 @@ export default function HocSinhGoiPage() {
     const matchKhoi = !filterKhoi || g.khoiLop.includes(filterKhoi);
     const matchMon  = !filterMon  || g.monHoc.includes(filterMon);
     const matchTen  = !filterTen  || g.ten.toLowerCase().includes(filterTen.toLowerCase());
-    return matchKhoi && matchMon && matchTen;
+    const matchTrangThai = !filterTrangThai || 
+      (filterTrangThai === "da-mua" && g.daMua) || 
+      (filterTrangThai === "chua-mua" && !g.daMua);
+    return matchKhoi && matchMon && matchTen && matchTrangThai;
   });
 
   const openMua = (goi: GoiChuongTrinh) => {
@@ -276,7 +320,21 @@ export default function HocSinhGoiPage() {
           goiCuocDaChon={chonGoiCuoc}
           monDaChon={chonMon}
           onQuayLai={() => setPopupStep("chon-mon")}
-          onXacNhan={() => setPopupStep("thanh-toan")}
+          onXacNhan={() => {
+            // Tính tổng tiền từ các gói đã chọn
+            const tongTien = chonGoiCuoc.reduce((sum, goiId) => {
+              const g = popupGoi.goiCuoc.find(gc => gc.id === goiId);
+              return sum + (g?.gia || 0);
+            }, 0);
+            // Nếu miễn phí (0đ) → hoàn tất, không cần bước thanh toán
+            if (tongTien === 0) {
+              setToastMsg("✅ Đã thêm vào danh sách học của bạn!");
+              setTimeout(() => closeAll(), 1500);
+            } else {
+              // Có tiền → đi bước thanh toán
+              setPopupStep("thanh-toan");
+            }
+          }}
           onClose={closeAll}
         />
       )}
@@ -309,6 +367,7 @@ export default function HocSinhGoiPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
           <SelFilter value={filterKhoi} onChange={setFilterKhoi} options={DS_KHOI} placeholder="--Chọn khối lớp--" />
           <SelFilter value={filterMon}  onChange={setFilterMon}  options={DS_MON}  placeholder="--Chọn môn học/HĐGD--" />
+          <SelFilterObj value={filterTrangThai} onChange={setFilterTrangThai} options={DS_TRANG_THAI} placeholder="--Chọn trạng thái--" />
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", minWidth: 260 }}>
             <input
               value={filterTen}
@@ -554,16 +613,17 @@ function XacNhanThanhToanPopup({
   // Lấy thông tin gói cước đã chọn
   const goiCuocChon = goiCuocDaChon.map(id => goi.goiCuoc.find(gc => gc.id === id)).filter(Boolean) as GoiCuoc[];
   const tongTienGoiCuoc = goiCuocChon.reduce((sum, g) => sum + g.gia, 0);
+  const isFreeTier = tongTienGoiCuoc === 0;
 
   return (
     <Backdrop onClose={onClose}>
       <PopupShell maxWidth={500}>
         <PopupHeader
-          badge="Bước 3 / 4 — Xác nhận lựa chọn"
-          title="Xác nhận lựa chọn & Thanh toán"
+          badge={isFreeTier ? "Bước 3 / 3 — Xác nhận lựa chọn" : "Bước 3 / 4 — Xác nhận lựa chọn"}
+          title={isFreeTier ? "Xác nhận lựa chọn & Vào học" : "Xác nhận lựa chọn & Thanh toán"}
           onClose={onClose}
           stepDots={3}
-          totalSteps={4}
+          totalSteps={isFreeTier ? 3 : 4}
         />
 
         <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -634,23 +694,35 @@ function XacNhanThanhToanPopup({
           </div>
 
           {/* Tổng thanh toán */}
-          <div style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", background: "#f0f9ff" }}>
+          <div style={{ borderRadius: 12, border: isFreeTier ? "1px solid #86efac" : "1px solid #e5e7eb", overflow: "hidden", background: isFreeTier ? "#f0fdf4" : "#f0f9ff" }}>
             <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#005CB6" }}>Tổng thanh toán</span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "#005CB6" }}>{formatGia(tongTienGoiCuoc)}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: isFreeTier ? "#15803d" : "#005CB6" }}>
+                {isFreeTier ? "✅ Sẵn sàng vào học" : "Tổng thanh toán"}
+              </span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: isFreeTier ? "#15803d" : "#005CB6" }}>{formatGia(tongTienGoiCuoc)}</span>
             </div>
           </div>
 
           {/* Cảnh báo */}
           <div style={{
             padding: "12px 16px", borderRadius: 10,
-            background: "#fff7ed", border: "1px solid #fed7aa",
+            background: isFreeTier ? "#f0fdf4" : "#fff7ed",
+            border: isFreeTier ? "1px solid #bbf7d0" : "1px solid #fed7aa",
             display: "flex", gap: 10,
           }}>
-            <AlertCircle size={16} color="#ea580c" style={{ flexShrink: 0, marginTop: 1 }} />
-            <p style={{ margin: 0, fontSize: 13, color: "#9a3412", lineHeight: 1.6 }}>
-              <strong>Vui lòng kiểm tra kỹ.</strong> Sau khi xác nhận thanh toán, bạn sẽ{" "}
-              <strong>không thể thay đổi</strong> danh sách gói cước và môn học.
+            <AlertCircle size={16} color={isFreeTier ? "#15803d" : "#ea580c"} style={{ flexShrink: 0, marginTop: 1 }} />
+            <p style={{ margin: 0, fontSize: 13, color: isFreeTier ? "#166534" : "#9a3412", lineHeight: 1.6 }}>
+              {isFreeTier ? (
+                <>
+                  <strong>✅ Gói miễn phí!</strong> Sau khi xác nhận, bạn sẽ có thể{" "}
+                  <strong>vào học ngay</strong>.
+                </>
+              ) : (
+                <>
+                  <strong>Vui lòng kiểm tra kỹ.</strong> Sau khi xác nhận thanh toán, bạn sẽ{" "}
+                  <strong>không thể thay đổi</strong> danh sách gói cước và môn học.
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -662,7 +734,7 @@ function XacNhanThanhToanPopup({
           </BtnOutline>
           <BtnPrimary onClick={onXacNhan}>
             <Shield size={15} />
-            Xác nhận &amp; Thanh toán
+            {isFreeTier ? "Xác nhận & Vào học" : "Xác nhận & Thanh toán"}
           </BtnPrimary>
         </PopupFooter>
       </PopupShell>
@@ -1259,6 +1331,18 @@ function SelFilter({ value, onChange, options, placeholder }: { value: string; o
       <select value={value} onChange={(e) => onChange(e.target.value)} style={{ appearance: "none", padding: "9px 32px 9px 14px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 13, color: value ? "#1a1a2e" : "#6b7280", cursor: "pointer", outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif", minWidth: 170 }}>
         <option value="">{placeholder}</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <ChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#9ca3af" }} />
+    </div>
+  );
+}
+
+function SelFilterObj({ value, onChange, options, placeholder }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder: string }) {
+  return (
+    <div style={{ position: "relative" }}>
+      <select value={value} onChange={(e) => onChange(e.target.value)} style={{ appearance: "none", padding: "9px 32px 9px 14px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 13, color: value ? "#1a1a2e" : "#6b7280", cursor: "pointer", outline: "none", fontFamily: "'Be Vietnam Pro', sans-serif", minWidth: 170 }}>
+        <option value="">{placeholder}</option>
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
       <ChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: "#9ca3af" }} />
     </div>
