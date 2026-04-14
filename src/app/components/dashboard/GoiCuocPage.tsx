@@ -1529,12 +1529,13 @@ const ALL_MA_GOIS: BCCSMaGoi[] = DEMO_BCCS_PACKAGES.flatMap(p => p.maGois);
 
 interface KhacGiaRow {
   _id: string;
-  khoiLopId: string;  // e.g. "lop1"
-  maGoiId:   string;  // e.g. "k12_LTQG_A"
-  giaBan:    string;  // auto-filled from giaSauVAT, editable
+  khoiLopIds: string[];  // multi-select, e.g. ["lop1","lop2"]
+  maGoiId:    string;    // e.g. "k12_LTQG_A"
+  giaBan:     string;    // auto-filled from giaSauVAT
 }
 
 interface FormThemFlat {
+  chuongTrinhIds: string[];        // Chương trình học
   tenGoi: string;
   loaiGia: LoaiGia;
   bccsGoiId: string;
@@ -1552,6 +1553,7 @@ interface FormThemFlat {
 }
 
 const FORM_THEM_FLAT_RONG: FormThemFlat = {
+  chuongTrinhIds: [],
   tenGoi: "", loaiGia: "dong-gia", bccsGoiId: "", giaBan: "",
   khoiLopIds: [], khacGiaRows: [], monHocIds: [], gioiHanMonHoc: "",
   sdEnd: "", thoiLuongThuNghiem: "",
@@ -1593,9 +1595,9 @@ function ModalThemGoiCuocFlat({
   const handleLoaiGiaChange = (lg: LoaiGia) => {
     const defaultKhacGiaRows: KhacGiaRow[] = lg === "khac-gia"
       ? [
-          { _id: String(Date.now()),     khoiLopId: "", maGoiId: "", giaBan: "" },
-          { _id: String(Date.now() + 1), khoiLopId: "", maGoiId: "", giaBan: "" },
-          { _id: String(Date.now() + 2), khoiLopId: "", maGoiId: "", giaBan: "" },
+          { _id: String(Date.now()),     khoiLopIds: [], maGoiId: "", giaBan: "" },
+          { _id: String(Date.now() + 1), khoiLopIds: [], maGoiId: "", giaBan: "" },
+          { _id: String(Date.now() + 2), khoiLopIds: [], maGoiId: "", giaBan: "" },
         ]
       : [];
     setForm(f => ({
@@ -1610,7 +1612,7 @@ function ModalThemGoiCuocFlat({
 
   /* ── Khác giá: thêm / sửa / xóa dòng ── */
   const addKhacGiaRow = () =>
-    setForm(f => ({ ...f, khacGiaRows: [...f.khacGiaRows, { _id: String(Date.now()), khoiLopId: "", maGoiId: "", giaBan: "" }] }));
+    setForm(f => ({ ...f, khacGiaRows: [...f.khacGiaRows, { _id: String(Date.now()), khoiLopIds: [], maGoiId: "", giaBan: "" }] }));
 
   const removeKhacGiaRow = (id: string) =>
     setForm(f => ({ ...f, khacGiaRows: f.khacGiaRows.filter(r => r._id !== id) }));
@@ -1667,7 +1669,7 @@ function ModalThemGoiCuocFlat({
       if (form.khacGiaRows.length === 0) {
         e.khacGiaRows = "Vui lòng thêm ít nhất 1 dòng cấu hình";
       } else {
-        const bad = form.khacGiaRows.find(r => !r.khoiLopId || !r.maGoiId || !r.giaBan || Number(r.giaBan) <= 0);
+        const bad = form.khacGiaRows.find(r => r.khoiLopIds.length === 0 || !r.maGoiId || !r.giaBan || Number(r.giaBan) <= 0);
         if (bad) e.khacGiaRows = "Vui lòng điền đầy đủ Khối lớp, Mã gói và Giá tiền cho tất cả các dòng";
       }
     }
@@ -1763,6 +1765,35 @@ function ModalThemGoiCuocFlat({
         {/* ── BODY ── */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
+          {/* 0. Chọn Chương trình học */}
+          <div>
+            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+              Chọn Chương trình học <span style={{ color:"#D4183D" }}>*</span>
+            </label>
+            <select 
+              value={form.chuongTrinhIds[0] || ""} 
+              onChange={e => set("chuongTrinhIds", e.target.value ? [e.target.value] : [])}
+              style={{
+                border: `1.5px solid #E2E8F0`,
+                padding: "10px 14px",
+                fontSize: "0.85rem",
+                background: "#F8F9FA",
+                outline: "none",
+                width: "100%",
+                borderRadius: 10,
+                fontFamily: "'Be Vietnam Pro',sans-serif",
+                appearance: "none",
+                cursor: "pointer",
+                paddingRight: 36,
+              }}
+            >
+              <option value="">-- Chọn chương trình học --</option>
+              {DS_CHUONG_TRINH.map(prog => (
+                <option key={prog.id} value={prog.id}>{prog.ten}</option>
+              ))}
+            </select>
+          </div>
+
           {/* 1. Tên gói cước */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
@@ -1777,7 +1808,7 @@ function ModalThemGoiCuocFlat({
             <ErrMsg f="tenGoi"/>
           </div>
 
-          {/* 2. Cấu hình giá — chọn TRƯỚC */}
+          {/* 3. Cấu hình giá — chọn TRƯỚC */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:8 }}>
               Cấu hình giá <span style={{ color:"#D4183D" }}>*</span>
@@ -1921,37 +1952,43 @@ function ModalThemGoiCuocFlat({
                     <span style={{ fontSize:"0.72rem", color:"#92400E" }}>Chưa có dòng nào — nhấn "+ Thêm dòng" để bắt đầu</span>
                   </div>
                 ) : form.khacGiaRows.map((row, idx) => {
-                  const lop = DS_LOP.find(l => l.id === row.khoiLopId);
-                  const cap = lop ? CAP_CFG[lop.cap] : null;
                   const maInfo = ALL_MA_GOIS.find(m => m.ma === row.maGoiId);
-                  const hasRowErr = !!errors.khacGiaRows && (!row.khoiLopId || !row.maGoiId || !row.giaBan || Number(row.giaBan) <= 0);
+                  const hasRowErr = !!errors.khacGiaRows && (row.khoiLopIds.length === 0 || !row.maGoiId || !row.giaBan || Number(row.giaBan) <= 0);
+                  const toggleRowLop = (lopId: string) => {
+                    const next = row.khoiLopIds.includes(lopId)
+                      ? row.khoiLopIds.filter(x => x !== lopId)
+                      : [...row.khoiLopIds, lopId];
+                    updateKhacGiaRow(row._id, { khoiLopIds: next });
+                  };
                   return (
                     <div key={row._id}
                       style={{ borderTop: idx > 0 ? "1px solid #FEF3C7" : "none", background: idx%2===0?"#fff":"#FFFBF5" }}>
                       <div className="grid items-start gap-2 px-3 py-2.5"
                         style={{ gridTemplateColumns:"1fr 1fr 120px 36px" }}>
 
-                        {/* Khối lớp — dropdown single */}
+                        {/* Khối lớp — chip multi-select */}
                         <div>
-                          <select
-                            value={row.khoiLopId}
-                            onChange={e => updateKhacGiaRow(row._id, { khoiLopId: e.target.value })}
-                            style={{ width:"100%", padding:"6px 10px", fontSize:"0.78rem", borderRadius:8,
-                              border:`1.5px solid ${hasRowErr&&!row.khoiLopId?"#D4183D":"#E2E8F0"}`,
-                              background:row.khoiLopId?"#F0FDF4":"#F8F9FA",
-                              outline:"none", fontFamily:"'Be Vietnam Pro',sans-serif", color:"#0F172A", cursor:"pointer" }}>
-                            <option value="">-- Chọn khối --</option>
-                            {(["tieuhoc","thcs","thpt"] as const).map(cap => (
-                              <optgroup key={cap} label={CAP_CFG[cap].label}>
-                                {DS_LOP.filter(l=>l.cap===cap).map(l=>(
-                                  <option key={l.id} value={l.id}>Khối {l.so}</option>
-                                ))}
-                              </optgroup>
+                          <div className="flex flex-wrap gap-1"
+                            style={{ border:`1.5px solid ${hasRowErr&&row.khoiLopIds.length===0?"#D4183D":"#E2E8F0"}`, borderRadius:8, padding:"5px 7px", background:"#F8F9FA", minHeight:34 }}>
+                            {(["tieuhoc","thcs","thpt"] as const).map(capKey => (
+                              DS_LOP.filter(l => l.cap === capKey).map(l => {
+                                const sel = row.khoiLopIds.includes(l.id);
+                                const cc  = CAP_CFG[capKey];
+                                return (
+                                  <button key={l.id} type="button" onClick={() => toggleRowLop(l.id)}
+                                    style={{ padding:"1px 6px", fontSize:"0.67rem", fontWeight: sel?700:500, borderRadius:6, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif",
+                                      background: sel ? cc.bg : "transparent",
+                                      border:`1px solid ${sel ? cc.color : "#E2E8F0"}`,
+                                      color: sel ? cc.color : "#94A3B8" }}>
+                                    {l.so}
+                                  </button>
+                                );
+                              })
                             ))}
-                          </select>
-                          {lop && cap && (
-                            <div className="flex items-center gap-1 mt-1">
-                              <span style={{ fontSize:"0.62rem", fontWeight:700, color:cap.color, background:cap.bg, padding:"1px 7px", borderRadius:20 }}>{cap.label}</span>
+                          </div>
+                          {row.khoiLopIds.length > 0 && (
+                            <div style={{ fontSize:"0.62rem", color:"#0F766E", fontWeight:600, marginTop:3 }}>
+                              ✓ {row.khoiLopIds.length} khối
                             </div>
                           )}
                         </div>
@@ -3179,7 +3216,8 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const [sortD, setSortD]       = useState<SortD>("asc");
 
   const showToast = (msg:string, type:"success"|"error"|"info"="success") => setToast({msg,type});
-   const handleSaveEditDays = () => {
+
+  const handleSaveEditDays = () => {
     if (editDaysValue && Number(editDaysValue) > 0) {
       showToast(`Cập nhật thời gian sửa môn: ${editDaysValue} ngày`, "success");
       setShowEditDaysModal(false);
@@ -3226,7 +3264,7 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
     const thoiLuongSuDung = sdE ? Math.max(1, Math.round((sdE.getTime() - today.getTime()) / (1000*60*60*24*30))) : 12;
     // Tổng hợp lopIds
     const allLopIds = f.loaiGia === "khac-gia"
-      ? [...new Set(f.khacGiaRows.map(r => r.khoiLopId).filter(Boolean))]
+      ? [...new Set(f.khacGiaRows.flatMap(r => r.khoiLopIds))]
       : f.khoiLopIds;
     const ng: GoiCuoc = {
       id: String(Date.now()),
@@ -3339,13 +3377,23 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
               <p style={{ fontSize:"0.75rem", color:"#64748B", marginTop:2 }}>Mapping gói cước BCCS với chương trình học có sẵn</p>
             </div>
           </div>
-          <button onClick={()=>setModal("add")}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl"
-            style={{ background:"linear-gradient(135deg,#005CB6,#0074E4)", border:"none", color:"#fff", fontSize:"0.85rem", fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(0,92,182,0.35)", fontFamily:"'Be Vietnam Pro',sans-serif" }}
-            onMouseEnter={e=>(e.currentTarget.style.boxShadow="0 6px 20px rgba(0,92,182,0.48)")}
-            onMouseLeave={e=>(e.currentTarget.style.boxShadow="0 4px 16px rgba(0,92,182,0.35)")}>
-            <Plus size={16}/> Thêm gói cước mới
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setShowEditDaysModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl"
+              style={{ border:"1.5px solid #E2E8F0", background:"#fff", cursor:"pointer", fontSize:"0.82rem", fontWeight:600, color:"#64748B", fontFamily:"'Be Vietnam Pro',sans-serif" }}
+              onMouseEnter={e=>(e.currentTarget.style.background="#F8FAFC")}
+              onMouseLeave={e=>(e.currentTarget.style.background="#fff")}>
+              <Calendar size={14}/> Số ngày của môn
+            </button>
+            <button onClick={()=>setModal("add")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl"
+              style={{ background:"linear-gradient(135deg,#005CB6,#0074E4)", border:"none", color:"#fff", fontSize:"0.85rem", fontWeight:700, cursor:"pointer", boxShadow:"0 4px 16px rgba(0,92,182,0.35)", fontFamily:"'Be Vietnam Pro',sans-serif" }}
+              onMouseEnter={e=>(e.currentTarget.style.boxShadow="0 6px 20px rgba(0,92,182,0.48)")}
+              onMouseLeave={e=>(e.currentTarget.style.boxShadow="0 4px 16px rgba(0,92,182,0.35)")}>
+              <Plus size={16}/> Thêm gói cước mới
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -3390,12 +3438,6 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
               {f.opts.map(o=><option key={o} value={o}>{f.map?f.map(o):o}</option>)}
             </select>
           ))}
-          <button 
-            onClick={() => setShowEditDaysModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
-            style={{ border:"1.5px solid #E2E8F0", background:"#fff", cursor:"pointer", fontSize:"0.78rem", color:"#64748B", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
-            <Calendar size={12}/> Số ngày sửa môn
-          </button>
           {(search||filterLG||filterTS) && (
             <button onClick={()=>{setSearch("");setFilterLG("");setFilterTS("");}}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl"

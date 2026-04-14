@@ -3,7 +3,6 @@ import {
   Plus, RefreshCw, ArrowUpDown, Upload, Pencil, Trash2,
   Copy, Search, ChevronDown, AlertCircle, Check,
   X, AlertTriangle, Home, ChevronRight, Image,
-  CheckCircle2, XCircle,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -211,11 +210,6 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", borderBottom: "1px solid #e5e7eb" }}>
           <div>
             <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>{editId ? "Chỉnh sửa Nội dung học" : "Thêm mới Nội dung học"}</h2>
-            {!editId && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, fontSize: 12, color: "#059669", fontWeight: 500 }}>
-                <CheckCircle2 size={13} />Nội dung do Admin tạo sẽ được phê duyệt tự động
-              </div>
-            )}
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "#f3f4f6", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X size={16} color="#6b7280" />
@@ -481,7 +475,6 @@ export default function AdminNoiDungPage() {
   const [showPopup,  setShowPopup]  = useState(false);
   const [editId,     setEditId]     = useState<string | null>(null);
   const [deleteId,   setDeleteId]   = useState<string | null>(null);
-  const [confirmId,  setConfirmId]  = useState<{ id: string; action: "approve" | "reject" } | null>(null);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
   const showToast = (msg: string, type: "success" | "error" = "success") => {
@@ -542,22 +535,6 @@ export default function AdminNoiDungPage() {
     }
   };
 
-  const handlePheDuyet = (id: string) => {
-    setDanhSach((prev) => prev.map((item) =>
-      item.id === id ? { ...item, trangThai: "Đã phê duyệt" } : item
-    ));
-    setConfirmId(null);
-    showToast("Đã phê duyệt nội dung. Học sinh có thể xem nội dung này.");
-  };
-
-  const handleTuChoi = (id: string) => {
-    setDanhSach((prev) => prev.map((item) =>
-      item.id === id ? { ...item, trangThai: "Chưa phê duyệt" } : item
-    ));
-    setConfirmId(null);
-    showToast("Đã từ chối nội dung. Đối tác sẽ cần chỉnh sửa lại.", "error");
-  };
-
   return (
     <div style={{ height: "100%", overflowY: "auto", background: "#f5f6fa", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
       {/* Toast */}
@@ -573,11 +550,11 @@ export default function AdminNoiDungPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, fontSize: 13, color: "#6b7280" }}>
           <Home size={13} /><span>Trang chủ</span><ChevronRight size={13} />
           <span>Nội dung</span><ChevronRight size={13} />
-          <span style={{ color: "#1a1a2e", fontWeight: 600 }}>Quản lý & Phê duyệt Nội dung</span>
+          <span style={{ color: "#1a1a2e", fontWeight: 600 }}>Quản lý Nội dung</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Quản lý & Phê duyệt Nội dung</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Quản lý Nội dung</h1>
           {coPheNhap > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 10, background: "#fff7ed", border: "1px solid #fed7aa", fontSize: 13, color: "#c2410c", fontWeight: 500 }}>
               <AlertCircle size={15} />
@@ -635,11 +612,10 @@ export default function AdminNoiDungPage() {
                 ) : (
                   dsHienThi.map((ct, idx) => {
                     const isSelected = selected.includes(ct.id);
-                    const canApprove = ct.trangThai === "Chưa phê duyệt" && ct.nguon === "doitac";
                     return (
-                      <tr key={ct.id} style={{ borderBottom: "1px solid #f3f4f6", background: isSelected ? "rgba(0,92,182,0.03)" : canApprove ? "rgba(249,115,22,0.04)" : "transparent" }}
-                        onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = canApprove ? "rgba(249,115,22,0.07)" : "#f9fafb"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = isSelected ? "rgba(0,92,182,0.03)" : canApprove ? "rgba(249,115,22,0.04)" : "transparent"; }}>
+                      <tr key={ct.id} style={{ borderBottom: "1px solid #f3f4f6", background: isSelected ? "rgba(0,92,182,0.03)" : "transparent" }}
+                        onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = "#f9fafb"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = isSelected ? "rgba(0,92,182,0.03)" : "transparent"; }}>
 
                         <td style={{ padding: "12px 14px", textAlign: "center" }}>
                           <div onClick={() => toggleOne(ct.id)} style={{ width: 16, height: 16, borderRadius: 4, cursor: "pointer", border: `1.5px solid ${isSelected ? "#005CB6" : "#d1d5db"}`, background: isSelected ? "#005CB6" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
@@ -675,15 +651,6 @@ export default function AdminNoiDungPage() {
                         <td style={{ padding: "12px 14px", fontSize: 13, color: "#6b7280" }}>{ct.lanSuaCuoi}</td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                            {/* Phê duyệt & Từ chối — chỉ hiện với nội dung đối tác Chưa phê duyệt */}
-                            {canApprove && (
-                              <>
-                                <ActionBtn icon={<CheckCircle2 size={14} />} title="Phê duyệt" color="#059669"
-                                  onClick={() => setConfirmId({ id: ct.id, action: "approve" })} />
-                                <ActionBtn icon={<XCircle size={14} />} title="Từ chối" color="#ef4444"
-                                  onClick={() => setConfirmId({ id: ct.id, action: "reject" })} />
-                              </>
-                            )}
                             <ActionBtn icon={<Pencil size={14} />} title="Sửa" color="#005CB6" onClick={() => { setEditId(ct.id); setShowPopup(true); }} />
                             <ActionBtn icon={<Trash2 size={14} />} title="Xóa" color="#ef4444" onClick={() => setDeleteId(ct.id)} />
                             <ActionBtn icon={<Copy size={14} />} title="Sao chép" color="#6b7280" onClick={() => showToast("Đã sao chép nội dung học.")} />
@@ -736,49 +703,6 @@ export default function AdminNoiDungPage() {
               <button onClick={() => setDeleteId(null)} style={{ padding: "10px 24px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 14, color: "#374151", cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>Hủy bỏ</button>
               <button onClick={handleXoa} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#ef4444", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>Xóa</button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Dialog phê duyệt / từ chối */}
-      {confirmId && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }} onClick={() => setConfirmId(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 28, width: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", textAlign: "center" }}>
-            {confirmId.action === "approve" ? (
-              <>
-                <div style={{ width: 52, height: 52, borderRadius: 14, background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-                  <CheckCircle2 size={28} color="#059669" />
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 8px", color: "#1a1a2e" }}>Xác nhận Phê duyệt</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 6px" }}>
-                  Phê duyệt nội dung <strong>"{danhSach.find((c) => c.id === confirmId.id)?.ten}"</strong>?
-                </p>
-                <p style={{ fontSize: 13, color: "#059669", margin: "0 0 22px" }}>Học sinh sẽ có thể xem nội dung này sau khi phê duyệt.</p>
-                <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
-                  <button onClick={() => setConfirmId(null)} style={{ padding: "10px 24px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 14, color: "#374151", cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>Hủy</button>
-                  <button onClick={() => handlePheDuyet(confirmId.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 24px", borderRadius: 8, border: "none", background: "#059669", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-                    <CheckCircle2 size={15} />Phê duyệt
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ width: 52, height: 52, borderRadius: 14, background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
-                  <XCircle size={28} color="#ef4444" />
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 8px", color: "#1a1a2e" }}>Xác nhận Từ chối</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", margin: "0 0 6px" }}>
-                  Từ chối nội dung <strong>"{danhSach.find((c) => c.id === confirmId.id)?.ten}"</strong>?
-                </p>
-                <p style={{ fontSize: 13, color: "#ef4444", margin: "0 0 22px" }}>Đối tác sẽ cần chỉnh sửa và gửi lại yêu cầu phê duyệt.</p>
-                <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
-                  <button onClick={() => setConfirmId(null)} style={{ padding: "10px 24px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 14, color: "#374151", cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>Hủy</button>
-                  <button onClick={() => handleTuChoi(confirmId.id)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 24px", borderRadius: 8, border: "none", background: "#ef4444", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
-                    <XCircle size={15} />Từ chối
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       )}
