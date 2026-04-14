@@ -19,6 +19,7 @@ import ChuongTrinhHocPage from "./ChuongTrinhHocPage";
 import DoiTacChuongTrinhPage from "./DoiTacChuongTrinhPage";
 import AdminNoiDungPage from "./AdminNoiDungPage";
 import HocSinhGoiPage from "./HocSinhGoiPage";
+import GanDonViPage from "./GanDonViPage";
 import type { UserRole } from "../LoginScreen";
 
 // ── TRANG MẶC ĐỊNH THEO ROLE ───────────────────────────────────────────────────
@@ -73,6 +74,7 @@ export function DashboardLayout({ userRole: initialRole, onLogout }: DashboardLa
       case "dtnd-chuong-trinh": return <DoiTacChuongTrinhPage />;
       case "admin-noi-dung":    return <AdminNoiDungPage />;
       case "hs-danh-sach-goi":  return <HocSinhGoiPage />;
+      case "gan-don-vi":        return <GanDonViPage />;
       default:                  return <PlaceholderPage page={activePage} />;
     }
   };

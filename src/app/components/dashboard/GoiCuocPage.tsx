@@ -1526,10 +1526,13 @@ function BCCSPackageSelect({
 
 interface FormThemFlat {
   tenGoi: string;
-  bccsGoiId: string;
   loaiGia: LoaiGia;
+  bccsGoiId: string;
   giaBan: string;
+  // Đồng giá / Miễn phí: chung 1 danh sách lớp
   khoiLopIds: string[];
+  // Khác giá: mỗi mã gói BCCS gán khối lớp riêng  { ma -> lopId[] }
+  khoiLopPerMa: Record<string, string[]>;
   monHocIds: string[];
   gioiHanMonHoc: string;
   sdEnd: string;
@@ -1539,8 +1542,8 @@ interface FormThemFlat {
 }
 
 const FORM_THEM_FLAT_RONG: FormThemFlat = {
-  tenGoi: "", bccsGoiId: "", loaiGia: "dong-gia", giaBan: "",
-  khoiLopIds: [], monHocIds: [], gioiHanMonHoc: "",
+  tenGoi: "", loaiGia: "dong-gia", bccsGoiId: "", giaBan: "",
+  khoiLopIds: [], khoiLopPerMa: {}, monHocIds: [], gioiHanMonHoc: "",
   sdEnd: "", thoiLuongThuNghiem: "",
   trangThai: "Đang hoạt động", ghiChu: "",
 };
@@ -1557,24 +1560,57 @@ function ModalThemGoiCuocFlat({
   const [saving, setSaving] = useState(false);
   const [ghiChuLen, setGhiChuLen] = useState(0);
 
-  const set = (k: keyof FormThemFlat, v: string | string[]) =>
+  const set = (k: keyof FormThemFlat, v: string | string[] | Record<string, string[]>) =>
     setForm(f => ({ ...f, [k]: v }));
 
-  /* ── BCCS mapping ── */
+  /* ── BCCS ── */
   const selectedBCCSGoi = DEMO_BCCS_PACKAGES.find(p => p.id === form.bccsGoiId);
   const totalVAT = selectedBCCSGoi
     ? selectedBCCSGoi.maGois.reduce((s, m) => s + m.giaSauVAT, 0) : 0;
 
+  /* Khi chọn gói BCCS → auto-fill giá bán (nếu Đồng giá), reset khoiLopPerMa */
   const handleBCCSChange = (goiId: string) => {
     const goi = DEMO_BCCS_PACKAGES.find(p => p.id === goiId);
     const total = goi ? goi.maGois.reduce((s, m) => s + m.giaSauVAT, 0) : 0;
     setForm(f => ({
       ...f,
       bccsGoiId: goiId,
-      giaBan: total > 0 ? String(total) : "",
-      loaiGia: total === 0 ? "free" : "dong-gia",
+      giaBan: f.loaiGia === "dong-gia" && total > 0 ? String(total) : f.giaBan,
+      khoiLopPerMa: {},
     }));
   };
+
+  /* Khi đổi loại giá → reset BCCS và giá nếu cần */
+  const handleLoaiGiaChange = (lg: LoaiGia) => {
+    setForm(f => ({
+      ...f,
+      loaiGia: lg,
+      bccsGoiId: lg === "free" ? "" : f.bccsGoiId,
+      giaBan: lg === "free" ? "" : f.giaBan,
+      khoiLopPerMa: {},
+      khoiLopIds: lg === "free" ? f.khoiLopIds : [],
+    }));
+  };
+
+  /* ── Khác giá: toggle lớp cho từng mã ── */
+  const toggleLopPerMa = (ma: string, lopId: string) => {
+    setForm(f => {
+      const cur = f.khoiLopPerMa[ma] ?? [];
+      const next = cur.includes(lopId) ? cur.filter(x => x !== lopId) : [...cur, lopId];
+      return { ...f, khoiLopPerMa: { ...f.khoiLopPerMa, [ma]: next } };
+    });
+  };
+
+  /* ── Đồng giá / Miễn phí: toggle chung ── */
+  const toggleLop = (id: string) =>
+    set("khoiLopIds", form.khoiLopIds.includes(id)
+      ? form.khoiLopIds.filter(x => x !== id)
+      : [...form.khoiLopIds, id]);
+
+  const toggleMon = (id: string) =>
+    set("monHocIds", form.monHocIds.includes(id)
+      ? form.monHocIds.filter(x => x !== id)
+      : [...form.monHocIds, id]);
 
   /* ── Styles ── */
   const iStyle = (k?: string): React.CSSProperties => ({
@@ -1600,9 +1636,21 @@ function ModalThemGoiCuocFlat({
     else if (allGoi.find(g => g.tenGoi.trim().toLowerCase() === form.tenGoi.trim().toLowerCase()))
       e.tenGoi = "Tên gói đã tồn tại";
     if (!form.sdEnd) e.sdEnd = "Vui lòng chọn thời lượng sử dụng";
-    if (form.loaiGia !== "free" && (!form.giaBan || Number(form.giaBan) <= 0))
-      e.giaBan = "Giá bán không hợp lệ";
-    if (form.khoiLopIds.length === 0) e.khoiLopIds = "Vui lòng chọn ít nhất 1 khối lớp";
+    if (form.loaiGia === "dong-gia") {
+      if (!form.bccsGoiId) e.bccsGoiId = "Vui lòng chọn gói BCCS";
+      if (!form.giaBan || Number(form.giaBan) <= 0) e.giaBan = "Giá bán không hợp lệ";
+      if (form.khoiLopIds.length === 0) e.khoiLopIds = "Vui lòng chọn ít nhất 1 khối lớp";
+    }
+    if (form.loaiGia === "khac-gia") {
+      if (!form.bccsGoiId) e.bccsGoiId = "Vui lòng chọn gói BCCS";
+      else if (selectedBCCSGoi) {
+        const missingMa = selectedBCCSGoi.maGois.find(m => !(form.khoiLopPerMa[m.ma]?.length));
+        if (missingMa) e.khoiLopPerMa = `Vui lòng gán khối lớp cho mã "${missingMa.ma}"`;
+      }
+    }
+    if (form.loaiGia === "free") {
+      if (form.khoiLopIds.length === 0) e.khoiLopIds = "Vui lòng chọn ít nhất 1 khối lớp";
+    }
     if (form.monHocIds.length === 0) e.monHocIds = "Vui lòng chọn ít nhất 1 môn học";
     return e;
   };
@@ -1618,16 +1666,40 @@ function ModalThemGoiCuocFlat({
     }, 700);
   };
 
-  /* ── Multi-select togglers ── */
-  const toggleLop = (id: string) =>
-    set("khoiLopIds", form.khoiLopIds.includes(id)
-      ? form.khoiLopIds.filter(x => x !== id)
-      : [...form.khoiLopIds, id]);
-
-  const toggleMon = (id: string) =>
-    set("monHocIds", form.monHocIds.includes(id)
-      ? form.monHocIds.filter(x => x !== id)
-      : [...form.monHocIds, id]);
+  /* ── Helper: khối lớp picker (dùng cho Đồng giá & Miễn phí) ── */
+  const KhoiLopPicker = ({ value, onChange, errKey }: {
+    value: string[]; onChange: (ids: string[]) => void; errKey: string;
+  }) => (
+    <div className="rounded-xl overflow-hidden" style={{ border:`1.5px solid ${errors[errKey]?"#D4183D":"#E2E8F0"}` }}>
+      {(["tieuhoc","thcs","thpt"] as CapHoc[]).map((cap, ci) => {
+        const c = CAP_CFG[cap];
+        const lops = DS_LOP.filter(l => l.cap === cap);
+        return (
+          <div key={cap} style={{ borderBottom: ci < 2 ? "1px solid #EEF0F4" : "none" }}>
+            <div className="px-3 py-1.5" style={{ background:"#F8FAFC", borderBottom:"1px solid #EEF0F4" }}>
+              <span style={{ fontSize:"0.67rem", fontWeight:800, color:c.color, textTransform:"uppercase", letterSpacing:"0.06em" }}>
+                {c.label} ({c.range})
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 px-3 py-2.5">
+              {lops.map(lop => {
+                const sel = value.includes(lop.id);
+                return (
+                  <button key={lop.id} type="button"
+                    onClick={() => onChange(sel ? value.filter(x=>x!==lop.id) : [...value,lop.id])}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all"
+                    style={{ background:sel?c.bg:"#F1F5F9", border:`1.5px solid ${sel?c.color:"#E2E8F0"}`, cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+                    <span style={{ fontSize:"0.74rem", fontWeight:sel?700:500, color:sel?c.color:"#64748B" }}>Lớp {lop.so}</span>
+                    {sel && <Check size={9} color={c.color} strokeWidth={3}/>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 
   const selectStyle: React.CSSProperties = {
     border:"1.5px solid #E2E8F0", borderRadius:10, padding:"10px 36px 10px 14px",
@@ -1641,7 +1713,7 @@ function ModalThemGoiCuocFlat({
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
 
       <div className="flex flex-col rounded-2xl overflow-hidden"
-        style={{ width:620, maxHeight:"94vh", background:"#fff", boxShadow:"0 32px 80px rgba(0,0,0,0.28)", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
+        style={{ width:660, maxHeight:"94vh", background:"#fff", boxShadow:"0 32px 80px rgba(0,0,0,0.28)", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
 
         {/* ── HEADER ── */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
@@ -1682,175 +1754,260 @@ function ModalThemGoiCuocFlat({
             <ErrMsg f="tenGoi"/>
           </div>
 
-          {/* 2. Chọn Gói cước từ BCCS */}
-          <div>
-            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Chọn Gói cước từ hệ thống BCCS
-            </label>
-            <BCCSPackageSelect value={form.bccsGoiId} onChange={handleBCCSChange}/>
-
-            {/* Mapped codes info — hiển thị khi đã chọn gói */}
-            {selectedBCCSGoi && (
-              <div className="mt-3 rounded-xl overflow-hidden"
-                style={{ border:"1.5px solid rgba(0,92,182,0.22)" }}>
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-2.5"
-                  style={{ background:"rgba(0,92,182,0.06)", borderBottom:"1px solid rgba(0,92,182,0.12)" }}>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck size={13} color="#005CB6"/>
-                    <span style={{ fontSize:"0.74rem", fontWeight:800, color:"#005CB6" }}>
-                      Mapping từ BCCS — {selectedBCCSGoi.maGois.length} mã gói
-                    </span>
-                  </div>
-                  {totalVAT > 0 && (
-                    <span style={{ fontSize:"0.78rem", fontWeight:900, color:"#005CB6" }}>
-                      Tổng sau VAT: {fmt(totalVAT)}
-                    </span>
-                  )}
-                  {totalVAT === 0 && (
-                    <span style={{ fontSize:"0.72rem", fontWeight:700, color:"#0F766E" }}>Miễn phí</span>
-                  )}
-                </div>
-                {/* Code rows */}
-                {selectedBCCSGoi.maGois.map((m, idx) => (
-                  <div key={m.ma}
-                    className="flex items-center justify-between px-4 py-2.5"
-                    style={{ borderTop: idx > 0 ? "1px solid #F1F5F9" : "none", background: idx%2===0 ? "#fff" : "#FAFCFF" }}>
-                    <div className="flex items-center gap-3">
-                      <code style={{ fontSize:"0.75rem", fontWeight:900, color:"#005CB6", background:"rgba(0,92,182,0.08)", padding:"2px 8px", borderRadius:6, fontFamily:"monospace", letterSpacing:"0.04em" }}>
-                        {m.ma}
-                      </code>
-                      <span style={{ fontSize:"0.75rem", color:"#64748B" }}>{m.moTa}</span>
-                    </div>
-                    <span style={{ fontSize:"0.78rem", fontWeight:700, color: m.giaSauVAT === 0 ? "#0F766E" : "#1E293B", whiteSpace:"nowrap" }}>
-                      {m.giaSauVAT === 0 ? "Miễn phí" : fmt(m.giaSauVAT)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!selectedBCCSGoi && (
-              <div className="flex items-start gap-2 mt-2 px-3 py-2.5 rounded-lg"
-                style={{ background:"#F8FAFB", border:"1px solid #EEF0F4" }}>
-                <Info size={13} color="#94A3B8" className="flex-shrink-0 mt-0.5"/>
-                <p style={{ fontSize:"0.7rem", color:"#94A3B8", lineHeight:1.6, margin:0 }}>
-                  Chưa chọn gói BCCS. Khi chọn, hệ thống sẽ tự động mapping mã gói và tổng tiền sau VAT.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* 3. Cấu hình giá */}
+          {/* 2. Cấu hình giá — chọn TRƯỚC */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:8 }}>
               Cấu hình giá <span style={{ color:"#D4183D" }}>*</span>
             </label>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-3 gap-2.5">
               {(DS_LG).map(lg => {
-                const c = LG_CFG[lg]; const Ic = c.icon;
-                const sel = form.loaiGia === lg;
-                const locked = !selectedBCCSGoi && lg !== "free";
+                const c = LG_CFG[lg]; const Ic = c.icon; const sel = form.loaiGia === lg;
                 return (
                   <button key={lg} type="button"
-                    onClick={() => !locked && set("loaiGia", lg)}
-                    disabled={locked}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all"
+                    onClick={() => handleLoaiGiaChange(lg)}
+                    className="relative flex flex-col items-center gap-2 p-3.5 rounded-xl transition-all"
                     style={{
-                      background: locked ? "#F1F5F9" : sel ? c.bg : "#F8F9FA",
-                      border:`1.5px solid ${locked?"#E2E8F0":sel?c.color:"#E2E8F0"}`,
-                      cursor:locked?"not-allowed":"pointer", opacity:locked?0.55:1,
-                      fontFamily:"'Be Vietnam Pro',sans-serif",
+                      background: sel ? c.bg : "#F8FAFB",
+                      border:`2px solid ${sel ? c.color : "#E2E8F0"}`,
+                      cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif",
+                      boxShadow: sel ? `0 4px 14px ${c.color}22` : "none",
                     }}>
-                    <Ic size={14} color={sel&&!locked?c.color:"#94A3B8"}/>
-                    <span style={{ fontSize:"0.8rem", fontWeight:sel?700:500, color:sel&&!locked?c.color:locked?"#94A3B8":"#374151" }}>
-                      {c.label}
-                    </span>
-                    {sel && !locked && <Check size={12} color={c.color} strokeWidth={3}/>}
+                    {sel && (
+                      <div className="absolute top-2 right-2 flex items-center justify-center w-4 h-4 rounded-full" style={{ background:c.color }}>
+                        <Check size={9} color="#fff" strokeWidth={3}/>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: sel ? c.color : "#E2E8F0" }}>
+                      <Ic size={17} color={sel ? "#fff" : "#94A3B8"}/>
+                    </div>
+                    <span style={{ fontSize:"0.82rem", fontWeight:800, color:sel?c.color:"#374151" }}>{c.label}</span>
+                    <span style={{ fontSize:"0.62rem", color:"#94A3B8", textAlign:"center", lineHeight:1.4 }}>{c.desc}</span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* 4. Giá bán */}
-          {form.loaiGia !== "free" && (
-            <div>
-              <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-                Giá bán (VNĐ) <span style={{ color:"#D4183D" }}>*</span>
-                {selectedBCCSGoi && totalVAT > 0 && (
-                  <span style={{ fontSize:"0.65rem", color:"#005CB6", fontWeight:500, marginLeft:8 }}>
-                    · Tự động từ BCCS ({fmt(totalVAT)})
-                  </span>
-                )}
-              </label>
-              <div className="relative">
-                <input type="number" min="1" value={form.giaBan}
-                  onChange={e => set("giaBan", e.target.value)}
-                  placeholder="0"
-                  style={{ ...iStyle("giaBan"), paddingRight:52 }}
-                  onFocus={e => Object.assign(e.target.style, fcs)}
-                  onBlur={e  => Object.assign(e.target.style, blr("giaBan"))}
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2"
-                  style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>VNĐ</span>
+          {/* 3a. BCCS + Giá bán + Khối lớp cho ĐỒNG GIÁ */}
+          {form.loaiGia === "dong-gia" && (
+            <div className="space-y-4 rounded-2xl p-4" style={{ background:"rgba(0,92,182,0.03)", border:"1.5px solid rgba(0,92,182,0.12)" }}>
+              <div style={{ fontSize:"0.75rem", fontWeight:800, color:"#005CB6", display:"flex", alignItems:"center", gap:6 }}>
+                <DollarSign size={13}/> Cấu hình Đồng giá
               </div>
-              {form.giaBan && !isNaN(Number(form.giaBan)) && Number(form.giaBan) > 0 && (
-                <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:700 }}>{fmt(Number(form.giaBan))}</p>
-              )}
-              <ErrMsg f="giaBan"/>
+
+              {/* BCCS chọn gói */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Chọn Gói cước từ hệ thống BCCS <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <BCCSPackageSelect value={form.bccsGoiId} onChange={handleBCCSChange} hasError={!!errors.bccsGoiId}/>
+                <ErrMsg f="bccsGoiId"/>
+
+                {/* Mapped codes — hiển thị khi đã chọn */}
+                {selectedBCCSGoi && (
+                  <div className="mt-2.5 rounded-xl overflow-hidden" style={{ border:"1.5px solid rgba(0,92,182,0.2)" }}>
+                    <div className="flex items-center justify-between px-4 py-2"
+                      style={{ background:"rgba(0,92,182,0.06)", borderBottom:"1px solid rgba(0,92,182,0.12)" }}>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={12} color="#005CB6"/>
+                        <span style={{ fontSize:"0.72rem", fontWeight:800, color:"#005CB6" }}>
+                          {selectedBCCSGoi.maGois.length} mã gói được mapping
+                        </span>
+                      </div>
+                      <span style={{ fontSize:"0.74rem", fontWeight:900, color:"#005CB6" }}>
+                        Tổng: {fmt(totalVAT)}
+                      </span>
+                    </div>
+                    {selectedBCCSGoi.maGois.map((m, idx) => (
+                      <div key={m.ma} className="flex items-center justify-between px-4 py-2"
+                        style={{ borderTop:idx>0?"1px solid #F1F5F9":"none", background:idx%2===0?"#fff":"#FAFCFF" }}>
+                        <div className="flex items-center gap-2.5">
+                          <code style={{ fontSize:"0.72rem", fontWeight:900, color:"#005CB6", background:"rgba(0,92,182,0.08)", padding:"1px 7px", borderRadius:5, fontFamily:"monospace" }}>
+                            {m.ma}
+                          </code>
+                        </div>
+                        <span style={{ fontSize:"0.76rem", fontWeight:700, color:"#1E293B", whiteSpace:"nowrap" }}>
+                          {fmt(m.giaSauVAT)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Giá bán */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Giá bán (VNĐ) <span style={{ color:"#D4183D" }}>*</span>
+                  {selectedBCCSGoi && totalVAT > 0 && (
+                    <span style={{ fontSize:"0.63rem", color:"#005CB6", fontWeight:500, marginLeft:8 }}>· Tự động từ BCCS</span>
+                  )}
+                </label>
+                <div className="relative">
+                  <input type="number" min="1" value={form.giaBan}
+                    onChange={e => set("giaBan", e.target.value)}
+                    placeholder="0"
+                    style={{ ...iStyle("giaBan"), paddingRight:52 }}
+                    onFocus={e => Object.assign(e.target.style, fcs)}
+                    onBlur={e  => Object.assign(e.target.style, blr("giaBan"))}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>VNĐ</span>
+                </div>
+                {form.giaBan && !isNaN(Number(form.giaBan)) && Number(form.giaBan) > 0 && (
+                  <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:700 }}>{fmt(Number(form.giaBan))}</p>
+                )}
+                <ErrMsg f="giaBan"/>
+              </div>
+
+              {/* Khối lớp */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Khối lớp áp dụng <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <KhoiLopPicker value={form.khoiLopIds} onChange={v => set("khoiLopIds", v)} errKey="khoiLopIds"/>
+                {form.khoiLopIds.length > 0 && (
+                  <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:4, fontWeight:600 }}>Đã chọn {form.khoiLopIds.length} khối lớp</p>
+                )}
+                <ErrMsg f="khoiLopIds"/>
+              </div>
             </div>
           )}
 
-          {/* 5. Khối lớp */}
-          <div>
-            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Khối lớp <span style={{ color:"#D4183D" }}>*</span>
-            </label>
-            {/* Flat checkbox grid by cap */}
-            <div className="rounded-xl overflow-hidden" style={{ border:`1.5px solid ${errors.khoiLopIds?"#D4183D":"#E2E8F0"}` }}>
-              {(["tieuhoc","thcs","thpt"] as CapHoc[]).map(cap => {
-                const c = CAP_CFG[cap];
-                const lops = DS_LOP.filter(l => l.cap === cap);
-                return (
-                  <div key={cap} style={{ borderBottom:"1px solid #EEF0F4" }}>
-                    <div className="px-3 py-1.5" style={{ background:"#F8FAFC", borderBottom:"1px solid #EEF0F4" }}>
-                      <span style={{ fontSize:"0.67rem", fontWeight:800, color:c.color, textTransform:"uppercase", letterSpacing:"0.06em" }}>
-                        {c.label} ({c.range})
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 px-3 py-2.5">
-                      {lops.map(lop => {
-                        const sel = form.khoiLopIds.includes(lop.id);
-                        return (
-                          <button key={lop.id} type="button" onClick={() => toggleLop(lop.id)}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all"
-                            style={{
-                              background: sel ? c.bg : "#F1F5F9",
-                              border:`1.5px solid ${sel ? c.color : "#E2E8F0"}`,
-                              cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif",
-                            }}>
-                            <span style={{ fontSize:"0.75rem", fontWeight:sel?700:500, color:sel?c.color:"#64748B" }}>
-                              Lớp {lop.so}
-                            </span>
-                            {sel && <Check size={10} color={c.color} strokeWidth={3}/>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {form.khoiLopIds.length > 0 && (
-              <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:4, fontWeight:600 }}>
-                Đã chọn {form.khoiLopIds.length} khối lớp
-              </p>
-            )}
-            <ErrMsg f="khoiLopIds"/>
-          </div>
+          {/* 3b. BCCS + gán Khối lớp per mã cho KHÁC GIÁ */}
+          {form.loaiGia === "khac-gia" && (
+            <div className="space-y-4 rounded-2xl p-4" style={{ background:"rgba(217,119,6,0.03)", border:"1.5px solid rgba(217,119,6,0.18)" }}>
+              <div style={{ fontSize:"0.75rem", fontWeight:800, color:"#D97706", display:"flex", alignItems:"center", gap:6 }}>
+                <BadgePercent size={13}/> Cấu hình Khác giá — gán khối lớp cho từng mã gói
+              </div>
 
-          {/* 6. Môn học */}
+              {/* BCCS chọn gói */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Chọn Gói cước từ hệ thống BCCS <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <BCCSPackageSelect value={form.bccsGoiId} onChange={handleBCCSChange} hasError={!!errors.bccsGoiId}/>
+                <ErrMsg f="bccsGoiId"/>
+              </div>
+
+              {/* Bảng gán khối lớp per mã */}
+              {selectedBCCSGoi ? (
+                <div className="rounded-xl overflow-hidden" style={{ border:`1.5px solid ${errors.khoiLopPerMa?"#D4183D":"rgba(217,119,6,0.25)"}` }}>
+                  {/* Table header */}
+                  <div className="grid px-4 py-2.5"
+                    style={{ gridTemplateColumns:"140px 1fr 110px", background:"rgba(217,119,6,0.06)", borderBottom:"1px solid rgba(217,119,6,0.15)" }}>
+                    <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em" }}>Mã gói</span>
+                    <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em" }}>Khối lớp áp dụng <span style={{ color:"#D4183D" }}>*</span></span>
+                    <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em", textAlign:"right" }}>Đơn giá</span>
+                  </div>
+                  {/* Rows */}
+                  {selectedBCCSGoi.maGois.map((m, idx) => {
+                    const assignedIds = form.khoiLopPerMa[m.ma] ?? [];
+                    const hasErr = !!errors.khoiLopPerMa && assignedIds.length === 0;
+                    return (
+                      <div key={m.ma} style={{ borderTop: idx > 0 ? "1px solid #F5F0E8" : "none", background: idx%2===0?"#fff":"#FFFBF5" }}>
+                        {/* Top row: mã + giá */}
+                        <div className="grid items-center px-4 pt-3 pb-1"
+                          style={{ gridTemplateColumns:"140px 1fr 110px" }}>
+                          <div>
+                            <code style={{ fontSize:"0.76rem", fontWeight:900, color:"#D97706", background:"rgba(217,119,6,0.1)", padding:"2px 8px", borderRadius:6, fontFamily:"monospace", letterSpacing:"0.04em" }}>
+                              {m.ma}
+                            </code>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {/* Chip list of lops assigned */}
+                            {DS_LOP.map(lop => {
+                              const sel = assignedIds.includes(lop.id);
+                              const cap = CAP_CFG[lop.cap];
+                              return (
+                                <button key={lop.id} type="button"
+                                  onClick={() => toggleLopPerMa(m.ma, lop.id)}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg transition-all"
+                                  style={{
+                                    background: sel ? cap.bg : "#F1F5F9",
+                                    border:`1.5px solid ${hasErr&&!sel?"rgba(212,24,61,0.3)":sel?cap.color:"#E2E8F0"}`,
+                                    cursor:"pointer", fontFamily:"'Be Vietnam Pro',sans-serif",
+                                  }}>
+                                  <span style={{ fontSize:"0.68rem", fontWeight:sel?700:500, color:sel?cap.color:"#64748B" }}>Lớp {lop.so}</span>
+                                  {sel && <Check size={8} color={cap.color} strokeWidth={3}/>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div style={{ textAlign:"right" }}>
+                            <span style={{ fontSize:"0.78rem", fontWeight:800, color:"#D97706" }}>
+                              {fmt(m.giaSauVAT)}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Summary of assigned */}
+                        <div className="px-4 pb-2.5">
+                          {assignedIds.length > 0 ? (
+                            <span style={{ fontSize:"0.66rem", color:"#0F766E", fontWeight:600 }}>
+                              ✓ Đã gán: {assignedIds.map(id => {
+                                const l = DS_LOP.find(x=>x.id===id);
+                                return l ? `Lớp ${l.so}` : id;
+                              }).join(", ")}
+                            </span>
+                          ) : (
+                            <span style={{ fontSize:"0.66rem", color:hasErr?"#D4183D":"#94A3B8" }}>
+                              {hasErr ? "⚠ Chưa gán khối lớp nào" : "— Chưa gán khối lớp"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {/* Footer tổng */}
+                  <div className="flex items-center justify-between px-4 py-2.5"
+                    style={{ background:"rgba(217,119,6,0.06)", borderTop:"1px solid rgba(217,119,6,0.15)" }}>
+                    <span style={{ fontSize:"0.72rem", color:"#92400E", fontWeight:700 }}>
+                      {selectedBCCSGoi.maGois.length} mã gói · {Object.values(form.khoiLopPerMa).flat().length > 0
+                        ? `${new Set(Object.values(form.khoiLopPerMa).flat()).size} khối lớp được gán`
+                        : "Chưa gán khối lớp"}
+                    </span>
+                    <span style={{ fontSize:"0.76rem", fontWeight:900, color:"#D97706" }}>
+                      Tổng VAT: {fmt(totalVAT)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl"
+                  style={{ background:"rgba(217,119,6,0.05)", border:"1px solid rgba(217,119,6,0.2)" }}>
+                  <Info size={13} color="#D97706" className="flex-shrink-0 mt-0.5"/>
+                  <p style={{ fontSize:"0.7rem", color:"#92400E", lineHeight:1.6, margin:0 }}>
+                    Chọn gói BCCS để hiển thị danh sách mã gói — mỗi mã gói sẽ được gán khối lớp riêng với giá tương ứng.
+                  </p>
+                </div>
+              )}
+              {errors.khoiLopPerMa && (
+                <div className="flex items-center gap-1.5">
+                  <AlertCircle size={11} color="#D4183D"/>
+                  <span style={{ fontSize:"0.68rem", color:"#D4183D", fontWeight:600 }}>{errors.khoiLopPerMa}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 3c. Miễn phí */}
+          {form.loaiGia === "free" && (
+            <div className="space-y-4 rounded-2xl p-4" style={{ background:"rgba(15,118,110,0.03)", border:"1.5px solid rgba(15,118,110,0.18)" }}>
+              <div style={{ fontSize:"0.75rem", fontWeight:800, color:"#0F766E", display:"flex", alignItems:"center", gap:6 }}>
+                <Gift size={13}/> Gói miễn phí — không thu phí
+              </div>
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Khối lớp áp dụng <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <KhoiLopPicker value={form.khoiLopIds} onChange={v => set("khoiLopIds", v)} errKey="khoiLopIds"/>
+                {form.khoiLopIds.length > 0 && (
+                  <p style={{ fontSize:"0.68rem", color:"#0F766E", marginTop:4, fontWeight:600 }}>Đã chọn {form.khoiLopIds.length} khối lớp</p>
+                )}
+                <ErrMsg f="khoiLopIds"/>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Môn học */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Môn học <span style={{ color:"#D4183D" }}>*</span>
@@ -1873,14 +2030,12 @@ function ModalThemGoiCuocFlat({
               })}
             </div>
             {form.monHocIds.length > 0 && (
-              <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:4, fontWeight:600 }}>
-                Đã chọn {form.monHocIds.length} môn học
-              </p>
+              <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:4, fontWeight:600 }}>Đã chọn {form.monHocIds.length} môn học</p>
             )}
             <ErrMsg f="monHocIds"/>
           </div>
 
-          {/* 7. Giới hạn lựa chọn môn học */}
+          {/* 5. Giới hạn lựa chọn môn học */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Giới hạn lựa chọn môn học
@@ -1899,12 +2054,12 @@ function ModalThemGoiCuocFlat({
             </div>
           </div>
 
-          {/* 8. Thời lượng sử dụng */}
+          {/* 6. Thời lượng sử dụng */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Thời lượng sử dụng <span style={{ color:"#D4183D" }}>*</span>
             </label>
-            <div className="relative" style={{ width:"100%" }}>
+            <div className="relative">
               <input
                 type="date"
                 value={form.sdEnd ? (() => { const [d,m,y]=form.sdEnd.split("/"); return y&&m&&d?`${y}-${m}-${d}`:""; })() : ""}
@@ -1923,7 +2078,7 @@ function ModalThemGoiCuocFlat({
             <ErrMsg f="sdEnd"/>
           </div>
 
-          {/* 9. Thời lượng sử dụng thử */}
+          {/* 7. Thời lượng sử dụng thử */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Thời lượng sử dụng thử
@@ -1942,25 +2097,9 @@ function ModalThemGoiCuocFlat({
             </div>
           </div>
 
-          {/* 10. Trạng thái */}
-          <div>
-            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Trạng thái
-            </label>
-            <div className="relative" style={{ width:"100%" }}>
-              <select
-                value={form.trangThai}
-                onChange={e => set("trangThai", e.target.value as TrangThai)}
-                style={selectStyle}
-              >
-                <option value="Đang hoạt động">Đang hoạt động</option>
-                <option value="Tạm dừng">Tạm dừng</option>
-              </select>
-              <ChevronDown size={14} color="#94A3B8" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-            </div>
-          </div>
 
-          {/* 11. Ghi chú */}
+
+          {/* 9. Ghi chú */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151" }}>Ghi chú</label>
@@ -3009,19 +3148,31 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
 
   const handleSaveNew = (f: FormThemFlat, bccsCodes: BCCSMaGoi[]) => {
     const maBCSS = bccsCodes.length > 0 ? bccsCodes.map(m => m.ma).join(", ") : "";
-    const giaSauVATTotal = bccsCodes.reduce((s, m) => s + m.giaSauVAT, 0);
-    const giaFrom = f.loaiGia === "free" ? 0 : giaSauVATTotal > 0 ? giaSauVATTotal : Number(f.giaBan) || 0;
+    // Tính giaFrom / giaTo
+    let giaFrom = 0, giaTo = 0;
+    if (f.loaiGia === "dong-gia") {
+      giaFrom = giaTo = Number(f.giaBan) || 0;
+    } else if (f.loaiGia === "khac-gia") {
+      // Mỗi mã gói có giá riêng → giaFrom = min, giaTo = max trong bccsCodes
+      const prices = bccsCodes.map(m => m.giaSauVAT).filter(p => p > 0);
+      giaFrom = prices.length ? Math.min(...prices) : 0;
+      giaTo   = prices.length ? Math.max(...prices) : 0;
+    }
     // Tính thoiLuongSuDung (tháng) từ sdEnd
     const sdE = parseDMY(f.sdEnd);
     const today = new Date();
     const thoiLuongSuDung = sdE ? Math.max(1, Math.round((sdE.getTime() - today.getTime()) / (1000*60*60*24*30))) : 12;
+    // Tổng hợp lopIds từ khoiLopPerMa (Khác giá) hoặc khoiLopIds (Đồng giá / Miễn phí)
+    const allLopIds = f.loaiGia === "khac-gia"
+      ? [...new Set(Object.values(f.khoiLopPerMa).flat())]
+      : f.khoiLopIds;
     const ng: GoiCuoc = {
       id: String(Date.now()),
       tenGoi: f.tenGoi.trim(),
       maBCSS,
       phanLoai: "",
       loaiGia: f.loaiGia,
-      giaFrom, giaTo: giaFrom,
+      giaFrom, giaTo,
       thoiLuongThuNghiem: Number(f.thoiLuongThuNghiem) || 0,
       thoiLuongSuDung,
       chuongTrinhIds: [],
@@ -3033,6 +3184,8 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
       ngayTao: new Date().toLocaleDateString("vi-VN"),
       donViGan: [],
     };
+    // Suppress unused var warning
+    void allLopIds;
     setList(prev => [ng, ...prev]);
     showToast(`Tạo gói cước "${ng.tenGoi}" thành công!`, "success");
     setModal(null);
@@ -3203,13 +3356,12 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
                   <th style={thS}><button onClick={()=>handleSort("giaFrom")} className="flex items-center gap-1.5 cursor-pointer" style={{ background:"none", border:"none", fontFamily:"'Be Vietnam Pro',sans-serif", fontWeight:700, color:"#64748B", fontSize:"0.71rem" }}>Giá tiền <SI f="giaFrom"/></button></th>
                   <th style={thS}><button onClick={()=>handleSort("thoiLuongSuDung")} className="flex items-center gap-1.5 cursor-pointer" style={{ background:"none", border:"none", fontFamily:"'Be Vietnam Pro',sans-serif", fontWeight:700, color:"#64748B", fontSize:"0.71rem" }}>Thời lượng <SI f="thoiLuongSuDung"/></button></th>
                   <th style={thS}>Chương trình</th>
-                  <th style={thS}>Trạng thái</th>
                   <th style={{ ...thS, textAlign:"center" }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length===0 ? (
-                  <tr><td colSpan={8} style={{ padding:"52px 24px", textAlign:"center" }}>
+                  <tr><td colSpan={7} style={{ padding:"52px 24px", textAlign:"center" }}>
                     <Tags size={32} color="#CBD5E1" style={{ margin:"0 auto 12px" }}/>
                     <p style={{ color:"#94A3B8", fontSize:"0.85rem" }}>Không tìm thấy gói cước phù hợp</p>
                   </td></tr>
@@ -3230,7 +3382,6 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
                         {g.thoiLuongThuNghiem>0 && <div style={{ fontSize:"0.64rem", color:"#059669", fontWeight:600 }}>Thử {g.thoiLuongThuNghiem} ngày</div>}
                       </td>
                       <td style={{ padding:"12px 14px", maxWidth:150 }}><ChuongTrinhTags ids={g.chuongTrinhIds} maxShow={4}/></td>
-                      <td style={{ padding:"12px 14px" }}><TrangThaiBadge ts={g.trangThai}/></td>
                       <td style={{ padding:"12px 14px", textAlign:"center" }}>
                         <div className="flex items-center justify-center gap-1.5">
                           <button title="Chỉnh sửa" onClick={()=>{setEdit(g);setModal("edit");}} className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background:"rgba(124,58,237,0.07)", border:"none", cursor:"pointer" }} onMouseEnter={e=>(e.currentTarget.style.background="rgba(124,58,237,0.14)")} onMouseLeave={e=>(e.currentTarget.style.background="rgba(124,58,237,0.07)")}><Edit2 size={13} color="#7C3AED"/></button>

@@ -624,18 +624,17 @@ export default function AdminNoiDungPage() {
                       {selected.length === dsHienThi.length && dsHienThi.length > 0 && <Check size={10} color="#fff" strokeWidth={3} />}
                     </div>
                   </th>
-                  {["STT","Tên nội dung học","Gói cước","Số học liệu","Trạng thái","Đối tác","Lần sửa cuối","Hành động"].map((h, i) => (
-                    <th key={i} style={{ padding: "12px 14px", textAlign: "left" as const, fontSize: 13, fontWeight: 600, color: "#374151", ...(i === 0 ? { width: 50, textAlign: "center" as const } : {}), ...(i === 7 ? { width: 160, textAlign: "center" as const } : {}) }}>{h}</th>
+                  {["STT","Tên nội dung học","Gói cước","Số học liệu","Đối tác","Lần sửa cuối","Hành động"].map((h, i) => (
+                    <th key={i} style={{ padding: "12px 14px", textAlign: "left" as const, fontSize: 13, fontWeight: 600, color: "#374151", ...(i === 0 ? { width: 50, textAlign: "center" as const } : {}), ...(i === 6 ? { width: 160, textAlign: "center" as const } : {}) }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {dsHienThi.length === 0 ? (
-                  <tr><td colSpan={9} style={{ padding: 40, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>Không tìm thấy nội dung học nào</td></tr>
+                  <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "#9ca3af", fontSize: 14 }}>Không tìm thấy nội dung học nào</td></tr>
                 ) : (
                   dsHienThi.map((ct, idx) => {
                     const isSelected = selected.includes(ct.id);
-                    const s = TRANG_THAI_CFG[ct.trangThai];
                     const canApprove = ct.trangThai === "Chưa phê duyệt" && ct.nguon === "doitac";
                     return (
                       <tr key={ct.id} style={{ borderBottom: "1px solid #f3f4f6", background: isSelected ? "rgba(0,92,182,0.03)" : canApprove ? "rgba(249,115,22,0.04)" : "transparent" }}
@@ -665,11 +664,6 @@ export default function AdminNoiDungPage() {
                             {ct.soHocLieu.nganHangCauHoi > 0 && <div>Ngân hàng: <strong>{ct.soHocLieu.nganHangCauHoi}</strong></div>}
                             {ct.soHocLieu.baiGiang === 0 && ct.soHocLieu.baiKiemTra === 0 && ct.soHocLieu.nganHangCauHoi === 0 && <span style={{ color: "#9ca3af" }}>Chưa có học liệu</span>}
                           </div>
-                        </td>
-                        <td style={{ padding: "12px 14px" }}>
-                          <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: s.bg, color: s.color, border: `1px solid ${s.border}`, whiteSpace: "nowrap" }}>
-                            {ct.trangThai}
-                          </span>
                         </td>
                         <td style={{ padding: "12px 14px" }}>
                           <div style={{ fontSize: 13, fontWeight: 500, color: "#1a1a2e" }}>{ct.tenDoiTac}</div>

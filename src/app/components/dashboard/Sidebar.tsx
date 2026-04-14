@@ -24,6 +24,7 @@ import {
   FileText,
   BookMarked,
   FlaskConical,
+  Link2,
 } from "lucide-react";
 import type { UserRole } from "../LoginScreen";
 
@@ -55,7 +56,9 @@ export type ActivePage =
   | "hs-danh-sach-goi"
   | "hs-lich-su-thanh-toan"
   // Admin nội dung
-  | "admin-noi-dung";
+  | "admin-noi-dung"
+  // Gán đơn vị
+  | "gan-don-vi";
 
 interface NavItem {
   id: ActivePage;
@@ -99,6 +102,13 @@ const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       label: "Quản lý Nội dung",
       icon: GraduationCap,
       moTa: "Phê duyệt nội dung đối tác",
+    },
+        {
+      id: "gan-don-vi",
+      label: "Gán đơn vị",
+      icon: Link2,
+      badge: 4,
+      moTa: "Gán đơn vị cho yêu cầu đối tác",
     },
     {
       id: "license-bccs",

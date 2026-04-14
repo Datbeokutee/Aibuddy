@@ -15,7 +15,7 @@ interface SoHocLieu {
   nganHangCauHoi: number;
 }
 
-type TrangThaiND = "Chưa phê duyệt" | "Đã phê duyệt";
+type TrangThaiND = "Chưa phê duyệt" | "Chờ gán đơn vị" | "Đã phê duyệt";
 
 interface NoiDungHoc {
   id: string;
@@ -103,16 +103,16 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
 // ── DỮ LIỆU BẢNG ──────────────────────────────────────────────────────────────
 
 const SAMPLE_TABLE: NoiDungHoc[] = [
-  { id: "nd-01", ten: "AI Book 2026",           goiCuoc: "BASIC Tiểu học",    khoiLop: "Lớp 1, 2",     monHoc: "Toán",           soHocLieu: { baiGiang: 1,  baiKiemTra: 2, nganHangCauHoi: 0 }, nguoiTao: "quantridoitac", lanSuaCuoi: "28/03/2026, 17:10", trangThai: "Đã phê duyệt"    },
-  { id: "nd-02", ten: "AI Book 2026",           goiCuoc: "PLUS Tiểu học",     khoiLop: "Lớp 3, 4",     monHoc: "Tiếng Anh",      soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 0 }, nguoiTao: "quantridoitac", lanSuaCuoi: "27/03/2026, 16:13", trangThai: "Đã phê duyệt"    },
+  { id: "nd-01", ten: "AI Book 2026",           goiCuoc: "BASIC Tiểu học",    khoiLop: "Lớp 1, 2",     monHoc: "Toán",           soHocLieu: { baiGiang: 1,  baiKiemTra: 2, nganHangCauHoi: 0 }, nguoiTao: "quantridoitac", lanSuaCuoi: "28/03/2026, 17:10", trangThai: "Chờ gán đơn vị"    },
+  { id: "nd-02", ten: "AI Book 2026",           goiCuoc: "PLUS Tiểu học",     khoiLop: "Lớp 3, 4",     monHoc: "Tiếng Anh",      soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 0 }, nguoiTao: "quantridoitac", lanSuaCuoi: "27/03/2026, 16:13", trangThai: "Chờ gán đơn vị"    },
   { id: "nd-03", ten: "Kỹ năng sống Pro",       goiCuoc: "Gói Hè Miễn Phí",  khoiLop: "Lớp 1 đến 5",  monHoc: "Kỹ năng sống",   soHocLieu: { baiGiang: 1,  baiKiemTra: 2, nganHangCauHoi: 1 }, nguoiTao: "quantridoitac", lanSuaCuoi: "28/03/2026, 17:11", trangThai: "Chưa phê duyệt"   },
-  { id: "nd-04", ten: "Luyện thi THPT",         goiCuoc: "Gói Cấp tốc",       khoiLop: "Lớp 12",       monHoc: "Vật lí, Hóa",    soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 1 }, nguoiTao: "quantridoitac", lanSuaCuoi: "27/03/2026, 09:10", trangThai: "Đã phê duyệt"    },
+  { id: "nd-04", ten: "Luyện thi THPT",         goiCuoc: "Gói Cấp tốc",       khoiLop: "Lớp 12",       monHoc: "Vật lí, Hóa",    soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 1 }, nguoiTao: "quantridoitac", lanSuaCuoi: "27/03/2026, 09:10", trangThai: "Chờ gán đơn vị"    },
   { id: "nd-05", ten: "AI Book Ngữ Văn",        goiCuoc: "BASIC THCS",        khoiLop: "Lớp 6, 7",     monHoc: "Ngữ văn",        soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 1 }, nguoiTao: "quantridoitac", lanSuaCuoi: "23/03/2026, 11:15", trangThai: "Chưa phê duyệt"  },
   { id: "nd-06", ten: "AI Book Toán",           goiCuoc: "PLUS THCS",         khoiLop: "Lớp 8, 9",     monHoc: "Toán",           soHocLieu: { baiGiang: 1,  baiKiemTra: 1, nganHangCauHoi: 1 }, nguoiTao: "quantridoitac", lanSuaCuoi: "23/03/2026, 09:57", trangThai: "Chưa phê duyệt"  },
-  { id: "nd-07", ten: "Tiếng Anh Giao tiếp",   goiCuoc: "Gói VIP 1 kèm 1",  khoiLop: "Lớp 1 đến 12", monHoc: "Tiếng Anh",      soHocLieu: { baiGiang: 12, baiKiemTra: 4, nganHangCauHoi: 3 }, nguoiTao: "quantridoitac", lanSuaCuoi: "20/03/2026, 14:00", trangThai: "Đã phê duyệt"    },
+  { id: "nd-07", ten: "Tiếng Anh Giao tiếp",   goiCuoc: "Gói VIP 1 kèm 1",  khoiLop: "Lớp 1 đến 12", monHoc: "Tiếng Anh",      soHocLieu: { baiGiang: 12, baiKiemTra: 4, nganHangCauHoi: 3 }, nguoiTao: "quantridoitac", lanSuaCuoi: "20/03/2026, 14:00", trangThai: "Chờ gán đơn vị"    },
   { id: "nd-08", ten: "STEM Robotics",          goiCuoc: "Gói Trải nghiệm",   khoiLop: "Lớp 3, 4, 5",  monHoc: "Tin học",        soHocLieu: { baiGiang: 8,  baiKiemTra: 3, nganHangCauHoi: 2 }, nguoiTao: "quantridoitac", lanSuaCuoi: "19/03/2026, 10:30", trangThai: "Chưa phê duyệt"   },
   { id: "nd-09", ten: "AI Book 2026",           goiCuoc: "BASIC THPT",        khoiLop: "Lớp 10, 11",   monHoc: "Lịch sử",        soHocLieu: { baiGiang: 6,  baiKiemTra: 2, nganHangCauHoi: 0 }, nguoiTao: "quantridoitac", lanSuaCuoi: "15/03/2026, 08:45", trangThai: "Chưa phê duyệt"  },
-  { id: "nd-10", ten: "Ôn thi vào 10",         goiCuoc: "Gói Tổng ôn",       khoiLop: "Lớp 9",        monHoc: "Toán, Văn, Anh", soHocLieu: { baiGiang: 10, baiKiemTra: 5, nganHangCauHoi: 4 }, nguoiTao: "quantridoitac", lanSuaCuoi: "10/03/2026, 16:20", trangThai: "Đã phê duyệt"    },
+  { id: "nd-10", ten: "Ôn thi vào 10",         goiCuoc: "Gói Tổng ôn",       khoiLop: "Lớp 9",        monHoc: "Toán, Văn, Anh", soHocLieu: { baiGiang: 10, baiKiemTra: 5, nganHangCauHoi: 4 }, nguoiTao: "quantridoitac", lanSuaCuoi: "10/03/2026, 16:20", trangThai: "Chờ gán đơn vị"    },
 ];
 
 // ── Định dạng giá ─────────────────────────────────────────────────────────────
@@ -241,9 +241,6 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
   };
   const errorStyle: React.CSSProperties = {
     fontSize: 11, color: "#dc2626", marginTop: 4,
-  };
-  const readonlyStyle: React.CSSProperties = {
-    ...inputBase, background: "#f3f4f6", color: "#6b7280", cursor: "not-allowed",
   };
 
   return (
@@ -526,13 +523,20 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
 const DS_KHOI_LOP = ["Khối 1","Khối 2","Khối 3","Khối 4","Khối 5","Khối 6","Khối 7","Khối 8","Khối 9","Khối 10","Khối 11","Khối 12"];
 const DS_MON_HOC = ["Toán","Tiếng Việt","Tiếng Anh","Đạo đức","Vật lí","Hóa học","Sinh học","Lịch sử","Địa lý","Tin học","Kỹ năng sống","Ngữ văn"];
 
+function ActionBtnDisabled({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <button title={title} disabled style={{ width: 30, height: 30, borderRadius: 6, border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "not-allowed", color: "#d1d5db", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {icon}
+    </button>
+  );
+}
+
 export default function DoiTacChuongTrinhPage() {
   const [danhSach, setDanhSach] = useState<NoiDungHoc[]>(SAMPLE_TABLE);
   const [filterKhoi, setFilterKhoi] = useState("");
   const [filterMon, setFilterMon] = useState("");
   const [filterTen, setFilterTen] = useState("");
   const [filterTrangThai, setFilterTrangThai] = useState<TrangThaiND | "">("");
-  const [daGuiIds, setDaGuiIds] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<string[]>([]);
   const [showPopup, setShowPopup] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -569,7 +573,6 @@ export default function DoiTacChuongTrinhPage() {
           ? { ...item, ten: tenTuDong, goiCuoc: goiTen, khoiLop: data.khoiLopChon.join(", "), monHoc: data.monHocChon.join(", "), lanSuaCuoi: thoiGian, trangThai: "Chưa phê duyệt" }
           : item
       ));
-      setDaGuiIds((prev) => { const next = new Set(prev); next.delete(currentEditId); return next; });
       showToast(`Đã cập nhật "${tenTuDong}".`);
       setShowPopup(false);
       setEditId(null);
@@ -590,9 +593,11 @@ export default function DoiTacChuongTrinhPage() {
     }
   };
 
-  const handleGuiPheDuyet = (id: string) => {
-    setDaGuiIds((prev) => new Set(prev).add(id));
-    showToast("Đã gửi yêu cầu phê duyệt thành công.");
+  const handleGuiKinhDoanh = (id: string) => {
+    setDanhSach((prev) => prev.map((item) =>
+      item.id === id ? { ...item, trangThai: "Chờ gán đơn vị" } : item
+    ));
+    showToast("Đã gửi kinh doanh thành công. Nội dung đang chờ được gán đơn vị.");
   };
 
   const handleXoa = () => {
@@ -628,7 +633,7 @@ export default function DoiTacChuongTrinhPage() {
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
               <SelFilter value={filterKhoi}      onChange={setFilterKhoi}      options={DS_KHOI_LOP}       placeholder="-- Chọn khối lớp --" />
               <SelFilter value={filterMon}       onChange={setFilterMon}       options={DS_MON_HOC}        placeholder="-- Chọn môn học --" />
-              <SelFilter value={filterTrangThai} onChange={(v) => setFilterTrangThai(v as TrangThaiND | "")} options={["Chưa phê duyệt","Đã phê duyệt"]} placeholder="-- Trạng thái --" />
+              <SelFilter value={filterTrangThai} onChange={(v) => setFilterTrangThai(v as TrangThaiND | "")} options={["Chưa phê duyệt","Chờ gán đơn vị","Đã phê duyệt"]} placeholder="-- Trạng thái --" />
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", minWidth: 220 }}>
                 <Search size={13} color="#9ca3af" />
                 <input value={filterTen} onChange={(e) => setFilterTen(e.target.value)} placeholder="Tên nội dung học" style={{ border: "none", outline: "none", fontSize: 13, background: "transparent", flex: 1, fontFamily: "'Be Vietnam Pro', sans-serif" }} />
@@ -697,13 +702,19 @@ export default function DoiTacChuongTrinhPage() {
                             </div>
                           </td>
                           <td style={{ padding: "12px 14px" }}>
-                            {ct.trangThai === "Đã phê duyệt" ? (
+                            {ct.trangThai === "Chờ gán đơn vị" ? (
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", whiteSpace: "nowrap" }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#3b82f6", display: "inline-block" }}/>
+                                Chờ gán đơn vị
+                              </span>
+                            ) : ct.trangThai === "Đã phê duyệt" ? (
                               <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", whiteSpace: "nowrap" }}>
                                 Đã phê duyệt
                               </span>
                             ) : (
-                              <span style={{ display: "inline-block", padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", whiteSpace: "nowrap" }}>
-                                Chưa phê duyệt
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: "#fafafa", color: "#6b7280", border: "1px solid #e5e7eb", whiteSpace: "nowrap" }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#d1d5db", display: "inline-block" }}/>
+                                Chưa gửi
                               </span>
                             )}
                           </td>
@@ -711,11 +722,21 @@ export default function DoiTacChuongTrinhPage() {
                           <td style={{ padding: "12px 14px", fontSize: 13, color: "#6b7280" }}>{ct.lanSuaCuoi}</td>
                           <td style={{ padding: "12px 14px" }}>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-                              <ActionBtn icon={<Pencil size={14} />} title="Sửa" color="#005CB6" onClick={() => { setEditId(ct.id); setShowPopup(true); }} />
+                              {/* Sửa – ẩn khi đã gửi kinh doanh */}
+                              {ct.trangThai !== "Chờ gán đơn vị" ? (
+                                <ActionBtn icon={<Pencil size={14} />} title="Sửa" color="#005CB6" onClick={() => { setEditId(ct.id); setShowPopup(true); }} />
+                              ) : (
+                                <ActionBtnDisabled icon={<Pencil size={14} />} title="Đã gửi kinh doanh – không thể chỉnh sửa" />
+                              )}
                               <ActionBtn icon={<Trash2 size={14} />} title="Xóa" color="#ef4444" onClick={() => setDeleteId(ct.id)} />
                               <ActionBtn icon={<Copy size={14} />} title="Sao chép" color="#6b7280" onClick={() => showToast("Đã sao chép nội dung học.")} />
-                              {ct.trangThai === "Chưa phê duyệt" && !daGuiIds.has(ct.id) && (
-                                <ActionBtn icon={<SendHorizontal size={14} />} title="Gửi yêu cầu phê duyệt" color="#005CB6" onClick={() => handleGuiPheDuyet(ct.id)} />
+                              {/* Gửi kinh doanh – chỉ hiện khi chưa gửi */}
+                              {ct.trangThai === "Chưa phê duyệt" && (
+                                ct.goiCuoc.trim() !== "" ? (
+                                  <ActionBtn icon={<SendHorizontal size={14} />} title="Gửi kinh doanh" color="#7C3AED" onClick={() => handleGuiKinhDoanh(ct.id)} />
+                                ) : (
+                                  <ActionBtnDisabled icon={<SendHorizontal size={14} />} title="Cần gắn ít nhất 1 Chương trình / Gói cước trước khi gửi" />
+                                )
                               )}
                             </div>
                           </td>
