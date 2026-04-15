@@ -202,10 +202,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
 
 const DS_KHOI = ["Khối 1","Khối 2","Khối 3","Khối 4","Khối 5","Khối 6","Khối 7","Khối 8","Khối 9","Khối 10","Khối 11","Khối 12"];
 const DS_MON  = ["Toán","Tiếng Việt","Tiếng Anh","Ngữ văn","Vật lí","Hóa học","Sinh học","Lịch sử","Địa lý","Tin học","Kỹ năng sống"];
-const DS_TRANG_THAI = [
-  { value: "da-mua", label: "Đã mua" },
-  { value: "chua-mua", label: "Chưa mua" },
-];
+// DS_TRANG_THAI được ẩn - logic vẫn hoạt động ở background
+const DS_TRANG_THAI: { value: string; label: string }[] = [];
 
 const formatGia = (gia: number) =>
   gia === 0 ? "Miễn phí" : `${gia.toLocaleString("vi-VN")}đ`;
@@ -219,6 +217,24 @@ const formatGiaRange = (goiCuoc: GoiCuoc[]) => {
   if (min === 0 && max === 0) return "Miễn phí";
   if (min === 0) return `Miễn phí - ${formatGia(max)}`;
   return `${formatGia(min)} - ${formatGia(max)}`;
+};
+
+const calculateDaysFromRange = (dateRange?: string): string => {
+  if (!dateRange) return "";
+  // Parse "01/02/2026 — 15/02/2026" format
+  const parts = dateRange.split("—").map(d => d.trim());
+  if (parts.length !== 2) return "";
+
+  try {
+    const [day1, month1, year1] = parts[0].split("/").map(Number);
+    const [day2, month2, year2] = parts[1].split("/").map(Number);
+    const date1 = new Date(year1, month1 - 1, day1);
+    const date2 = new Date(year2, month2 - 1, day2);
+    const days = Math.ceil((date2.getTime() - date1.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return `${days} NGÀY`;
+  } catch {
+    return "";
+  }
 };
 
 type PopupStep = "chon-goi-cuoc" | "chon-mon" | "xac-nhan" | "thanh-toan" | null;
@@ -468,7 +484,7 @@ function ChonGoiCuocPopup({
                 gia={g.gia}
                 checked={isChon}
                 onClick={() => toggle(g.id)}
-                thoiGian={g.thoiGian}
+                thoiGian={g.ten}
                 thoiGianDungThu={g.thoiGianDungThu}
               />
             );
@@ -615,6 +631,24 @@ function XacNhanThanhToanPopup({
   const tongTienGoiCuoc = goiCuocChon.reduce((sum, g) => sum + g.gia, 0);
   const isFreeTier = tongTienGoiCuoc === 0;
 
+  // Extract durations from goiCuoc items (same as GoiCard)
+  const getDurations = () => {
+    const durations = goi.goiCuoc
+      .map(g => {
+        const match = g.ten.match(/(\d+)\s*tháng/);
+        return match ? parseInt(match[1]) : null;
+      })
+      .filter((d): d is number => d !== null);
+    return [...new Set(durations)].sort((a, b) => a - b);
+  };
+
+  // Check if any package is free
+  const isFreeAvailable = goi.goiCuoc.some(g => g.gia === 0);
+
+  // Get durations string
+  const durationsStr = getDurations().join(", ");
+  const displayTime = isFreeTier || isFreeAvailable ? goi.thoiGian : (durationsStr ? `Thời hạn: ${durationsStr} tháng` : goi.thoiGian);
+
   return (
     <Backdrop onClose={onClose}>
       <PopupShell maxWidth={500}>
@@ -637,7 +671,7 @@ function XacNhanThanhToanPopup({
             </div>
             <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
               <SummaryRow label="Tên gói" value={goi.ten} bold />
-              <SummaryRow label="Thời hạn" value={goi.thoiGian} />
+              <SummaryRow label="Thời hạn" value={displayTime} />
               <SummaryRow label="Khối lớp" value={goi.khoiLop.join(", ")} />
             </div>
           </div>
@@ -656,13 +690,12 @@ function XacNhanThanhToanPopup({
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{g.tenLoai}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#005CB6" }}>{formatGia(g.gia)}</span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280" }}>
-                    <Clock size={12} />
-                    {g.thoiGian}
+                  <div style={{ fontSize: 12, color: "#6b7280" }}>
+                    {g.ten}
                   </div>
                   {g.thoiGianDungThu && (
                     <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500 }}>
-                      🎁 Dùng thử: {g.thoiGianDungThu}
+                      🎁 Dùng thử: {calculateDaysFromRange(g.thoiGianDungThu)}
                     </div>
                   )}
                 </div>
@@ -905,13 +938,12 @@ function CongThanhToanPopup({
                   {goiCuocChon.map((g) => (
                     <div key={g.id} style={{ display: "flex", flexDirection: "column", gap: 4, padding: "8px 12px", borderRadius: 8, background: "#dbeafe", border: "1px solid #bfdbfe" }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: "#1d4ed8" }}>{g.tenLoai}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" }}>
-                        <Clock size={11} />
-                        {g.thoiGian}
+                      <div style={{ fontSize: 11, color: "#6b7280" }}>
+                        {g.ten}
                       </div>
                       {g.thoiGianDungThu && (
                         <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#059669", fontWeight: 500 }}>
-                          🎁 Dùng thử: {g.thoiGianDungThu}
+                          🎁 Dùng thử: {calculateDaysFromRange(g.thoiGianDungThu)}
                         </div>
                       )}
                     </div>
@@ -1107,6 +1139,24 @@ function FakeQR({ size = 160, seed = "default" }: { size?: number; seed?: string
 function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => void }) {
   const [imgErr, setImgErr] = useState(false);
 
+  // Extract durations from goiCuoc items (e.g., "3 tháng" → 3)
+  const getDurations = () => {
+    const durations = goi.goiCuoc
+      .map(g => {
+        const match = g.ten.match(/(\d+)\s*tháng/);
+        return match ? parseInt(match[1]) : null;
+      })
+      .filter((d): d is number => d !== null);
+    return [...new Set(durations)].sort((a, b) => a - b);
+  };
+
+  // Check if any package is free
+  const isFreeAvailable = goi.goiCuoc.some(g => g.gia === 0);
+
+  // Get durations string (e.g., "3, 6, 12")
+  const durationsStr = getDurations().join(", ");
+  const durationText = durationsStr ? `Thời hạn: ${durationsStr} tháng` : goi.thoiGian;
+
   return (
     <div
       style={{ background: "#fff", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", transition: "box-shadow 0.2s, transform 0.2s" }}
@@ -1122,13 +1172,6 @@ function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => voi
             <BookOpen size={48} color="#005CB6" style={{ opacity: 0.3 }} />
           </div>
         )}
-        <div style={{ position: "absolute", top: 10, left: 10, display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: goi.daMua ? "#22c55e" : "#f97316", color: "#fff" }}>
-          {goi.daMua && <Check size={11} strokeWidth={3} />}
-          {goi.daMua ? "Đã mua" : "Chưa mua"}
-        </div>
-        <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 8px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: "rgba(0,0,0,0.55)", color: "#fff", backdropFilter: "blur(4px)" }}>
-          Chọn tối đa {goi.maxMon} môn
-        </div>
       </div>
 
       {/* Nội dung */}
@@ -1139,7 +1182,7 @@ function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => voi
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           <InfoRow icon={<GraduationCap size={13} color="#005CB6" />} text={goi.khoiLop.join(", ")} />
           <InfoRow icon={<BookOpen size={13} color="#005CB6" />} text={goi.monHoc.join(", ")} />
-          <InfoRow icon={<Clock size={13} color="#005CB6" />} text={goi.thoiGian} />
+          <InfoRow icon={<Clock size={13} color="#005CB6" />} text={isFreeAvailable ? goi.thoiGian : durationText} />
         </div>
         <div style={{ marginTop: "auto", paddingTop: 10 }}>
           {goi.daMua ? (
@@ -1289,14 +1332,13 @@ function GoiCuocCheckRow({ id, label, gia, checked, onClick, thoiGian, thoiGianD
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: checked ? 600 : 400, color: checked ? "#005CB6" : "#374151", marginBottom: 6 }}>{label}</div>
         {thoiGian && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#6b7280" }}>
-            <Clock size={12} />
+          <div style={{ fontSize: 12, color: "#6b7280" }}>
             {thoiGian}
           </div>
         )}
         {thoiGianDungThu && (
           <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500, marginTop: 4 }}>
-            🎁 Dùng thử: {thoiGianDungThu}
+            🎁 Dùng thử: {calculateDaysFromRange(thoiGianDungThu)}
           </div>
         )}
       </div>
