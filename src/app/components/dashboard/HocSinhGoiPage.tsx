@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Search, Home, ChevronRight, ChevronDown, Check,
-  BookOpen, Clock, GraduationCap, ShoppingCart, X, AlertCircle,
+  BookOpen, Clock, GraduationCap, X, AlertCircle,
   ArrowLeft, Shield, CheckCircle2, Loader2,
 } from "lucide-react";
 
@@ -25,6 +25,8 @@ interface GoiCuoc {
   moTa?: string;
   thoiGian: string;           // Thời gian dùng: từ - đến (VD: "01/09/2025 — 31/08/2026")
   thoiGianDungThu?: string;   // Thời gian dùng thử (VD: "01/09/2025 — 07/09/2025")
+  maxMon: number;             // Giới hạn môn học cho gói cước này
+  monHoc?: string[];          // Danh sách môn học riêng (nếu khác chương trình)
 }
 
 interface GoiChuongTrinh {
@@ -49,8 +51,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 17/02/2026 – 08:40, 20/03/2026",
     daMua: true, img: PLACEHOLDER_IMGS[0],
     goiCuoc: [
-      { id: "gc01-1", ten: "1 tháng", tenLoai: "BASIC", gia: 200000, thoiGian: "17/02/2026 — 20/03/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
-      { id: "gc01-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 450000, thoiGian: "17/02/2026 — 20/05/2026" },
+      { id: "gc01-1", ten: "1 tháng", tenLoai: "BASIC", gia: 200000, thoiGian: "17/02/2026 — 20/03/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026", maxMon: 2 },
+      { id: "gc01-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 450000, thoiGian: "17/02/2026 — 20/05/2026", maxMon: 4 },
     ],
   },
   {
@@ -61,9 +63,9 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: false, img: PLACEHOLDER_IMGS[1],
     goiCuoc: [
-      { id: "gc02-1", ten: "1 tháng", tenLoai: "BASIC", gia: 500000, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc02-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1200000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 15/02/2026" },
-      { id: "gc02-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 2200000, thoiGian: "01/02/2026 — 31/07/2026" },
+      { id: "gc02-1", ten: "1 tháng", tenLoai: "BASIC", gia: 500000, thoiGian: "01/02/2026 — 29/02/2026", maxMon: 1 },
+      { id: "gc02-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1200000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 15/02/2026", maxMon: 2 },
+      { id: "gc02-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 2200000, thoiGian: "01/02/2026 — 31/07/2026", maxMon: 4 },
     ],
   },
   {
@@ -74,8 +76,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/03/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[2],
     goiCuoc: [
-      { id: "gc03-1", ten: "1 tháng", tenLoai: "BASIC", gia: 350000, thoiGian: "01/03/2026 — 31/03/2026", thoiGianDungThu: "01/03/2026 — 10/03/2026" },
-      { id: "gc03-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
+      { id: "gc03-1", ten: "1 tháng", tenLoai: "BASIC", gia: 350000, thoiGian: "01/03/2026 — 31/03/2026", thoiGianDungThu: "01/03/2026 — 10/03/2026", maxMon: 2 },
+      { id: "gc03-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026", maxMon: 5 },
     ],
   },
   {
@@ -86,8 +88,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/03/2026 – 08:40, 30/05/2026",
     daMua: false, img: PLACEHOLDER_IMGS[3],
     goiCuoc: [
-      { id: "gc04-1", ten: "1 tháng", tenLoai: "BASIC", gia: 800000, thoiGian: "01/03/2026 — 31/03/2026" },
-      { id: "gc04-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 2100000, thoiGian: "01/03/2026 — 30/05/2026", thoiGianDungThu: "01/03/2026 — 15/03/2026" },
+      { id: "gc04-1", ten: "1 tháng", tenLoai: "BASIC", gia: 800000, thoiGian: "01/03/2026 — 31/03/2026", maxMon: 2 },
+      { id: "gc04-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 2100000, thoiGian: "01/03/2026 — 30/05/2026", thoiGianDungThu: "01/03/2026 — 15/03/2026", maxMon: 5 },
     ],
   },
   {
@@ -98,8 +100,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: true, img: PLACEHOLDER_IMGS[4],
     goiCuoc: [
-      { id: "gc05-1", ten: "1 tháng", tenLoai: "BASIC", gia: 450000, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc05-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1100000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026" },
+      { id: "gc05-1", ten: "1 tháng", tenLoai: "BASIC", gia: 450000, thoiGian: "01/02/2026 — 29/02/2026", maxMon: 2 },
+      { id: "gc05-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1100000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026", maxMon: 4 },
     ],
   },
   {
@@ -110,8 +112,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 5, thoiGian: "08:40, 01/06/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[0],
     goiCuoc: [
-      { id: "gc06-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/06/2026 — 31/08/2026", thoiGianDungThu: "01/06/2026 — 15/06/2026" },
-      { id: "gc06-3", ten: "Premium", tenLoai: "PLUS", gia: 300000, thoiGian: "01/06/2026 — 31/08/2026" },
+      { id: "gc06-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/06/2026 — 31/08/2026", thoiGianDungThu: "01/06/2026 — 15/06/2026", maxMon: 3 },
+      { id: "gc06-3", ten: "Premium", tenLoai: "PLUS", gia: 300000, thoiGian: "01/06/2026 — 31/08/2026", maxMon: 5 },
     ],
   },
   {
@@ -122,8 +124,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 5, thoiGian: "08:40, 01/03/2026 – 08:40, 31/08/2026",
     daMua: false, img: PLACEHOLDER_IMGS[1],
     goiCuoc: [
-      { id: "gc07-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1000000, thoiGian: "01/03/2026 — 31/05/2026", thoiGianDungThu: "01/03/2026 — 20/03/2026" },
-      { id: "gc07-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026" },
+      { id: "gc07-3", ten: "3 tháng", tenLoai: "PLUS", gia: 1000000, thoiGian: "01/03/2026 — 31/05/2026", thoiGianDungThu: "01/03/2026 — 20/03/2026", maxMon: 3 },
+      { id: "gc07-6", ten: "6 tháng", tenLoai: "PREMIUM", gia: 1800000, thoiGian: "01/03/2026 — 31/08/2026", maxMon: 6 },
     ],
   },
   {
@@ -134,8 +136,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 4, thoiGian: "08:40, 01/04/2026 – 08:40, 30/06/2026",
     daMua: false, img: PLACEHOLDER_IMGS[2],
     goiCuoc: [
-      { id: "gc08-1", ten: "1 tháng", tenLoai: "BASIC", gia: 1200000, thoiGian: "01/04/2026 — 30/04/2026" },
-      { id: "gc08-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 3000000, thoiGian: "01/04/2026 — 30/06/2026", thoiGianDungThu: "01/04/2026 — 15/04/2026" },
+      { id: "gc08-1", ten: "1 tháng", tenLoai: "BASIC", gia: 1200000, thoiGian: "01/04/2026 — 30/04/2026", maxMon: 2 },
+      { id: "gc08-3", ten: "3 tháng", tenLoai: "PREMIUM", gia: 3000000, thoiGian: "01/04/2026 — 30/06/2026", thoiGianDungThu: "01/04/2026 — 15/04/2026", maxMon: 5 },
     ],
   },
   {
@@ -146,8 +148,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 1, thoiGian: "08:40, 17/02/2026 – 08:40, 20/03/2026",
     daMua: false, img: PLACEHOLDER_IMGS[3],
     goiCuoc: [
-      { id: "gc09-1", ten: "VIP BASIC", tenLoai: "VIP BASIC", gia: 2000000, thoiGian: "17/02/2026 — 20/03/2026" },
-      { id: "gc09-3", ten: "VIP PREMIUM", tenLoai: "VIP PREMIUM", gia: 5500000, thoiGian: "17/02/2026 — 20/05/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026" },
+      { id: "gc09-1", ten: "VIP BASIC", tenLoai: "VIP BASIC", gia: 2000000, thoiGian: "17/02/2026 — 20/03/2026", maxMon: 1 },
+      { id: "gc09-3", ten: "VIP PREMIUM", tenLoai: "VIP PREMIUM", gia: 5500000, thoiGian: "17/02/2026 — 20/05/2026", thoiGianDungThu: "15/03/2026 — 17/03/2026", maxMon: 1 },
     ],
   },
   {
@@ -158,8 +160,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 3, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: true, img: PLACEHOLDER_IMGS[4],
     goiCuoc: [
-      { id: "gc10-1", ten: "BASIC", tenLoai: "BASIC", gia: 300000, thoiGian: "01/02/2026 — 29/02/2026", thoiGianDungThu: "01/02/2026 — 07/02/2026" },
-      { id: "gc10-3", ten: "PLUS", tenLoai: "PLUS", gia: 750000, thoiGian: "01/02/2026 — 30/04/2026" },
+      { id: "gc10-1", ten: "BASIC", tenLoai: "BASIC", gia: 300000, thoiGian: "01/02/2026 — 29/02/2026", thoiGianDungThu: "01/02/2026 — 07/02/2026", maxMon: 2 },
+      { id: "gc10-3", ten: "PLUS", tenLoai: "PLUS", gia: 750000, thoiGian: "01/02/2026 — 30/04/2026", maxMon: 4 },
     ],
   },
   {
@@ -170,9 +172,9 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 1, thoiGian: "08:40, 01/02/2026 – 08:40, 30/04/2026",
     daMua: false, img: PLACEHOLDER_IMGS[2],
     goiCuoc: [
-      { id: "gc11-1", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc11-3", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026" },
-      { id: "gc11-6", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 31/07/2026" },
+      { id: "gc11-1", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 29/02/2026", maxMon: 1 },
+      { id: "gc11-3", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 30/04/2026", thoiGianDungThu: "01/02/2026 — 08/02/2026", maxMon: 1 },
+      { id: "gc11-6", ten: "STANDARD", tenLoai: "STANDARD", gia: 600000, thoiGian: "01/02/2026 — 31/07/2026", maxMon: 1 },
     ],
   },
   {
@@ -183,7 +185,7 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 01/05/2026 – 08:40, 30/09/2026",
     daMua: false, img: PLACEHOLDER_IMGS[3],
     goiCuoc: [
-      { id: "gc12-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/05/2026 — 31/05/2026", thoiGianDungThu: "01/05/2026 — 15/05/2026" },
+      { id: "gc12-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/05/2026 — 31/05/2026", thoiGianDungThu: "01/05/2026 — 15/05/2026", maxMon: 2 },
     ],
   },
   {
@@ -194,8 +196,8 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
     maxMon: 2, thoiGian: "08:40, 01/02/2026 – 08:40, 31/05/2026",
     daMua: false, img: PLACEHOLDER_IMGS[1],
     goiCuoc: [
-      { id: "gc13-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/02/2026 — 29/02/2026" },
-      { id: "gc13-2", ten: "PLUS", tenLoai: "PLUS", gia: 400000, thoiGian: "01/02/2026 — 31/05/2026" },
+      { id: "gc13-1", ten: "Miễn phí", tenLoai: "FREE", gia: 0, thoiGian: "01/02/2026 — 29/02/2026", maxMon: 1 },
+      { id: "gc13-2", ten: "PLUS", tenLoai: "PLUS", gia: 400000, thoiGian: "01/02/2026 — 31/05/2026", maxMon: 2 },
     ],
   },
 ];
@@ -237,7 +239,10 @@ const calculateDaysFromRange = (dateRange?: string): string => {
   }
 };
 
-type PopupStep = "chon-goi-cuoc" | "chon-mon" | "xac-nhan" | "thanh-toan" | null;
+type PopupStep = "chon-goi-cuoc" | "chon-mon" | "xac-nhan" | "thanh-toan" | "noi-dung" | null;
+
+// Map: goiCuocId → danh sách môn đã chọn cho gói đó
+type ChonMonPerGoi = Record<string, string[]>;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COMPONENT CHÍNH
@@ -251,26 +256,36 @@ export default function HocSinhGoiPage() {
   const [danhSach, setDanhSach]     = useState<GoiChuongTrinh[]>(DANH_SACH_GOI);
   const [toastMsg, setToastMsg]     = useState<string | null>(null);
 
+  // Theo dõi gói cước đã mua (per-package, không phải per-program)
+  const [purchasedGoiCuocIds, setPurchasedGoiCuocIds] = useState<string[]>(() => {
+    // g01: cả 2 gói đã mua (gc01-1, gc01-3)
+    // g02: 1 gói đã mua, 1 gói chưa mua (gc02-3 bought, gc02-1/gc02-6 not yet)
+    // g05: cả 2 gói đã mua (gc05-1, gc05-3)
+    // g10: cả 2 gói đã mua (gc10-1, gc10-3)
+    return ["gc01-1", "gc01-3", "gc02-3", "gc05-1", "gc05-3", "gc10-1", "gc10-3"];
+  });
+
   // Luồng mua nhiều bước
   const [popupStep, setPopupStep]   = useState<PopupStep>(null);
   const [popupGoi, setPopupGoi]     = useState<GoiChuongTrinh | null>(null);
-  const [chonGoiCuoc, setChonGoiCuoc] = useState<string[]>([]); // ID của các gói cước đã chọn
-  const [chonMon,  setChonMon]      = useState<string[]>([]);
+  const [chonGoiCuoc, setChonGoiCuoc] = useState<string[]>([]); // ID gói cước đang chọn mua
+  const [chonMonPerGoi, setChonMonPerGoi] = useState<ChonMonPerGoi>({}); // Môn học chọn riêng từng gói
+  const [noiDungGoiCuocId, setNoiDungGoiCuocId] = useState<string | null>(null); // Gói cước đang xem nội dung
 
   const dsHienThi = danhSach.filter((g) => {
     const matchKhoi = !filterKhoi || g.khoiLop.includes(filterKhoi);
     const matchMon  = !filterMon  || g.monHoc.includes(filterMon);
     const matchTen  = !filterTen  || g.ten.toLowerCase().includes(filterTen.toLowerCase());
-    const matchTrangThai = !filterTrangThai || 
-      (filterTrangThai === "da-mua" && g.daMua) || 
+    const matchTrangThai = !filterTrangThai ||
+      (filterTrangThai === "da-mua" && g.daMua) ||
       (filterTrangThai === "chua-mua" && !g.daMua);
     return matchKhoi && matchMon && matchTen && matchTrangThai;
   });
 
-  const openMua = (goi: GoiChuongTrinh) => {
+  const openHocNgay = (goi: GoiChuongTrinh) => {
     setPopupGoi(goi);
     setChonGoiCuoc([]);
-    setChonMon([]);
+    setChonMonPerGoi({});
     setPopupStep("chon-goi-cuoc");
   };
 
@@ -278,13 +293,18 @@ export default function HocSinhGoiPage() {
     setPopupStep(null);
     setPopupGoi(null);
     setChonGoiCuoc([]);
-    setChonMon([]);
+    setChonMonPerGoi({});
+    setNoiDungGoiCuocId(null);
   };
+
+  // Flatten chonMonPerGoi → danh sách tất cả môn (dùng cho step 3, 4)
+  const allChonMon = [...new Set(Object.values(chonMonPerGoi).flat())];
 
   const handleMuaThanhCong = () => {
     if (!popupGoi) return;
     const ten = popupGoi.ten;
-    setDanhSach((prev) => prev.map((g) => g.id === popupGoi.id ? { ...g, daMua: true } : g));
+    // Ghi nhận per-package purchase
+    setPurchasedGoiCuocIds(prev => [...new Set([...prev, ...chonGoiCuoc])]);
     closeAll();
     setToastMsg(`Thanh toán thành công! Bạn đã mở khoá gói "${ten}".`);
     setTimeout(() => setToastMsg(null), 3500);
@@ -313,17 +333,34 @@ export default function HocSinhGoiPage() {
         <ChonGoiCuocPopup
           goi={popupGoi}
           initialChon={chonGoiCuoc}
-          onConfirm={(selected) => { setChonGoiCuoc(selected); setPopupStep("chon-mon"); }}
+          purchasedIds={purchasedGoiCuocIds}
+          onConfirm={(selected) => {
+            // Chỉ cho mua các gói chưa mua
+            const unpurchased = selected.filter(id => !purchasedGoiCuocIds.includes(id));
+            if (unpurchased.length === 0) return; // Không có gói mới để mua
+            setChonGoiCuoc(unpurchased);
+            // Khởi tạo chonMonPerGoi cho từng gói
+            const init: ChonMonPerGoi = {};
+            unpurchased.forEach(id => { init[id] = []; });
+            setChonMonPerGoi(init);
+            setPopupStep("chon-mon");
+          }}
+          onVaoHoc={(goiCuocId) => {
+            setNoiDungGoiCuocId(goiCuocId);
+            setPopupStep("noi-dung");
+          }}
           onClose={closeAll}
         />
       )}
 
-      {/* ── Popup Bước 2: Chọn môn học ── */}
+      {/* ── Popup Bước 2: Chọn môn học (riêng từng gói) ── */}
       {popupStep === "chon-mon" && popupGoi && (
-        <ChonMonHocPopup
+        <ChonMonHocPerGoiPopup
           goi={popupGoi}
-          initialChon={chonMon}
-          onConfirm={(selected) => { setChonMon(selected); setPopupStep("xac-nhan"); }}
+          goiCuocIds={chonGoiCuoc}
+          chonMonPerGoi={chonMonPerGoi}
+          onUpdate={setChonMonPerGoi}
+          onConfirm={() => setPopupStep("xac-nhan")}
           onQuayLai={() => setPopupStep("chon-goi-cuoc")}
           onClose={closeAll}
         />
@@ -334,20 +371,20 @@ export default function HocSinhGoiPage() {
         <XacNhanThanhToanPopup
           goi={popupGoi}
           goiCuocDaChon={chonGoiCuoc}
-          monDaChon={chonMon}
+          monDaChon={allChonMon}
+          chonMonPerGoi={chonMonPerGoi}
           onQuayLai={() => setPopupStep("chon-mon")}
           onXacNhan={() => {
-            // Tính tổng tiền từ các gói đã chọn
             const tongTien = chonGoiCuoc.reduce((sum, goiId) => {
               const g = popupGoi.goiCuoc.find(gc => gc.id === goiId);
               return sum + (g?.gia || 0);
             }, 0);
-            // Nếu miễn phí (0đ) → hoàn tất, không cần bước thanh toán
             if (tongTien === 0) {
+              // Miễn phí → ghi nhận mua luôn
+              setPurchasedGoiCuocIds(prev => [...new Set([...prev, ...chonGoiCuoc])]);
               setToastMsg("✅ Đã thêm vào danh sách học của bạn!");
               setTimeout(() => closeAll(), 1500);
             } else {
-              // Có tiền → đi bước thanh toán
               setPopupStep("thanh-toan");
             }
           }}
@@ -360,9 +397,18 @@ export default function HocSinhGoiPage() {
         <CongThanhToanPopup
           goi={popupGoi}
           goiCuocDaChon={chonGoiCuoc}
-          monDaChon={chonMon}
+          monDaChon={allChonMon}
           onQuayLai={() => setPopupStep("xac-nhan")}
           onThanhCong={handleMuaThanhCong}
+          onClose={closeAll}
+        />
+      )}
+
+      {/* ── Popup Nội dung gói cước (Vào học) ── */}
+      {popupStep === "noi-dung" && popupGoi && noiDungGoiCuocId && (
+        <NoiDungGoiCuocPopup
+          goi={popupGoi}
+          goiCuocId={noiDungGoiCuocId}
           onClose={closeAll}
         />
       )}
@@ -405,7 +451,7 @@ export default function HocSinhGoiPage() {
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
             {dsHienThi.map((goi) => (
-              <GoiCard key={goi.id} goi={goi} onMuaNgay={() => openMua(goi)} />
+              <GoiCard key={goi.id} goi={goi} purchasedIds={purchasedGoiCuocIds} onHocNgay={() => openHocNgay(goi)} />
             ))}
           </div>
         )}
@@ -419,19 +465,26 @@ export default function HocSinhGoiPage() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function ChonGoiCuocPopup({
-  goi, initialChon, onConfirm, onClose,
+  goi, initialChon, purchasedIds, onConfirm, onVaoHoc, onClose,
 }: {
   goi: GoiChuongTrinh;
   initialChon: string[];
+  purchasedIds: string[];
   onConfirm: (selected: string[]) => void;
+  onVaoHoc: (goiCuocId: string) => void;
   onClose: () => void;
 }) {
   const [chon, setChon] = useState<string[]>(initialChon);
   const { goiCuoc, ten } = goi;
-  const soChon = chon.length;
-  const coTheXacNhan = soChon >= 1;
+
+  // Chỉ đếm gói chưa mua đang chọn
+  const unpurchasedChon = chon.filter(id => !purchasedIds.includes(id));
+  const soChonMoi = unpurchasedChon.length;
+  const soGoiChuaMua = goiCuoc.filter(gc => !purchasedIds.includes(gc.id)).length;
+  const coTheXacNhan = soChonMoi >= 1;
 
   const toggle = (goiId: string) => {
+    if (purchasedIds.includes(goiId)) return; // Không cho toggle gói đã mua
     if (chon.includes(goiId)) {
       setChon(chon.filter((g) => g !== goiId));
     } else {
@@ -439,8 +492,8 @@ function ChonGoiCuocPopup({
     }
   };
 
-  // Tính tổng tiền từ các gói đã chọn
-  const tongTien = chon.reduce((sum, goiId) => {
+  // Tổng tiền chỉ từ gói chưa mua
+  const tongTien = unpurchasedChon.reduce((sum, goiId) => {
     const g = goiCuoc.find(gc => gc.id === goiId);
     return sum + (g?.gia || 0);
   }, 0);
@@ -448,7 +501,6 @@ function ChonGoiCuocPopup({
   return (
     <Backdrop onClose={onClose}>
       <PopupShell maxWidth={520}>
-        {/* Header */}
         <PopupHeader
           badge="Bước 1 / 4 — Lựa chọn gói cước"
           title={ten}
@@ -457,17 +509,15 @@ function ChonGoiCuocPopup({
           totalSteps={4}
         />
 
-        {/* Info banner */}
         <div style={{ margin: "16px 24px 0", padding: "12px 16px", borderRadius: 10,
           background: "#eff6ff", border: "1px solid #bfdbfe",
           display: "flex", alignItems: "center", gap: 10 }}>
           <AlertCircle size={16} color="#2563eb" style={{ flexShrink: 0 }} />
           <span style={{ fontSize: 13, color: "#1e40af", fontWeight: 500 }}>
-            Chọn một hoặc nhiều gói cước để bắt đầu.
+            Chọn gói cước để mua thêm, hoặc nhấn "Vào học" để xem nội dung gói đã mua.
           </span>
         </div>
 
-        {/* Sub-header: counter */}
         <div style={{ padding: "12px 24px 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 13, color: "#6b7280" }}>Danh sách gói cước ({goiCuoc.length} gói)</span>
         </div>
@@ -475,7 +525,39 @@ function ChonGoiCuocPopup({
         {/* Danh sách gói cước */}
         <div style={{ overflowY: "auto", padding: "4px 24px 20px", flex: 1 }}>
           {goiCuoc.map((g) => {
+            const isPurchased = purchasedIds.includes(g.id);
             const isChon = chon.includes(g.id);
+
+            if (isPurchased) {
+              // Gói đã mua → hiện "Vào học"
+              return (
+                <div
+                  key={g.id}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", marginBottom: 6,
+                    borderRadius: 10, border: "1.5px solid #86efac", background: "#f0fdf4",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "#15803d", marginBottom: 4 }}>{g.tenLoai}</div>
+                    <div style={{ fontSize: 12, color: "#6b7280" }}>{g.ten}</div>
+                  </div>
+                  <button
+                    onClick={() => onVaoHoc(g.id)}
+                    style={{
+                      padding: "7px 16px", borderRadius: 20, border: "none",
+                      background: "#15803d", color: "#fff", fontSize: 13, fontWeight: 600,
+                      cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif",
+                      display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
+                    }}
+                  >
+                    <BookOpen size={13} /> Vào học
+                  </button>
+                </div>
+              );
+            }
+
+            // Gói chưa mua → checkbox chọn mua
             return (
               <GoiCuocCheckRow
                 key={g.id}
@@ -492,10 +574,10 @@ function ChonGoiCuocPopup({
         </div>
 
         {/* Tổng tiền */}
-        {soChon > 0 && (
+        {soChonMoi > 0 && (
           <div style={{ padding: "12px 24px", borderTop: "1px solid #e5e7eb", background: "#f9fafb" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>Tổng tiền ({soChon} gói)</span>
+              <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>Tổng tiền ({soChonMoi} gói)</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: "#005CB6" }}>{formatGia(tongTien)}</span>
             </div>
           </div>
@@ -504,10 +586,12 @@ function ChonGoiCuocPopup({
         {/* Footer */}
         <PopupFooter>
           <BtnOutline onClick={onClose}>Hủy</BtnOutline>
-          <BtnPrimary disabled={!coTheXacNhan} onClick={() => coTheXacNhan && onConfirm(chon)}>
-            <Check size={15} />
-            Tiếp theo ({soChon}/{goiCuoc.length})
-          </BtnPrimary>
+          {soGoiChuaMua > 0 && (
+            <BtnPrimary disabled={!coTheXacNhan} onClick={() => coTheXacNhan && onConfirm(unpurchasedChon)}>
+              <Check size={15} />
+              Tiếp theo ({soChonMoi}/{soGoiChuaMua})
+            </BtnPrimary>
+          )}
         </PopupFooter>
       </PopupShell>
     </Backdrop>
@@ -515,33 +599,47 @@ function ChonGoiCuocPopup({
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// POPUP BƯỚC 2 — CHỌN MÔN HỌC
+// POPUP BƯỚC 2 — CHỌN MÔN HỌC (RIÊNG TỪNG GÓI)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function ChonMonHocPopup({
-  goi, initialChon, onConfirm, onQuayLai, onClose,
+function ChonMonHocPerGoiPopup({
+  goi, goiCuocIds, chonMonPerGoi, onUpdate, onConfirm, onQuayLai, onClose,
 }: {
   goi: GoiChuongTrinh;
-  initialChon: string[];
-  onConfirm: (selected: string[]) => void;
-  onQuayLai?: () => void;
+  goiCuocIds: string[];
+  chonMonPerGoi: ChonMonPerGoi;
+  onUpdate: (updated: ChonMonPerGoi) => void;
+  onConfirm: () => void;
+  onQuayLai: () => void;
   onClose: () => void;
 }) {
-  const [chon, setChon] = useState<string[]>(initialChon);
-  const { monHoc, maxMon, ten } = goi;
-  const soChon = chon.length;
-  const datGioiHan = soChon >= maxMon;
-  const coTheXacNhan = soChon >= 1 && soChon <= maxMon;
+  const { monHoc, ten } = goi;
+  const goiCuocList = goiCuocIds.map(id => goi.goiCuoc.find(gc => gc.id === id)).filter(Boolean) as GoiCuoc[];
 
-  const toggle = (mon: string) => {
-    if (chon.includes(mon)) setChon(chon.filter((m) => m !== mon));
-    else if (!datGioiHan) setChon([...chon, mon]);
+  const toggleMon = (goiCuocId: string, mon: string, maxMon: number) => {
+    const current = chonMonPerGoi[goiCuocId] || [];
+    let updated: string[];
+    if (current.includes(mon)) {
+      updated = current.filter(m => m !== mon);
+    } else {
+      if (current.length >= maxMon) return;
+      updated = [...current, mon];
+    }
+    onUpdate({ ...chonMonPerGoi, [goiCuocId]: updated });
   };
+
+  // Kiểm tra tất cả gói đều đã chọn ít nhất 1 môn
+  const allValid = goiCuocList.every(gc => {
+    const chon = chonMonPerGoi[gc.id] || [];
+    return chon.length >= 1 && chon.length <= gc.maxMon;
+  });
+
+  // Tổng số môn đã chọn
+  const totalChon = Object.values(chonMonPerGoi).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
     <Backdrop onClose={onClose}>
-      <PopupShell maxWidth={520}>
-        {/* Header */}
+      <PopupShell maxWidth={560}>
         <PopupHeader
           badge="Bước 2 / 4 — Lựa chọn nội dung học"
           title={ten}
@@ -550,62 +648,66 @@ function ChonMonHocPopup({
           totalSteps={4}
         />
 
-        {/* Quota banner */}
         <div style={{ margin: "16px 24px 0", padding: "12px 16px", borderRadius: 10,
-          background: datGioiHan ? "#fef3c7" : "#eff6ff",
-          border: `1px solid ${datGioiHan ? "#fcd34d" : "#bfdbfe"}`,
+          background: "#eff6ff", border: "1px solid #bfdbfe",
           display: "flex", alignItems: "center", gap: 10 }}>
-          <AlertCircle size={16} color={datGioiHan ? "#d97706" : "#2563eb"} style={{ flexShrink: 0 }} />
-          <span style={{ fontSize: 13, color: datGioiHan ? "#92400e" : "#1e40af", fontWeight: 500 }}>
-            {datGioiHan
-              ? `Bạn đã chọn đủ ${maxMon} môn học — giới hạn gói.`
-              : `Bạn được chọn tối đa ${maxMon} môn học trong gói này.`}
+          <AlertCircle size={16} color="#2563eb" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: "#1e40af", fontWeight: 500 }}>
+            Chọn môn học riêng cho từng gói cước. Mỗi gói có giới hạn số môn khác nhau.
           </span>
         </div>
 
-        {/* Sub-header: counter */}
-        <div style={{ padding: "12px 24px 8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 13, color: "#6b7280" }}>Danh sách môn học ({monHoc.length} môn)</span>
-          <CounterBadge current={soChon} max={maxMon} />
-        </div>
+        {/* Danh sách từng gói cước */}
+        <div style={{ overflowY: "auto", padding: "12px 24px 20px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+          {goiCuocList.map((gc) => {
+            const chon = chonMonPerGoi[gc.id] || [];
+            const soChon = chon.length;
+            const datGioiHan = soChon >= gc.maxMon;
+            const dsMonHoc = gc.monHoc && gc.monHoc.length > 0 ? gc.monHoc : monHoc;
 
-        {/* Danh sách checkbox */}
-        <div style={{ overflowY: "auto", padding: "4px 24px 20px", flex: 1 }}>
-          {monHoc.map((mon) => {
-            const isChon = chon.includes(mon);
-            const isDisabled = !isChon && datGioiHan;
             return (
-              <MonCheckRow
-                key={mon} label={mon}
-                checked={isChon} disabled={isDisabled}
-                onClick={() => toggle(mon)}
-              />
+              <div key={gc.id} style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+                {/* Header gói */}
+                <div style={{
+                  background: "#f8fafc", padding: "10px 16px",
+                  borderBottom: "1px solid #e5e7eb",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                }}>
+                  <div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#1d4ed8" }}>{gc.tenLoai}</span>
+                    <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 8 }}>({gc.ten})</span>
+                  </div>
+                  <CounterBadge current={soChon} max={gc.maxMon} small />
+                </div>
+
+                {/* Danh sách môn */}
+                <div style={{ padding: "8px 12px" }}>
+                  {dsMonHoc.map((mon) => {
+                    const isChon = chon.includes(mon);
+                    const isDisabled = !isChon && datGioiHan;
+                    return (
+                      <MonCheckRow
+                        key={mon} label={mon}
+                        checked={isChon} disabled={isDisabled}
+                        onClick={() => toggleMon(gc.id, mon, gc.maxMon)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
 
-        {/* Footer */}
         <PopupFooter>
-          {onQuayLai ? (
-            <>
-              <BtnOutline onClick={onQuayLai}>
-                <ArrowLeft size={15} />
-                Quay lại
-              </BtnOutline>
-              <BtnPrimary disabled={!coTheXacNhan} onClick={() => coTheXacNhan && onConfirm(chon)}>
-                <Check size={15} />
-                Tiếp theo ({soChon}/{maxMon})
-              </BtnPrimary>
-            </>
-          ) : (
-            <>
-              <BtnOutline onClick={onClose}>Hủy</BtnOutline>
-              <BtnPrimary disabled={!coTheXacNhan} onClick={() => coTheXacNhan && onConfirm(chon)}>
-                <Check size={15} />
-                Tiếp theo ({soChon}/{maxMon})
-              </BtnPrimary>
-            </>
-          )}
+          <BtnOutline onClick={onQuayLai}>
+            <ArrowLeft size={15} />
+            Quay lại
+          </BtnOutline>
+          <BtnPrimary disabled={!allValid} onClick={() => allValid && onConfirm()}>
+            <Check size={15} />
+            Tiếp theo ({totalChon} môn)
+          </BtnPrimary>
         </PopupFooter>
       </PopupShell>
     </Backdrop>
@@ -617,23 +719,22 @@ function ChonMonHocPopup({
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function XacNhanThanhToanPopup({
-  goi, goiCuocDaChon, monDaChon, onQuayLai, onXacNhan, onClose,
+  goi, goiCuocDaChon, monDaChon, chonMonPerGoi, onQuayLai, onXacNhan, onClose,
 }: {
   goi: GoiChuongTrinh;
   goiCuocDaChon: string[];
   monDaChon: string[];
+  chonMonPerGoi: ChonMonPerGoi;
   onQuayLai: () => void;
   onXacNhan: () => void;
   onClose: () => void;
 }) {
-  // Lấy thông tin gói cước đã chọn
   const goiCuocChon = goiCuocDaChon.map(id => goi.goiCuoc.find(gc => gc.id === id)).filter(Boolean) as GoiCuoc[];
   const tongTienGoiCuoc = goiCuocChon.reduce((sum, g) => sum + g.gia, 0);
   const isFreeTier = tongTienGoiCuoc === 0;
 
-  // Extract durations from goiCuoc items (same as GoiCard)
   const getDurations = () => {
-    const durations = goi.goiCuoc
+    const durations = goiCuocChon
       .map(g => {
         const match = g.ten.match(/(\d+)\s*tháng/);
         return match ? parseInt(match[1]) : null;
@@ -642,16 +743,12 @@ function XacNhanThanhToanPopup({
     return [...new Set(durations)].sort((a, b) => a - b);
   };
 
-  // Check if any package is free
-  const isFreeAvailable = goi.goiCuoc.some(g => g.gia === 0);
-
-  // Get durations string
   const durationsStr = getDurations().join(", ");
-  const displayTime = isFreeTier || isFreeAvailable ? goi.thoiGian : (durationsStr ? `Thời hạn: ${durationsStr} tháng` : goi.thoiGian);
+  const displayTime = durationsStr ? `${durationsStr} tháng` : goi.thoiGian;
 
   return (
     <Backdrop onClose={onClose}>
-      <PopupShell maxWidth={500}>
+      <PopupShell maxWidth={520}>
         <PopupHeader
           badge={isFreeTier ? "Bước 3 / 3 — Xác nhận lựa chọn" : "Bước 3 / 4 — Xác nhận lựa chọn"}
           title={isFreeTier ? "Xác nhận lựa chọn & Vào học" : "Xác nhận lựa chọn & Thanh toán"}
@@ -660,7 +757,7 @@ function XacNhanThanhToanPopup({
           totalSteps={isFreeTier ? 3 : 4}
         />
 
-        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
 
           {/* Thông tin gói */}
           <div style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
@@ -676,53 +773,44 @@ function XacNhanThanhToanPopup({
             </div>
           </div>
 
-          {/* Gói cước đã chọn */}
+          {/* Gói cước & Môn học đã chọn (per package) */}
           <div style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
             <div style={{ background: "#f8fafc", padding: "12px 16px", borderBottom: "1px solid #e5e7eb" }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Gói cước đã chọn
+                Gói cước & Môn học đã chọn
               </span>
             </div>
-            <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-              {goiCuocChon.map((g) => (
-                <div key={g.id} style={{ display: "flex", flexDirection: "column", gap: 6, paddingBottom: 10, borderBottom: "1px solid #e5e7eb" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{g.tenLoai}</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#005CB6" }}>{formatGia(g.gia)}</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                    {g.ten}
-                  </div>
-                  {g.thoiGianDungThu && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500 }}>
-                      🎁 Dùng thử: {calculateDaysFromRange(g.thoiGianDungThu)}
+            <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+              {goiCuocChon.map((g) => {
+                const monChoGoi = chonMonPerGoi[g.id] || [];
+                return (
+                  <div key={g.id} style={{ paddingBottom: 12, borderBottom: "1px solid #f0f0f0" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{g.tenLoai}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#005CB6" }}>{formatGia(g.gia)}</span>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Môn học đã chọn */}
-          <div style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
-            <div style={{ background: "#f8fafc", padding: "12px 16px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Môn học đã chọn
-              </span>
-              <CounterBadge current={monDaChon.length} max={goi.maxMon} small />
-            </div>
-            <div style={{ padding: "12px 16px", display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {monDaChon.map((mon) => (
-                <span key={mon} style={{
-                  display: "flex", alignItems: "center", gap: 5,
-                  padding: "5px 12px", borderRadius: 20,
-                  background: "#eff6ff", border: "1px solid #bfdbfe",
-                  fontSize: 13, fontWeight: 600, color: "#1d4ed8",
-                }}>
-                  <Check size={12} strokeWidth={3} />
-                  {mon}
-                </span>
-              ))}
+                    <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{g.ten}</div>
+                    {g.thoiGianDungThu && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#059669", fontWeight: 500, marginBottom: 6 }}>
+                        🎁 Dùng thử: {calculateDaysFromRange(g.thoiGianDungThu)}
+                      </div>
+                    )}
+                    {/* Môn học cho gói này */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                      {monChoGoi.map((mon) => (
+                        <span key={mon} style={{
+                          display: "flex", alignItems: "center", gap: 4,
+                          padding: "3px 10px", borderRadius: 16,
+                          background: "#eff6ff", border: "1px solid #bfdbfe",
+                          fontSize: 12, fontWeight: 600, color: "#1d4ed8",
+                        }}>
+                          <Check size={10} strokeWidth={3} />{mon}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -730,7 +818,7 @@ function XacNhanThanhToanPopup({
           <div style={{ borderRadius: 12, border: isFreeTier ? "1px solid #86efac" : "1px solid #e5e7eb", overflow: "hidden", background: isFreeTier ? "#f0fdf4" : "#f0f9ff" }}>
             <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 15, fontWeight: 700, color: isFreeTier ? "#15803d" : "#005CB6" }}>
-                {isFreeTier ? "✅ Sẵn sàng vào học" : "Tổng thanh toán"}
+                {isFreeTier ? "Sẵn sàng vào học" : "Tổng thanh toán"}
               </span>
               <span style={{ fontSize: 20, fontWeight: 800, color: isFreeTier ? "#15803d" : "#005CB6" }}>{formatGia(tongTienGoiCuoc)}</span>
             </div>
@@ -747,7 +835,7 @@ function XacNhanThanhToanPopup({
             <p style={{ margin: 0, fontSize: 13, color: isFreeTier ? "#166534" : "#9a3412", lineHeight: 1.6 }}>
               {isFreeTier ? (
                 <>
-                  <strong>✅ Gói miễn phí!</strong> Sau khi xác nhận, bạn sẽ có thể{" "}
+                  <strong>Gói miễn phí!</strong> Sau khi xác nhận, bạn sẽ có thể{" "}
                   <strong>vào học ngay</strong>.
                 </>
               ) : (
@@ -1133,10 +1221,91 @@ function FakeQR({ size = 160, seed = "default" }: { size?: number; seed?: string
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// POPUP NỘI DUNG GÓI CƯỚC (VÀO HỌC)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function NoiDungGoiCuocPopup({
+  goi, goiCuocId, onClose,
+}: {
+  goi: GoiChuongTrinh;
+  goiCuocId: string;
+  onClose: () => void;
+}) {
+  const gc = goi.goiCuoc.find(g => g.id === goiCuocId);
+  if (!gc) return null;
+
+  const dsMonHoc = gc.monHoc && gc.monHoc.length > 0 ? gc.monHoc : goi.monHoc;
+
+  // Nội dung mẫu cho mỗi môn học
+  const noiDungMau = [
+    { ten: "Bài giảng video", soLuong: Math.floor(Math.random() * 20) + 10 },
+    { ten: "Bài tập thực hành", soLuong: Math.floor(Math.random() * 15) + 5 },
+    { ten: "Đề kiểm tra", soLuong: Math.floor(Math.random() * 10) + 3 },
+  ];
+
+  return (
+    <Backdrop onClose={onClose}>
+      <PopupShell maxWidth={520}>
+        <PopupHeader
+          badge={`Gói ${gc.tenLoai} — Nội dung học`}
+          title={goi.ten}
+          onClose={onClose}
+          stepDots={0}
+          totalSteps={0}
+        />
+
+        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
+          {/* Thông tin gói */}
+          <div style={{ padding: "14px 16px", borderRadius: 12, background: "#f0fdf4", border: "1px solid #86efac" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#15803d" }}>{gc.tenLoai}</span>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>{gc.ten}</span>
+            </div>
+            <div style={{ fontSize: 12, color: "#166534" }}>
+              Giới hạn: {gc.maxMon} môn học
+            </div>
+          </div>
+
+          {/* Danh sách môn học & nội dung */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Nội dung các môn học ({dsMonHoc.length} môn)
+            </span>
+            {dsMonHoc.map((mon) => (
+              <div key={mon} style={{ borderRadius: 10, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+                <div style={{ padding: "10px 14px", background: "#f8fafc", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
+                  <BookOpen size={14} color="#005CB6" />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#1a1a2e" }}>{mon}</span>
+                </div>
+                <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {noiDungMau.map((nd) => (
+                    <div key={nd.ten} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+                      <span style={{ color: "#6b7280" }}>{nd.ten}</span>
+                      <span style={{ fontWeight: 600, color: "#374151" }}>{nd.soLuong} bài</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <PopupFooter>
+          <BtnPrimary onClick={onClose}>
+            <Check size={15} />
+            Đóng
+          </BtnPrimary>
+        </PopupFooter>
+      </PopupShell>
+    </Backdrop>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CARD GÓI
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => void }) {
+function GoiCard({ goi, purchasedIds, onHocNgay }: { goi: GoiChuongTrinh; purchasedIds: string[]; onHocNgay: () => void }) {
   const [imgErr, setImgErr] = useState(false);
 
   // Extract durations from goiCuoc items (e.g., "3 tháng" → 3)
@@ -1150,12 +1319,13 @@ function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => voi
     return [...new Set(durations)].sort((a, b) => a - b);
   };
 
-  // Check if any package is free
   const isFreeAvailable = goi.goiCuoc.some(g => g.gia === 0);
-
-  // Get durations string (e.g., "3, 6, 12")
   const durationsStr = getDurations().join(", ");
   const durationText = durationsStr ? `Thời hạn: ${durationsStr} tháng` : goi.thoiGian;
+
+  // Kiểm tra có gói nào đã mua chưa
+  const hasPurchased = goi.goiCuoc.some(gc => purchasedIds.includes(gc.id));
+  const allPurchased = goi.goiCuoc.every(gc => purchasedIds.includes(gc.id));
 
   return (
     <div
@@ -1163,7 +1333,7 @@ function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => voi
       onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,92,182,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}
     >
-      {/* Ảnh + Tags */}
+      {/* Ảnh */}
       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden", background: "#e8f4fd" }}>
         {!imgErr ? (
           <img src={goi.img} alt={goi.ten} onError={() => setImgErr(true)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -1178,27 +1348,32 @@ function GoiCard({ goi, onMuaNgay }: { goi: GoiChuongTrinh; onMuaNgay: () => voi
       <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a2e", lineHeight: 1.4 }}>{goi.ten}</div>
         <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{goi.moTa}</div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: goi.goiCuoc.length > 0 && goi.goiCuoc[0].gia === 0 && goi.goiCuoc.every(g => g.gia === 0) ? "#059669" : "#005CB6", margin: "2px 0" }}>{formatGiaRange(goi.goiCuoc)}</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: allPurchased ? "#059669" : (goi.goiCuoc.length > 0 && goi.goiCuoc[0].gia === 0 && goi.goiCuoc.every(g => g.gia === 0) ? "#059669" : "#005CB6"), margin: "2px 0" }}>
+          {allPurchased ? "Đã mở khoá" : formatGiaRange(goi.goiCuoc.filter(gc => !purchasedIds.includes(gc.id)))}
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           <InfoRow icon={<GraduationCap size={13} color="#005CB6" />} text={goi.khoiLop.join(", ")} />
           <InfoRow icon={<BookOpen size={13} color="#005CB6" />} text={goi.monHoc.join(", ")} />
           <InfoRow icon={<Clock size={13} color="#005CB6" />} text={isFreeAvailable ? goi.thoiGian : durationText} />
         </div>
         <div style={{ marginTop: "auto", paddingTop: 10 }}>
-          {goi.daMua ? (
-            <button style={{ width: "100%", padding: "10px 0", borderRadius: 24, border: "1.5px solid #005CB6", background: "#005CB6", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <BookOpen size={15} /> Học ngay
-            </button>
-          ) : (
-            <button
-              onClick={onMuaNgay}
-              style={{ width: "100%", padding: "10px 0", borderRadius: 24, border: "1.5px solid #005CB6", background: "#fff", color: "#005CB6", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#005CB6"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#005CB6"; }}
-            >
-              <ShoppingCart size={15} /> Mua ngay
-            </button>
-          )}
+          <button
+            onClick={onHocNgay}
+            style={{
+              width: "100%", padding: "10px 0", borderRadius: 24,
+              border: hasPurchased ? "none" : "1.5px solid #005CB6",
+              background: hasPurchased ? "#005CB6" : "#fff",
+              color: hasPurchased ? "#fff" : "#005CB6",
+              fontSize: 14, fontWeight: 600, cursor: "pointer",
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => { if (!hasPurchased) { e.currentTarget.style.background = "#005CB6"; e.currentTarget.style.color = "#fff"; } }}
+            onMouseLeave={(e) => { if (!hasPurchased) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#005CB6"; } }}
+          >
+            <BookOpen size={15} /> Học ngay
+          </button>
         </div>
       </div>
     </div>

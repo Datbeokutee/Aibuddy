@@ -1788,10 +1788,10 @@ function ModalThemGoiCuocFlat({
           {/* 0. Chọn Chương trình học */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Chọn Chương trình học <span style={{ color:"#D4183D" }}>*</span>
+              Chương trình học <span style={{ color:"#D4183D" }}>*</span>
             </label>
-            <select 
-              value={form.chuongTrinhIds[0] || ""} 
+            <select
+              value={form.chuongTrinhIds[0] || ""}
               onChange={e => set("chuongTrinhIds", e.target.value ? [e.target.value] : [])}
               style={{
                 border: `1.5px solid #E2E8F0`,
@@ -1807,9 +1807,9 @@ function ModalThemGoiCuocFlat({
                 paddingRight: 36,
               }}
             >
-              <option value="">-- Chọn chương trình học --</option>
-              {DS_CHUONG_TRINH.map(prog => (
-                <option key={prog.id} value={prog.id}>{prog.ten}</option>
+              <option value="">-- Chọn --</option>
+              {DS_CHUONG_TRINH_HOC_PAGE.map(prog => (
+                <option key={prog.id} value={prog.id}>{prog.tenChuongTrinh}</option>
               ))}
             </select>
           </div>
@@ -2138,50 +2138,80 @@ function ModalThemGoiCuocFlat({
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Thời lượng sử dụng <span style={{ color:"#D4183D" }}>*</span>
-              {selectedBCCSGoi && (
+              {(form.loaiGia === "dong-gia" || form.loaiGia === "khac-gia") && selectedBCCSGoi && (
                 <span style={{ fontSize:"0.63rem", color:"#005CB6", fontWeight:500, marginLeft:8 }}>· Tự động từ BCCS</span>
               )}
             </label>
-            <div className="relative" style={{ width:160 }}>
-              <input
-                type="number"
-                min="0"
-                value={form.thoiLuongSuDung}
-                onChange={e => set("thoiLuongSuDung", e.target.value)}
-                placeholder="0"
-                readOnly={selectedBCCSGoi ? true : false}
-                style={{ ...iStyle("thoiLuongSuDung"), paddingRight:48, background: selectedBCCSGoi ? "#F1F5F9" : "#F8F9FA", cursor: selectedBCCSGoi ? "default" : "text" }}
-                onFocus={e => !selectedBCCSGoi && Object.assign(e.target.style, fcs)}
-                onBlur={e  => !selectedBCCSGoi && Object.assign(e.target.style, blr("thoiLuongSuDung"))}
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>Tháng</span>
-            </div>
-            {form.thoiLuongSuDung && !isNaN(Number(form.thoiLuongSuDung)) && Number(form.thoiLuongSuDung) > 0 && (
+
+            {form.loaiGia === "free" ? (
+              // Miễn phí → Date range picker
+              <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày bắt đầu</div>
+                  <input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={form.sdStart || ""}
+                    onChange={e => set("sdStart", e.target.value)}
+                    style={{
+                      ...iStyle("sdStart"),
+                      width:"100%",
+                      padding:"10px 12px",
+                      fontSize:"0.85rem",
+                    }}
+                    onFocus={e => Object.assign(e.target.style, fcs)}
+                    onBlur={e => Object.assign(e.target.style, blr("sdStart"))}
+                  />
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày kết thúc</div>
+                  <input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={form.sdEnd || ""}
+                    onChange={e => set("sdEnd", e.target.value)}
+                    style={{
+                      ...iStyle("sdEnd"),
+                      width:"100%",
+                      padding:"10px 12px",
+                      fontSize:"0.85rem",
+                    }}
+                    onFocus={e => Object.assign(e.target.style, fcs)}
+                    onBlur={e => Object.assign(e.target.style, blr("sdEnd"))}
+                  />
+                </div>
+              </div>
+            ) : (
+              // Đồng giá / Khác giá → Input số, khóa khi có BCCS
+              <div className="relative" style={{ width:160 }}>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.thoiLuongSuDung}
+                  onChange={e => set("thoiLuongSuDung", e.target.value)}
+                  placeholder="0"
+                  readOnly={selectedBCCSGoi ? true : false}
+                  style={{
+                    ...iStyle("thoiLuongSuDung"),
+                    paddingRight: 48,
+                    background: selectedBCCSGoi ? "#F1F5F9" : "#F8F9FA",
+                    cursor: selectedBCCSGoi ? "default" : "text",
+                    opacity: selectedBCCSGoi ? 0.7 : 1,
+                  }}
+                  onFocus={e => !selectedBCCSGoi && Object.assign(e.target.style, fcs)}
+                  onBlur={e => !selectedBCCSGoi && Object.assign(e.target.style, blr("thoiLuongSuDung"))}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>Tháng</span>
+              </div>
+            )}
+
+            {form.thoiLuongSuDung && !isNaN(Number(form.thoiLuongSuDung)) && Number(form.thoiLuongSuDung) > 0 && form.loaiGia !== "free" && (
               <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:600 }}>{form.thoiLuongSuDung} tháng</p>
             )}
             <ErrMsg f="sdEnd"/>
           </div>
 
-          {/* 5. Thời lượng sử dụng thử */}
-          <div>
-            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Thời lượng sử dụng thử
-            </label>
-            <div className="flex items-center gap-3">
-              <div className="relative" style={{ width:140 }}>
-                <input type="number" min="0" value={form.thoiLuongThuNghiem}
-                  onChange={e => set("thoiLuongThuNghiem", e.target.value)}
-                  placeholder="0"
-                  style={iStyle()}
-                  onFocus={e => Object.assign(e.target.style, fcs)}
-                  onBlur={e  => Object.assign(e.target.style, blr())}
-                />
-              </div>
-              <span style={{ fontSize:"0.85rem", color:"#374151", fontWeight:600 }}>Ngày</span>
-            </div>
-          </div>
-
-          {/* 6. Môn học */}
+          {/* 5. Môn học */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Môn học <span style={{ color:"#D4183D" }}>*</span>
@@ -2209,7 +2239,7 @@ function ModalThemGoiCuocFlat({
             <ErrMsg f="monHocIds"/>
           </div>
 
-          {/* 7. Giới hạn lựa chọn môn học */}
+          {/* 6. Giới hạn lựa chọn môn học */}
           <div>
             <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
               Giới hạn lựa chọn môn học
@@ -2228,7 +2258,7 @@ function ModalThemGoiCuocFlat({
             </div>
           </div>
 
-          {/* 8. Ghi chú */}
+          {/* 7. Ghi chú */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151" }}>Ghi chú</label>
@@ -2882,7 +2912,7 @@ function ModalGoiCuoc({ mode, goiEdit, allGoi, onClose, onSave, userRole }: {
 function DrawerChiTiet({ goi, onClose, onEdit }: { goi: GoiCuoc; onClose: ()=>void; onEdit: ()=>void }) {
   const [tab, setTab] = useState<"tongquan"|"donvi"|"noidung">("tongquan");
 
-  const cts = goi.chuongTrinhIds.map(id=>DS_CHUONG_TRINH.find(c=>c.id===id)).filter(Boolean) as ChuongTrinh[];
+  const cts = goi.chuongTrinhIds.map(id=>DS_CHUONG_TRINH_HOC_PAGE.find(c=>c.id===id)).filter(Boolean);
   const linkedMonHoc = (goi.monHocIds||[]).map(id=>DS_MON_HOC_K12.find(m=>m.id===id)).filter(Boolean) as MonHocK12[];
   const pct = Math.round((goi.soGoiNoiDungDaDung / Math.max(goi.quotaToiDa,1))*100);
   const donViGan = goi.donViGan || [];

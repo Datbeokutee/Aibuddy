@@ -33,16 +33,14 @@ interface ChuongTrinhHoc {
 // ── DỮ LIỆU MẪU (10 bản ghi) ──────────────────────────────────────────────────
 
 export const SAMPLE_DATA: ChuongTrinhHoc[] = [
-  { id: "ct-01", maChuongTrinh: "CT-TOAN-2026", tenChuongTrinh: "AI Book Toán 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["AI Book", "Viettel Study"] },
-  { id: "ct-02", maChuongTrinh: "CT-VAN-2026", tenChuongTrinh: "AI Book Văn học 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["HOCMAI"] },
-  { id: "ct-03", maChuongTrinh: "CT-ANH-2026", tenChuongTrinh: "AI Book Tiếng Anh 2026", ngayTao: "16/01/2026", nguoiTao: "Trần Thị Bình", doiTac: ["Ôn luyện", "Kiến Guru"] },
-  { id: "ct-04", maChuongTrinh: "CT-LY-2026", tenChuongTrinh: "AI Book Vật lý 2026", ngayTao: "18/01/2026", nguoiTao: "Trần Thị Bình", doiTac: [] },
-  { id: "ct-05", maChuongTrinh: "CT-HOA-2026", tenChuongTrinh: "AI Book Hóa học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: [] },
-  { id: "ct-06", maChuongTrinh: "CT-SINH-2026", tenChuongTrinh: "AI Book Sinh học 2026", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: ["VioEdu"] },
-  { id: "ct-07", maChuongTrinh: "CT-KNM-2026", tenChuongTrinh: "Khóa học Kỹ năng mềm", ngayTao: "22/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Marathon Education", "Educa"] },
-  { id: "ct-08", maChuongTrinh: "CT-TIN-2026", tenChuongTrinh: "AI Book Tin học 2026", ngayTao: "25/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Tuyensinh247"] },
-  { id: "ct-09", maChuongTrinh: "CT-SU-2026", tenChuongTrinh: "AI Book Lịch sử 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", doiTac: [] },
-  { id: "ct-10", maChuongTrinh: "CT-DIA-2026", tenChuongTrinh: "AI Book Địa lý 2026", ngayTao: "28/01/2026", nguoiTao: "Hoàng Thu Hà", doiTac: ["Luyện thi 123", "HOCMAI"] },
+  { id: "ct-01", maChuongTrinh: "CT-AB2026-001", tenChuongTrinh: "AI Book 2026", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["AI Book", "Viettel Study"] },
+  { id: "ct-02", maChuongTrinh: "CT-KNSP-001", tenChuongTrinh: "Kỹ năng sống Pro", ngayTao: "15/01/2026", nguoiTao: "Nguyễn Văn An", doiTac: ["HOCMAI"] },
+  { id: "ct-03", maChuongTrinh: "CT-LTTHPT-001", tenChuongTrinh: "Luyện thi THPT", ngayTao: "16/01/2026", nguoiTao: "Trần Thị Bình", doiTac: ["Ôn luyện", "Kiến Guru"] },
+  { id: "ct-04", maChuongTrinh: "CT-ABNVAN-001", tenChuongTrinh: "AI Book Ngữ Văn", ngayTao: "18/01/2026", nguoiTao: "Trần Thị Bình", doiTac: [] },
+  { id: "ct-05", maChuongTrinh: "CT-ABTOAN-001", tenChuongTrinh: "AI Book Toán", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: [] },
+  { id: "ct-06", maChuongTrinh: "CT-TAGTEP-001", tenChuongTrinh: "Tiếng Anh Giao tiếp", ngayTao: "20/01/2026", nguoiTao: "Lê Minh Châu", doiTac: ["VioEdu"] },
+  { id: "ct-07", maChuongTrinh: "CT-STEMR-001", tenChuongTrinh: "STEM Robotics", ngayTao: "22/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Marathon Education", "Educa"] },
+  { id: "ct-08", maChuongTrinh: "CT-ONTV10-001", tenChuongTrinh: "Ôn thi vào 10", ngayTao: "25/01/2026", nguoiTao: "Phạm Đức Dũng", doiTac: ["Tuyensinh247"] },
 ];
 
 // ── STYLE CONSTANTS ─────────────────────────────────────────────────────────────

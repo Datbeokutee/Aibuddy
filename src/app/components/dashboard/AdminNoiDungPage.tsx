@@ -43,6 +43,7 @@ interface GoiCuocInfo {
   giaTheoKhoi?: Record<string, number>;
   sdStart: string; sdEnd: string;       // Ngày bắt đầu / kết thúc gói (DD/MM/YYYY)
   tnStart?: string; tnEnd?: string;     // Ngày bắt đầu / kết thúc dùng thử (DD/MM/YYYY)
+  thoiLuongThang?: number;              // Thời lượng tháng (3, 6, 12)
   khoiLop: string[]; monHoc: string[];
 }
 interface ChuongTrinhMaster {
@@ -53,9 +54,9 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
   {
     id: "m01", ten: "AI Book 2026",
     danhSachGoi: [
-      { id: "g01", ten: "BASIC Tiểu học",  loaiGia: "dong-gia", gia: 200,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 1","Lớp 2"],   monHoc: ["Toán"] },
-      { id: "g02", ten: "PLUS Tiểu học",   loaiGia: "khac-gia", gia: 400, giaTo: 500, giaTheoKhoi: { "Lớp 3": 400, "Lớp 4": 500 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 3","Lớp 4"], monHoc: ["Tiếng Anh"] },
-      { id: "g09", ten: "BASIC THPT",      loaiGia: "khac-gia", gia: 350, giaTo: 450, giaTheoKhoi: { "Lớp 10": 350, "Lớp 11": 450 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 10","Lớp 11"], monHoc: ["Lịch sử"] },
+      { id: "g01", ten: "BASIC Tiểu học",  loaiGia: "dong-gia", gia: 200,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", thoiLuongThang: 12, khoiLop: ["Lớp 1","Lớp 2"],   monHoc: ["Toán"] },
+      { id: "g02", ten: "PLUS Tiểu học",   loaiGia: "khac-gia", gia: 400, giaTo: 500, giaTheoKhoi: { "Lớp 3": 400, "Lớp 4": 500 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", thoiLuongThang: 12, khoiLop: ["Lớp 3","Lớp 4"], monHoc: ["Tiếng Anh"] },
+      { id: "g09", ten: "BASIC THPT",      loaiGia: "khac-gia", gia: 350, giaTo: 450, giaTheoKhoi: { "Lớp 10": 350, "Lớp 11": 450 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", thoiLuongThang: 12, khoiLop: ["Lớp 10","Lớp 11"], monHoc: ["Lịch sử"] },
     ],
   },
   {
@@ -67,25 +68,25 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
   {
     id: "m03", ten: "Luyện thi THPT",
     danhSachGoi: [
-      { id: "g04", ten: "Gói Cấp tốc",    loaiGia: "dong-gia", gia: 1000, sdStart: "01/01/2026", sdEnd: "30/06/2026", khoiLop: ["Lớp 12"], monHoc: ["Vật lí","Hóa học"] },
+      { id: "g04", ten: "Gói Cấp tốc",    loaiGia: "dong-gia", gia: 1000, sdStart: "01/01/2026", sdEnd: "30/06/2026", thoiLuongThang: 6, khoiLop: ["Lớp 12"], monHoc: ["Vật lí","Hóa học"] },
     ],
   },
   {
     id: "m04", ten: "AI Book Ngữ Văn",
     danhSachGoi: [
-      { id: "g05", ten: "BASIC THCS",      loaiGia: "dong-gia", gia: 300,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 6","Lớp 7"], monHoc: ["Ngữ văn"] },
+      { id: "g05", ten: "BASIC THCS",      loaiGia: "dong-gia", gia: 300,  sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", thoiLuongThang: 12, khoiLop: ["Lớp 6","Lớp 7"], monHoc: ["Ngữ văn"] },
     ],
   },
   {
     id: "m05", ten: "AI Book Toán",
     danhSachGoi: [
-      { id: "g06", ten: "PLUS THCS",       loaiGia: "khac-gia", gia: 500, giaTo: 600, giaTheoKhoi: { "Lớp 8": 500, "Lớp 9": 600 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", khoiLop: ["Lớp 8","Lớp 9"], monHoc: ["Toán"] },
+      { id: "g06", ten: "PLUS THCS",       loaiGia: "khac-gia", gia: 500, giaTo: 600, giaTheoKhoi: { "Lớp 8": 500, "Lớp 9": 600 }, sdStart: "01/09/2025", sdEnd: "31/08/2026", thoiLuongThang: 12, khoiLop: ["Lớp 8","Lớp 9"], monHoc: ["Toán"] },
     ],
   },
   {
     id: "m06", ten: "Tiếng Anh Giao tiếp",
     danhSachGoi: [
-      { id: "g07", ten: "Gói VIP 1 kèm 1", loaiGia: "dong-gia", gia: 2000, sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5","Lớp 6","Lớp 7","Lớp 8","Lớp 9","Lớp 10","Lớp 11","Lớp 12"], monHoc: ["Tiếng Anh"] },
+      { id: "g07", ten: "Gói VIP 1 kèm 1", loaiGia: "dong-gia", gia: 2000, sdStart: "01/09/2025", sdEnd: "31/08/2026", tnStart: "01/09/2025", tnEnd: "07/09/2025", thoiLuongThang: 12, khoiLop: ["Lớp 1","Lớp 2","Lớp 3","Lớp 4","Lớp 5","Lớp 6","Lớp 7","Lớp 8","Lớp 9","Lớp 10","Lớp 11","Lớp 12"], monHoc: ["Tiếng Anh"] },
     ],
   },
   {
@@ -97,7 +98,7 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
   {
     id: "m08", ten: "Ôn thi vào 10",
     danhSachGoi: [
-      { id: "g10", ten: "Gói Tổng ôn",     loaiGia: "dong-gia", gia: 800,  sdStart: "01/01/2026", sdEnd: "30/06/2026", khoiLop: ["Lớp 9"], monHoc: ["Toán","Ngữ văn","Tiếng Anh"] },
+      { id: "g10", ten: "Gói Tổng ôn",     loaiGia: "dong-gia", gia: 800,  sdStart: "01/01/2026", sdEnd: "30/06/2026", thoiLuongThang: 6, khoiLop: ["Lớp 9"], monHoc: ["Toán","Ngữ văn","Tiếng Anh"] },
     ],
   },
 ];
@@ -123,6 +124,14 @@ const SAMPLE_TABLE: NoiDungHoc[] = [
 ];
 
 const formatGia = (gia: number) => gia === 0 ? "Miễn phí" : `${gia.toLocaleString("vi-VN")}.000đ`;
+
+const calculateDaysFromRange = (startStr: string, endStr: string): number => {
+  const [d1, m1, y1] = startStr.split("/").map(Number);
+  const [d2, m2, y2] = endStr.split("/").map(Number);
+  const start = new Date(y1, m1 - 1, d1);
+  const end = new Date(y2, m2 - 1, d2);
+  return Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // POPUP THÊM MỚI
@@ -258,10 +267,13 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
                         {g.loaiGia === "khac-gia" && (
                           <span style={{ fontSize: 12, fontWeight: 700, color: "#d97706", background: "rgba(217,119,6,0.08)", padding: "2px 8px", borderRadius: 20 }}>{formatGia(g.gia)} – {formatGia(g.giaTo ?? g.gia)}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 3 }}>theo khối</span></span>
                         )}
-                        <div style={{ textAlign: "right", minWidth: 80 }}>
-                          <div style={{ fontSize: 11, color: "#374151" }}>{g.sdStart} →</div>
-                          <div style={{ fontSize: 11, color: "#374151" }}>{g.sdEnd}</div>
-                          {g.tnStart && <div style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>Thử: {g.tnStart} → {g.tnEnd}</div>}
+                        <div style={{ textAlign: "right", minWidth: 100 }}>
+                          {g.loaiGia === "free" ? (
+                            <div style={{ fontSize: 11, color: "#374151" }}>{g.sdStart} → {g.sdEnd}</div>
+                          ) : (
+                            <div style={{ fontSize: 11, color: "#374151", fontWeight: 600 }}>{g.thoiLuongThang || "—"} tháng</div>
+                          )}
+                          {g.tnStart && g.tnEnd && <div style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>Thử: {calculateDaysFromRange(g.tnStart, g.tnEnd)} ngày</div>}
                         </div>
                       </div>
                     );
@@ -289,7 +301,7 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
                         </div>
                         <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", gap: "2px 16px", fontSize: 12, color: "#374151" }}>
                           <span>📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong></span>
-                          {g.tnStart ? <span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
+                          {g.tnStart && g.tnEnd ? <span style={{ color: "#059669" }}>🎁 Dùng thử: <strong>{calculateDaysFromRange(g.tnStart, g.tnEnd)} NGÀY</strong></span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
                           <span>Khối lớp: {g.khoiLop.join(", ")} &nbsp;·&nbsp; Môn: {g.monHoc.join(", ")}</span>
                         </div>
                       </div>
@@ -326,8 +338,8 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
                           </table>
                         </div>
                         <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", gap: "2px 16px", fontSize: 11, color: "#78716c" }}>
-                          <span>📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong></span>
-                          {g.tnStart ? <span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
+                          <span>📅 Thời hạn: <strong>{g.thoiLuongThang || "—"} tháng</strong></span>
+                          {g.tnStart && g.tnEnd ? <span style={{ color: "#059669" }}>🎁 Dùng thử: <strong>{calculateDaysFromRange(g.tnStart, g.tnEnd)} NGÀY</strong></span> : <span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span>}
                           <span>Môn: {g.monHoc.join(", ")}</span>
                         </div>
                       </div>
@@ -341,8 +353,8 @@ function PopupThemMoi({ onClose, onSave, initialData, editId = null }: PopupThem
                           <span style={{ fontWeight: 700, fontSize: 13, color: "#005CB6" }}>{formatGia(g.gia)}</span>
                         </div>
                         <div style={{ marginTop: 5, fontSize: 12, color: "#374151" }}>
-                          📅 <strong>{g.sdStart}</strong> → <strong>{g.sdEnd}</strong>
-                          {g.tnStart ? <>&nbsp;·&nbsp;<span style={{ color: "#059669" }}>🎁 Dùng thử: {g.tnStart} → {g.tnEnd}</span></> : <>&nbsp;·&nbsp;<span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span></>}
+                          📅 Thời hạn: <strong>{g.thoiLuongThang || "—"} tháng</strong>
+                          {g.tnStart && g.tnEnd ? <>&nbsp;·&nbsp;<span style={{ color: "#059669" }}>🎁 Dùng thử: <strong>{calculateDaysFromRange(g.tnStart, g.tnEnd)} NGÀY</strong></span></> : <>&nbsp;·&nbsp;<span style={{ color: "#9ca3af" }}>Không có thời gian dùng thử</span></>}
                           &nbsp;·&nbsp; Khối lớp: {g.khoiLop.join(", ")} &nbsp;·&nbsp; Môn: {g.monHoc.join(", ")}
                         </div>
                       </div>
