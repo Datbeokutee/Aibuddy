@@ -204,8 +204,13 @@ const DANH_SACH_GOI: GoiChuongTrinh[] = [
 
 const DS_KHOI = ["Khối 1","Khối 2","Khối 3","Khối 4","Khối 5","Khối 6","Khối 7","Khối 8","Khối 9","Khối 10","Khối 11","Khối 12"];
 const DS_MON  = ["Toán","Tiếng Việt","Tiếng Anh","Ngữ văn","Vật lí","Hóa học","Sinh học","Lịch sử","Địa lý","Tin học","Kỹ năng sống"];
-// DS_TRANG_THAI được ẩn - logic vẫn hoạt động ở background
-const DS_TRANG_THAI: { value: string; label: string }[] = [];
+// DS_TRANG_THAI - Filter trạng thái: Đã mua / Chưa mua
+// Logic lọc: Đã mua = học sinh đã mua ít nhất 1 gói từ chương trình (ngay cả khi chỉ mua 1 gói trong 3)
+// Chưa mua = học sinh chưa mua gói nào từ chương trình
+const DS_TRANG_THAI: { value: string; label: string }[] = [
+  { value: "da-mua", label: "Đã mua" },
+  { value: "chua-mua", label: "Chưa mua" },
+];
 
 const formatGia = (gia: number) =>
   gia === 0 ? "Miễn phí" : `${gia.toLocaleString("vi-VN")}đ`;
@@ -276,9 +281,13 @@ export default function HocSinhGoiPage() {
     const matchKhoi = !filterKhoi || g.khoiLop.includes(filterKhoi);
     const matchMon  = !filterMon  || g.monHoc.includes(filterMon);
     const matchTen  = !filterTen  || g.ten.toLowerCase().includes(filterTen.toLowerCase());
+
+    // Tính trạng thái "Đã mua" dựa trên purchasedGoiCuocIds
+    // Đã mua = học sinh đã mua ít nhất 1 gói từ chương trình này
+    const daMuaThucTe = g.goiCuoc.some(gc => purchasedGoiCuocIds.includes(gc.id));
     const matchTrangThai = !filterTrangThai ||
-      (filterTrangThai === "da-mua" && g.daMua) ||
-      (filterTrangThai === "chua-mua" && !g.daMua);
+      (filterTrangThai === "da-mua" && daMuaThucTe) ||
+      (filterTrangThai === "chua-mua" && !daMuaThucTe);
     return matchKhoi && matchMon && matchTen && matchTrangThai;
   });
 
