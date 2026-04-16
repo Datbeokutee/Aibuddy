@@ -8,7 +8,8 @@ import {
 // ── KIỂU DỮ LIỆU ─────────────────────────────────────────────────────────────
 
 type LoaiYeuCau   = "chuong-trinh";
-type TrangThaiGan = "chua-gan" | "da-gan";
+type TrangThaiGan = "chua-gan" | "da-gan" | "moi-cap-nhat";
+type NguoiTao     = "Admin" | "Đối tác";
 type SortF        = "tenChuongTrinh" | "tenDoiTac" | "ngayGui";
 type SortD        = "asc" | "desc";
 type HinhThucKD   = "B2B" | "B2C" | "B2B2C";
@@ -39,6 +40,7 @@ interface YeuCauGan {
   trangThai: TrangThaiGan;
   donViDaGanIds: string[];
   goiCuocIds: string[];
+  nguoiTao: NguoiTao;
   cauHinhs: CauHinhDonVi[];
 }
 
@@ -119,31 +121,37 @@ const MASTER_DATA: ChuongTrinhMaster[] = [
 ];
 
 const DS_YEU_CAU: YeuCauGan[] = [
-  { id:"yc01", loai:"chuong-trinh", tenChuongTrinh:"AI Book 2026",                       tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"10/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g01","g02"], cauHinhs:[] },
-  { id:"yc02", loai:"chuong-trinh", tenChuongTrinh:"Toán 9 – Luyện thi vào lớp 10",     tenDoiTac:"Công ty CP Giáo dục Sao Mai",maDoiTac:"DT-002", ngayGui:"09/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g06"], cauHinhs:[] },
-  { id:"yc03", loai:"chuong-trinh", tenChuongTrinh:"Luyện thi THPT",                    tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"08/04/2025", trangThai:"da-gan",   donViDaGanIds:["dv10","dv11","dv12"], goiCuocIds:["g04"],
+  // === ADMIN TẠO (5 dữ liệu) ===
+  { id:"yc01", loai:"chuong-trinh", tenChuongTrinh:"AI Book 2026",                       tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"10/04/2025", trangThai:"chua-gan",      donViDaGanIds:[], goiCuocIds:["g01","g02"], nguoiTao:"Admin", cauHinhs:[] },
+  { id:"yc02", loai:"chuong-trinh", tenChuongTrinh:"Toán 9 – Luyện thi vào lớp 10",     tenDoiTac:"Công ty CP Giáo dục Sao Mai",maDoiTac:"DT-002", ngayGui:"09/04/2025", trangThai:"da-gan",        donViDaGanIds:["dv06","dv07"], goiCuocIds:["g06"], nguoiTao:"Admin",
+    cauHinhs:[
+      { _id:"ch2", tinhThanhIds:["Hà Nội","TP. Hồ Chí Minh"], capHoc:"THCS", truongIds:["dv06","dv07"], hinhThucPerTruong:{ "dv06":["B2B"], "dv07":["B2B","B2C"] } },
+    ]},
+  { id:"yc03", loai:"chuong-trinh", tenChuongTrinh:"Luyện thi THPT",                    tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"08/04/2025", trangThai:"moi-cap-nhat", donViDaGanIds:["dv10","dv11","dv12"], goiCuocIds:["g04"], nguoiTao:"Admin",
     cauHinhs:[
       { _id:"ch1", tinhThanhIds:["Hà Nội","TP. Hồ Chí Minh"], capHoc:"THPT", truongIds:["dv10","dv11"], hinhThucPerTruong:{ "dv10":["B2C"], "dv11":["B2B","B2B2C"] } },
       { _id:"ch3", tinhThanhIds:["Đà Nẵng"],                    capHoc:"",     truongIds:[],             hinhThucPerTruong:{ "":["B2B2C"] } },
     ]},
-  { id:"yc04", loai:"chuong-trinh", tenChuongTrinh:"Kỹ năng sống Pro",                   tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"07/04/2025", trangThai:"da-gan",   donViDaGanIds:["dv01","dv02","dv05"], goiCuocIds:["g03"],
-    cauHinhs:[
-      { _id:"ch4", tinhThanhIds:["Hà Nội"],          capHoc:"Tiểu học", truongIds:["dv01"], hinhThucPerTruong:{ "dv01":["B2B"] } },
-      { _id:"ch5", tinhThanhIds:["TP. Hồ Chí Minh"], capHoc:"",         truongIds:[],       hinhThucPerTruong:{ "":["B2C"] } },
-    ]},
-  { id:"yc05", loai:"chuong-trinh", tenChuongTrinh:"AI Book Ngữ Văn",                    tenDoiTac:"Công ty CP Giáo dục Sao Mai",maDoiTac:"DT-002", ngayGui:"06/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g05"], cauHinhs:[] },
-  { id:"yc06", loai:"chuong-trinh", tenChuongTrinh:"Vật lý 11 – Điện học & Từ trường",  tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"05/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g09"], cauHinhs:[] },
-  { id:"yc07", loai:"chuong-trinh", tenChuongTrinh:"AI Book Toán",                      tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"04/04/2025", trangThai:"da-gan",   donViDaGanIds:["dv06","dv07","dv10","dv11"], goiCuocIds:["g06"],
+  { id:"yc04", loai:"chuong-trinh", tenChuongTrinh:"AI Book Toán",                      tenDoiTac:"Đối tác Nội dung Edutech",   maDoiTac:"DT-001", ngayGui:"04/04/2025", trangThai:"da-gan",        donViDaGanIds:["dv06","dv07","dv10","dv11"], goiCuocIds:["g06"], nguoiTao:"Admin",
     cauHinhs:[
       { _id:"ch6", tinhThanhIds:["Hà Nội","TP. Hồ Chí Minh"], capHoc:"THCS", truongIds:["dv06","dv07"], hinhThucPerTruong:{ "dv06":["B2B"], "dv07":["B2B","B2C"] } },
       { _id:"ch8", tinhThanhIds:["Hà Nội","TP. Hồ Chí Minh"], capHoc:"THPT", truongIds:["dv11"],         hinhThucPerTruong:{ "dv11":["B2B2C"] } },
     ]},
-  { id:"yc08", loai:"chuong-trinh", tenChuongTrinh:"Hóa học 12 – Luyện thi THPTQG",     tenDoiTac:"Công ty TNHH EduSoft",       maDoiTac:"DT-004", ngayGui:"03/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g02","g04"], cauHinhs:[] },
-  { id:"yc09", loai:"chuong-trinh", tenChuongTrinh:"Ngữ văn 12 – Luyện thi THPTQG",     tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"02/04/2025", trangThai:"da-gan",   donViDaGanIds:["dv10","dv13"], goiCuocIds:["g05","g07"],
+  { id:"yc05", loai:"chuong-trinh", tenChuongTrinh:"Vật lý 11 – Điện học & Từ trường",  tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"05/04/2025", trangThai:"chua-gan",      donViDaGanIds:[], goiCuocIds:["g09"], nguoiTao:"Admin", cauHinhs:[] },
+
+  // === ĐỐI TÁC TẠO (5 dữ liệu) ===
+  { id:"yc06", loai:"chuong-trinh", tenChuongTrinh:"Kỹ năng sống Pro",                   tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"07/04/2025", trangThai:"da-gan",        donViDaGanIds:["dv01","dv02","dv05"], goiCuocIds:["g03"], nguoiTao:"Đối tác",
+    cauHinhs:[
+      { _id:"ch4", tinhThanhIds:["Hà Nội"],          capHoc:"Tiểu học", truongIds:["dv01"], hinhThucPerTruong:{ "dv01":["B2B"] } },
+      { _id:"ch5", tinhThanhIds:["TP. Hồ Chí Minh"], capHoc:"",         truongIds:[],       hinhThucPerTruong:{ "":["B2C"] } },
+    ]},
+  { id:"yc07", loai:"chuong-trinh", tenChuongTrinh:"AI Book Ngữ Văn",                    tenDoiTac:"Công ty CP Giáo dục Sao Mai",maDoiTac:"DT-002", ngayGui:"06/04/2025", trangThai:"chua-gan",      donViDaGanIds:[], goiCuocIds:["g05"], nguoiTao:"Đối tác", cauHinhs:[] },
+  { id:"yc08", loai:"chuong-trinh", tenChuongTrinh:"Hóa học 12 – Luyện thi THPTQG",     tenDoiTac:"Công ty TNHH EduSoft",       maDoiTac:"DT-004", ngayGui:"03/04/2025", trangThai:"moi-cap-nhat", donViDaGanIds:[], goiCuocIds:["g02","g04"], nguoiTao:"Đối tác", cauHinhs:[] },
+  { id:"yc09", loai:"chuong-trinh", tenChuongTrinh:"Ngữ văn 12 – Luyện thi THPTQG",     tenDoiTac:"Nhà xuất bản Giáo dục VN",   maDoiTac:"DT-003", ngayGui:"02/04/2025", trangThai:"da-gan",        donViDaGanIds:["dv10","dv13"], goiCuocIds:["g05","g07"], nguoiTao:"Đối tác",
     cauHinhs:[
       { _id:"ch10", tinhThanhIds:["Hà Nội","Hải Phòng"], capHoc:"THPT", truongIds:["dv10","dv13"], hinhThucPerTruong:{ "dv10":["B2B"], "dv13":["B2C","B2B2C"] } },
     ]},
-  { id:"yc10", loai:"chuong-trinh", tenChuongTrinh:"Tiếng Anh Giao tiếp",                 tenDoiTac:"Công ty TNHH EduSoft",       maDoiTac:"DT-004", ngayGui:"01/04/2025", trangThai:"chua-gan", donViDaGanIds:[], goiCuocIds:["g07"], cauHinhs:[] },
+  { id:"yc10", loai:"chuong-trinh", tenChuongTrinh:"Tiếng Anh Giao tiếp",                 tenDoiTac:"Công ty TNHH EduSoft",       maDoiTac:"DT-004", ngayGui:"01/04/2025", trangThai:"chua-gan",      donViDaGanIds:[], goiCuocIds:["g07"], nguoiTao:"Đối tác", cauHinhs:[] },
 ];
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -153,8 +161,9 @@ const LOAI_CFG: Record<LoaiYeuCau, { label: string; color: string; bg: string; b
 };
 
 const TRANG_THAI_CFG: Record<TrangThaiGan, { label: string; color: string; bg: string; dot: string }> = {
-  "chua-gan": { label: "Chưa gán", color: "#D97706", bg: "rgba(217,119,6,0.08)",  dot: "#D97706" },
-  "da-gan":   { label: "Đã gán",   color: "#0F766E", bg: "rgba(15,118,110,0.08)", dot: "#0F766E" },
+  "chua-gan":      { label: "Chưa gán",      color: "#D97706", bg: "rgba(217,119,6,0.08)",   dot: "#D97706" },
+  "da-gan":        { label: "Đã gán",        color: "#0F766E", bg: "rgba(15,118,110,0.08)",  dot: "#0F766E" },
+  "moi-cap-nhat":  { label: "Mới cập nhật",  color: "#7C3AED", bg: "rgba(124,58,237,0.08)",  dot: "#7C3AED" },
 };
 
 const CAP_HOC_CFG: Record<string, { color: string; bg: string }> = {
@@ -776,6 +785,7 @@ export default function GanDonViPage() {
                 <th style={{ ...thS, cursor: "pointer" }} onClick={() => handleSort("ngayGui")}>
                   <div className="flex items-center gap-1.5">Ngày gửi <SortIcon f="ngayGui"/></div>
                 </th>
+                <th style={thS}>Người tạo</th>
                 <th style={thS}>Trạng thái gán</th>
                 <th style={{ ...thS, textAlign: "center" }}>Hành động</th>
               </tr>
@@ -783,7 +793,7 @@ export default function GanDonViPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <div className="flex flex-col items-center justify-center py-16 gap-3">
                       <Link2 size={36} color="#CBD5E1"/>
                       <div style={{ textAlign: "center" }}>
@@ -854,6 +864,14 @@ export default function GanDonViPage() {
                       </div>
                     </td>
 
+                    {/* Người tạo */}
+                    <td style={{ padding: "14px" }}>
+                      <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg"
+                        style={{ background: yc.nguoiTao === "Admin" ? "rgba(59,130,246,0.1)" : "rgba(34,197,94,0.1)", fontSize: "0.8rem", fontWeight: 600, color: yc.nguoiTao === "Admin" ? "#1E40AF" : "#15803D" }}>
+                        {yc.nguoiTao}
+                      </span>
+                    </td>
+
                     {/* Trạng thái */}
                     <td style={{ padding: "14px" }}>
                       <div className="flex items-center gap-2">
@@ -888,17 +906,17 @@ export default function GanDonViPage() {
                         {/* Gán đơn vị */}
                         <button
                           onClick={() => setGanTarget(yc)}
-                          title={yc.trangThai === "da-gan" ? "Chỉnh sửa gán đơn vị" : "Gán đơn vị"}
+                          title={yc.trangThai === "chua-gan" ? "Gán đơn vị" : "Cập nhật"}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors"
                           style={{
-                            background: yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.08)" : "rgba(217,119,6,0.08)",
-                            border: `1px solid ${yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.2)" : "rgba(217,119,6,0.2)"}`,
+                            background: yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.08)" : yc.trangThai === "moi-cap-nhat" ? "rgba(124,58,237,0.08)" : "rgba(217,119,6,0.08)",
+                            border: `1px solid ${yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.2)" : yc.trangThai === "moi-cap-nhat" ? "rgba(124,58,237,0.2)" : "rgba(217,119,6,0.2)"}`,
                             cursor: "pointer", fontFamily: "'Be Vietnam Pro',sans-serif",
                           }}
                           onMouseEnter={e => (e.currentTarget.style.opacity = "0.8")}
                           onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                          <Link2 size={13} color={yc.trangThai === "chua-gan" ? "#005CB6" : "#D97706"}/>
-                          <span style={{ fontSize: "0.73rem", fontWeight: 700, color: yc.trangThai === "chua-gan" ? "#005CB6" : "#D97706" }}>
+                          <Link2 size={13} color={yc.trangThai === "chua-gan" ? "#005CB6" : yc.trangThai === "moi-cap-nhat" ? "#7C3AED" : "#D97706"}/>
+                          <span style={{ fontSize: "0.73rem", fontWeight: 700, color: yc.trangThai === "chua-gan" ? "#005CB6" : yc.trangThai === "moi-cap-nhat" ? "#7C3AED" : "#D97706" }}>
                             {yc.trangThai === "chua-gan" ? "Gán đơn vị" : "Cập nhật"}
                           </span>
                         </button>
