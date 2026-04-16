@@ -161,9 +161,9 @@ const LOAI_CFG: Record<LoaiYeuCau, { label: string; color: string; bg: string; b
 };
 
 const TRANG_THAI_CFG: Record<TrangThaiGan, { label: string; color: string; bg: string; dot: string }> = {
-  "chua-gan":      { label: "Chưa gán",      color: "#D97706", bg: "rgba(217,119,6,0.08)",   dot: "#D97706" },
-  "da-gan":        { label: "Đã gán",        color: "#0F766E", bg: "rgba(15,118,110,0.08)",  dot: "#0F766E" },
-  "moi-cap-nhat":  { label: "Mới cập nhật",  color: "#7C3AED", bg: "rgba(124,58,237,0.08)",  dot: "#7C3AED" },
+  "chua-gan":      { label: "Chưa gán",      color: "#D97706", bg: "rgba(217,119,6,0.08)" },
+  "da-gan":        { label: "Đã gán",        color: "#0F766E", bg: "rgba(15,118,110,0.08)" },
+  "moi-cap-nhat":  { label: "Mới cập nhật",  color: "#7C3AED", bg: "rgba(124,58,237,0.08)" },
 };
 
 const CAP_HOC_CFG: Record<string, { color: string; bg: string }> = {
@@ -762,6 +762,7 @@ export default function GanDonViPage() {
               <option value="">Tất cả trạng thái</option>
               <option value="chua-gan">Chưa gán</option>
               <option value="da-gan">Đã gán</option>
+              <option value="moi-cap-nhat">Mới cập nhật</option>
             </select>
             <ChevronDown size={13} color="#94A3B8" className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"/>
           </div>
@@ -822,19 +823,8 @@ export default function GanDonViPage() {
 
                     {/* Tên */}
                     <td style={{ padding: "14px" }}>
-                      <div className="flex items-start gap-2.5">
-                        <div className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0 mt-0.5"
-                          style={{ background: loai.bg, border: `1px solid ${loai.border}` }}>
-                          <LoaiIcon size={13} color={loai.color}/>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>
-                            {yc.tenChuongTrinh}
-                          </div>
-                          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: loai.color, background: loai.bg, padding: "1px 7px", borderRadius: 20, display: "inline-block", marginTop: 4 }}>
-                            {loai.label}
-                          </span>
-                        </div>
+                      <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "#0F172A", lineHeight: 1.3 }}>
+                        {yc.tenChuongTrinh}
                       </div>
                     </td>
 
@@ -858,10 +848,7 @@ export default function GanDonViPage() {
 
                     {/* Ngày gửi */}
                     <td style={{ padding: "14px" }}>
-                      <div className="flex items-center gap-1.5">
-                        <Clock size={12} color="#94A3B8"/>
-                        <span style={{ fontSize: "0.8rem", color: "#64748B" }}>{yc.ngayGui}</span>
-                      </div>
+                      <span style={{ fontSize: "0.8rem", color: "#64748B" }}>{yc.ngayGui}</span>
                     </td>
 
                     {/* Người tạo */}
@@ -874,18 +861,11 @@ export default function GanDonViPage() {
 
                     {/* Trạng thái */}
                     <td style={{ padding: "14px" }}>
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
-                          style={{ background: tt.bg, fontSize: "0.75rem", fontWeight: 700, color: tt.color }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: tt.dot, display: "inline-block" }}/>
-                          {tt.label}
-                        </span>
-                        {yc.trangThai === "da-gan" && (
-                          <span style={{ fontSize: "0.65rem", color: "#0F766E", fontWeight: 600 }}>
-                            {yc.cauHinhs.length} cấu hình
-                          </span>
-                        )}
-                      </div>
+                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl"
+                        style={{ background: tt.bg, fontSize: "0.75rem", fontWeight: 700, color: tt.color, width: "fit-content" }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: tt.dot, display: "inline-block" }}/>
+                        {tt.label}
+                      </span>
                     </td>
 
                     {/* Hành động */}
@@ -907,18 +887,14 @@ export default function GanDonViPage() {
                         <button
                           onClick={() => setGanTarget(yc)}
                           title={yc.trangThai === "chua-gan" ? "Gán đơn vị" : "Cập nhật"}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors"
+                          className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
                           style={{
-                            background: yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.08)" : yc.trangThai === "moi-cap-nhat" ? "rgba(124,58,237,0.08)" : "rgba(217,119,6,0.08)",
-                            border: `1px solid ${yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.2)" : yc.trangThai === "moi-cap-nhat" ? "rgba(124,58,237,0.2)" : "rgba(217,119,6,0.2)"}`,
-                            cursor: "pointer", fontFamily: "'Be Vietnam Pro',sans-serif",
+                            background: yc.trangThai === "chua-gan" ? "rgba(0,92,182,0.07)" : yc.trangThai === "moi-cap-nhat" ? "rgba(124,58,237,0.07)" : "rgba(217,119,6,0.07)",
+                            border: "none", cursor: "pointer",
                           }}
                           onMouseEnter={e => (e.currentTarget.style.opacity = "0.8")}
                           onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                          <Link2 size={13} color={yc.trangThai === "chua-gan" ? "#005CB6" : yc.trangThai === "moi-cap-nhat" ? "#7C3AED" : "#D97706"}/>
-                          <span style={{ fontSize: "0.73rem", fontWeight: 700, color: yc.trangThai === "chua-gan" ? "#005CB6" : yc.trangThai === "moi-cap-nhat" ? "#7C3AED" : "#D97706" }}>
-                            {yc.trangThai === "chua-gan" ? "Gán đơn vị" : "Cập nhật"}
-                          </span>
+                          <Link2 size={14} color={yc.trangThai === "chua-gan" ? "#005CB6" : yc.trangThai === "moi-cap-nhat" ? "#7C3AED" : "#D97706"}/>
                         </button>
                       </div>
                     </td>
