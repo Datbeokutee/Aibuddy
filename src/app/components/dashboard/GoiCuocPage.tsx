@@ -3272,7 +3272,7 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const [search, setSearch]     = useState("");
 
   const [filterLG, setFilterLG] = useState<LoaiGia|"">("");
-  const [filterTS, setFilterTS] = useState<TrangThai|"">("");
+  const [filterThoiLuong, setFilterThoiLuong] = useState<number|"">("");
   const [sortF, setSortF]       = useState<SortF>("tenGoi");
   const [sortD, setSortD]       = useState<SortD>("asc");
 
@@ -3296,7 +3296,7 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
   const filtered = list.filter(g=>{
     if (search && !g.tenGoi.toLowerCase().includes(search.toLowerCase()) && !g.maBCSS.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterLG && g.loaiGia!==filterLG)  return false;
-    if (filterTS && g.trangThai!==filterTS) return false;
+    if (filterThoiLuong && g.thoiLuongSuDung!==filterThoiLuong) return false;
     return true;
   }).sort((a,b)=>{
     let va: string|number, vb: string|number;
@@ -3491,7 +3491,7 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
           </div>
           {[
             { val:filterLG, set:setFilterLG as (v:string)=>void, opts:DS_LG, label:"Tất cả loại giá", map:(v:string)=>LG_CFG[v as LoaiGia].label },
-            { val:filterTS, set:setFilterTS as (v:string)=>void, opts:["Đang hoạt động","Tạm dừng"], label:"Tất cả trạng thái" },
+            { val:String(filterThoiLuong), set:(v:string)=>setFilterThoiLuong(v?Number(v):"") as (v:any)=>void, opts:[...new Set(list.map(g=>g.thoiLuongSuDung))].sort((a,b)=>a-b).map(String), label:"Tất cả thời lượng", map:(v:string)=>`${v} tháng` },
           ].map((f,i)=>(
             <select key={i} value={f.val} onChange={e=>f.set(e.target.value)} className="outline-none rounded-xl"
               style={{ border:"1.5px solid #E2E8F0", padding:"9px 14px", fontSize:"0.83rem", background:"#fff", cursor:"pointer", color:f.val?"#0F172A":"#94A3B8", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
@@ -3499,8 +3499,8 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
               {f.opts.map(o=><option key={o} value={o}>{f.map?f.map(o):o}</option>)}
             </select>
           ))}
-          {(search||filterLG||filterTS) && (
-            <button onClick={()=>{setSearch("");setFilterLG("");setFilterTS("");}}
+          {(search||filterLG||filterThoiLuong) && (
+            <button onClick={()=>{setSearch("");setFilterLG("");setFilterThoiLuong("");}}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl"
               style={{ border:"1.5px solid #E2E8F0", background:"#fff", cursor:"pointer", fontSize:"0.78rem", color:"#64748B", fontFamily:"'Be Vietnam Pro',sans-serif" }}>
               <RefreshCw size={12}/> Xóa lọc
