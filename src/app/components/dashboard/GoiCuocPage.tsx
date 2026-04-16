@@ -205,6 +205,7 @@ interface BCCSMaGoi {
   ma: string;
   moTa: string;
   giaSauVAT: number;  // đơn giá sau VAT (đồng)
+  thoiHan: number;    // Thời hạn (tháng)
 }
 
 interface BCCSGoi {
@@ -220,8 +221,8 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "lt10",
     ten: "Luyện thi vào lớp 10",
     maGois: [
-      { ma: "k12_u10s", moTa: "Ôn tập THCS thi vào 10 (cơ bản)",   giaSauVAT: 10000  },
-      { ma: "k12_LT20", moTa: "Luyện đề chuyên sâu vào lớp 10",    giaSauVAT: 300000 },
+      { ma: "k12_u10s", moTa: "Ôn tập THCS thi vào 10 (cơ bản)",   giaSauVAT: 10000,  thoiHan: 0 },
+      { ma: "k12_LT20", moTa: "Luyện đề chuyên sâu vào lớp 10",    giaSauVAT: 300000, thoiHan: 0 },
     ],
     trangThai: "Khả dụng",
     thoiLuongSuDung: 3,
@@ -230,9 +231,9 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "ltthptqg",
     ten: "Luyện thi THPTQG",
     maGois: [
-      { ma: "k12_LTQG_A", moTa: "Khối A – Toán Lý Hóa",  giaSauVAT: 400000 },
-      { ma: "k12_LTQG_B", moTa: "Khối B – Toán Hóa Sinh", giaSauVAT: 400000 },
-      { ma: "k12_LTQG_D", moTa: "Khối D – Toán Văn Anh",  giaSauVAT: 350000 },
+      { ma: "k12_LTQG_A", moTa: "Khối A – Toán Lý Hóa",  giaSauVAT: 400000, thoiHan: 0 },
+      { ma: "k12_LTQG_B", moTa: "Khối B – Toán Hóa Sinh", giaSauVAT: 400000, thoiHan: 0 },
+      { ma: "k12_LTQG_D", moTa: "Khối D – Toán Văn Anh",  giaSauVAT: 350000, thoiHan: 0 },
     ],
     trangThai: "Khả dụng",
     thoiLuongSuDung: 6,
@@ -241,8 +242,8 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "th-toan-dien",
     ten: "Gói Tiểu học – Toàn diện",
     maGois: [
-      { ma: "k12_TH_CB", moTa: "Chương trình cơ bản Tiểu học",  giaSauVAT: 150000 },
-      { ma: "k12_TH_NC", moTa: "Nâng cao & Phát triển tư duy",  giaSauVAT: 80000  },
+      { ma: "k12_TH_CB", moTa: "Chương trình cơ bản Tiểu học",  giaSauVAT: 150000, thoiHan: 0 },
+      { ma: "k12_TH_NC", moTa: "Nâng cao & Phát triển tư duy",  giaSauVAT: 80000,  thoiHan: 0 },
     ],
     trangThai: "Đang dùng",
     thoiLuongSuDung: 12,
@@ -251,7 +252,7 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "thcs-khtn",
     ten: "Gói THCS – Khoa học Tự nhiên",
     maGois: [
-      { ma: "k12_KHTN69", moTa: "KHTN lớp 6–9 (Toán Lý Hóa Sinh)", giaSauVAT: 280000 },
+      { ma: "k12_KHTN69", moTa: "KHTN lớp 6–9 (Toán Lý Hóa Sinh)", giaSauVAT: 280000, thoiHan: 0 },
     ],
     trangThai: "Khả dụng",
     thoiLuongSuDung: 6,
@@ -260,9 +261,9 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "thpt-stem",
     ten: "Gói THPT – Chuyên sâu Toán Lý Hóa",
     maGois: [
-      { ma: "k12_T10", moTa: "Toán nâng cao lớp 10",    giaSauVAT: 200000 },
-      { ma: "k12_L10", moTa: "Vật lý nâng cao lớp 10",  giaSauVAT: 180000 },
-      { ma: "k12_H10", moTa: "Hóa học nâng cao lớp 10", giaSauVAT: 180000 },
+      { ma: "k12_T10", moTa: "Toán nâng cao lớp 10",    giaSauVAT: 200000, thoiHan: 0 },
+      { ma: "k12_L10", moTa: "Vật lý nâng cao lớp 10",  giaSauVAT: 180000, thoiHan: 0 },
+      { ma: "k12_H10", moTa: "Hóa học nâng cao lớp 10", giaSauVAT: 180000, thoiHan: 0 },
     ],
     trangThai: "Khả dụng",
     thoiLuongSuDung: 12,
@@ -271,9 +272,9 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "k12-all",
     ten: "Gói K12 – Toàn diện tất cả môn",
     maGois: [
-      { ma: "k12_ALL_TH",   moTa: "Tất cả môn Tiểu học", giaSauVAT: 200000 },
-      { ma: "k12_ALL_THCS", moTa: "Tất cả môn THCS",     giaSauVAT: 350000 },
-      { ma: "k12_ALL_THPT", moTa: "Tất cả môn THPT",     giaSauVAT: 450000 },
+      { ma: "k12_ALL_TH",   moTa: "Tất cả môn Tiểu học", giaSauVAT: 200000, thoiHan: 0 },
+      { ma: "k12_ALL_THCS", moTa: "Tất cả môn THCS",     giaSauVAT: 350000, thoiHan: 0 },
+      { ma: "k12_ALL_THPT", moTa: "Tất cả môn THPT",     giaSauVAT: 450000, thoiHan: 0 },
     ],
     trangThai: "Đang dùng",
     thoiLuongSuDung: 12,
@@ -282,7 +283,7 @@ const DEMO_BCCS_PACKAGES: BCCSGoi[] = [
     id: "free-trial",
     ten: "Gói dùng thử miễn phí",
     maGois: [
-      { ma: "k12_FREE", moTa: "Trải nghiệm miễn phí 7 ngày", giaSauVAT: 0 },
+      { ma: "k12_FREE", moTa: "Trải nghiệm miễn phí 7 ngày", giaSauVAT: 0, thoiHan: 0 },
     ],
     trangThai: "Đang dùng",
     thoiLuongSuDung: 1,
@@ -1540,6 +1541,7 @@ interface KhacGiaRow {
   khoiLopIds: string[];  // multi-select, e.g. ["lop1","lop2"]
   maGoiId:    string;    // e.g. "k12_LTQG_A"
   giaBan:     string;    // auto-filled from giaSauVAT
+  thoiHan:    string;    // Thời hạn (tháng): 1, 3, 6, 12, ...
 }
 
 interface FormThemFlat {
@@ -1622,7 +1624,7 @@ function ModalThemGoiCuocFlat({
 
   /* ── Khác giá: thêm / sửa / xóa dòng ── */
   const addKhacGiaRow = () =>
-    setForm(f => ({ ...f, khacGiaRows: [...f.khacGiaRows, { _id: String(Date.now()), khoiLopIds: [], maGoiId: "", giaBan: "" }] }));
+    setForm(f => ({ ...f, khacGiaRows: [...f.khacGiaRows, { _id: String(Date.now()), khoiLopIds: [], maGoiId: "", giaBan: "", thoiHan: "" }] }));
 
   const removeKhacGiaRow = (id: string) =>
     setForm(f => ({ ...f, khacGiaRows: f.khacGiaRows.filter(r => r._id !== id) }));
@@ -1631,8 +1633,14 @@ function ModalThemGoiCuocFlat({
     setForm(f => ({ ...f, khacGiaRows: f.khacGiaRows.map(r => r._id === id ? { ...r, ...patch } : r) }));
 
   const handleKhacGiaMa = (rowId: string, maGoiId: string) => {
-    const price = ALL_MA_GOIS.find(m => m.ma === maGoiId)?.giaSauVAT ?? 0;
-    updateKhacGiaRow(rowId, { maGoiId, giaBan: price > 0 ? String(price) : "" });
+    const maInfo = ALL_MA_GOIS.find(m => m.ma === maGoiId);
+    const price = maInfo?.giaSauVAT ?? 0;
+    const thoiHan = maInfo?.thoiHan ?? 0;
+    updateKhacGiaRow(rowId, {
+      maGoiId,
+      giaBan: price > 0 ? String(price) : "",
+      thoiHan: thoiHan > 0 ? String(thoiHan) : ""
+    });
   };
 
   /* ── Đồng giá / Miễn phí: toggle chung ── */
@@ -1669,7 +1677,7 @@ function ModalThemGoiCuocFlat({
     if (!form.tenGoi.trim()) e.tenGoi = "Tên gói không được để trống";
     else if (allGoi.find(g => g.tenGoi.trim().toLowerCase() === form.tenGoi.trim().toLowerCase()))
       e.tenGoi = "Tên gói đã tồn tại";
-    if (!form.thoiLuongSuDung || Number(form.thoiLuongSuDung) <= 0) e.sdEnd = "Vui lòng chọn thời lượng sử dụng";
+    if (form.loaiGia !== "khac-gia" && (!form.thoiLuongSuDung || Number(form.thoiLuongSuDung) <= 0)) e.sdEnd = "Vui lòng chọn thời lượng sử dụng";
     if (form.loaiGia === "dong-gia") {
       if (!form.bccsGoiId) e.bccsGoiId = "Vui lòng chọn gói BCCS";
       if (!form.giaBan || Number(form.giaBan) <= 0) e.giaBan = "Giá bán không hợp lệ";
@@ -1679,8 +1687,8 @@ function ModalThemGoiCuocFlat({
       if (form.khacGiaRows.length === 0) {
         e.khacGiaRows = "Vui lòng thêm ít nhất 1 dòng cấu hình";
       } else {
-        const bad = form.khacGiaRows.find(r => r.khoiLopIds.length === 0 || !r.maGoiId || !r.giaBan || Number(r.giaBan) <= 0);
-        if (bad) e.khacGiaRows = "Vui lòng điền đầy đủ Khối lớp, Mã gói và Giá tiền cho tất cả các dòng";
+        const bad = form.khacGiaRows.find(r => r.khoiLopIds.length === 0 || !r.maGoiId || !r.giaBan || Number(r.giaBan) <= 0 || !r.thoiHan || Number(r.thoiHan) <= 0);
+        if (bad) e.khacGiaRows = "Vui lòng điền đầy đủ Khối lớp, Mã gói, Giá tiền và Thời hạn cho tất cả các dòng";
 
         // Check for duplicate class levels
         const lopIds = form.khacGiaRows.flatMap(r => r.khoiLopIds).filter(Boolean);
@@ -1944,6 +1952,40 @@ function ModalThemGoiCuocFlat({
                 )}
                 <ErrMsg f="khoiLopIds"/>
               </div>
+
+              {/* Thời lượng sử dụng */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Thời lượng sử dụng <span style={{ color:"#D4183D" }}>*</span>
+                  {selectedBCCSGoi && (
+                    <span style={{ fontSize:"0.63rem", color:"#005CB6", fontWeight:500, marginLeft:8 }}>· Tự động từ BCCS</span>
+                  )}
+                </label>
+                <div className="relative" style={{ width:160 }}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.thoiLuongSuDung}
+                    onChange={e => set("thoiLuongSuDung", e.target.value)}
+                    placeholder="0"
+                    readOnly={selectedBCCSGoi ? true : false}
+                    style={{
+                      ...iStyle("thoiLuongSuDung"),
+                      paddingRight: 48,
+                      background: selectedBCCSGoi ? "#F1F5F9" : "#F8F9FA",
+                      cursor: selectedBCCSGoi ? "default" : "text",
+                      opacity: selectedBCCSGoi ? 0.7 : 1,
+                    }}
+                    onFocus={e => !selectedBCCSGoi && Object.assign(e.target.style, fcs)}
+                    onBlur={e => !selectedBCCSGoi && Object.assign(e.target.style, blr("thoiLuongSuDung"))}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>Tháng</span>
+                </div>
+                {form.thoiLuongSuDung && !isNaN(Number(form.thoiLuongSuDung)) && Number(form.thoiLuongSuDung) > 0 && (
+                  <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:600 }}>{form.thoiLuongSuDung} tháng</p>
+                )}
+                <ErrMsg f="thoiLuongSuDung"/>
+              </div>
             </div>
           )}
 
@@ -1958,10 +2000,11 @@ function ModalThemGoiCuocFlat({
               <div className="rounded-xl overflow-hidden" style={{ border:"1.5px solid rgba(217,119,6,0.22)" }}>
                 {/* Header */}
                 <div className="grid px-3 py-2"
-                  style={{ gridTemplateColumns:"1fr 1fr 120px 36px", background:"rgba(217,119,6,0.07)", borderBottom:"1px solid rgba(217,119,6,0.15)" }}>
+                  style={{ gridTemplateColumns:"1fr 1fr 120px 100px 36px", background:"rgba(217,119,6,0.07)", borderBottom:"1px solid rgba(217,119,6,0.15)" }}>
                   <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em" }}>Khối lớp <span style={{ color:"#D4183D" }}>*</span></span>
                   <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em" }}>Mã gói BCCS <span style={{ color:"#D4183D" }}>*</span></span>
                   <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em", textAlign:"right" }}>Giá tiền <span style={{ color:"#D4183D" }}>*</span></span>
+                  <span style={{ fontSize:"0.66rem", fontWeight:800, color:"#92400E", textTransform:"uppercase", letterSpacing:"0.06em" }}>Thời hạn <span style={{ color:"#D4183D" }}>*</span></span>
                   <span/>
                 </div>
 
@@ -1991,7 +2034,7 @@ function ModalThemGoiCuocFlat({
                     <div key={row._id}
                       style={{ borderTop: idx > 0 ? "1px solid #FEF3C7" : "none", background: idx%2===0?"#fff":"#FFFBF5" }}>
                       <div className="grid items-start gap-2 px-3 py-2.5"
-                        style={{ gridTemplateColumns:"1fr 1fr 120px 36px" }}>
+                        style={{ gridTemplateColumns:"1fr 1fr 120px 100px 36px" }}>
 
                         {/* Khối lớp — dropdown select */}
                         <div>
@@ -2064,6 +2107,25 @@ function ModalThemGoiCuocFlat({
                           )}
                         </div>
 
+                        {/* Thời hạn */}
+                        <div>
+                          <input
+                            type="number"
+                            value={row.thoiHan}
+                            onChange={e => updateKhacGiaRow(row._id, { thoiHan: e.target.value })}
+                            placeholder="Nhập tháng"
+                            min="1"
+                            style={{ width:"100%", padding:"6px 10px", fontSize:"0.78rem", borderRadius:8,
+                              border:`1.5px solid ${hasRowErr&&!row.thoiHan?"#D4183D":"#E2E8F0"}`,
+                              background:row.thoiHan?"#FFF7ED":"#F8F9FA",
+                              outline:"none", fontFamily:"'Be Vietnam Pro',sans-serif", color:"#0F172A" }}/>
+                          {row.thoiHan && (
+                            <div style={{ fontSize:"0.62rem", color:"#0F766E", fontWeight:600, marginTop:3 }}>
+                              ✓ {row.thoiHan} tháng
+                            </div>
+                          )}
+                        </div>
+
                         {/* Xóa */}
                         <div className="flex items-center justify-center" style={{ paddingTop:4 }}>
                           <button type="button" onClick={() => removeKhacGiaRow(row._id)}
@@ -2131,85 +2193,76 @@ function ModalThemGoiCuocFlat({
                 )}
                 <ErrMsg f="khoiLopIds"/>
               </div>
+
+              {/* Thời gian sử dụng */}
+              <div>
+                <label style={{ fontSize:"0.76rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                  Thời gian áp dụng <span style={{ color:"#D4183D" }}>*</span>
+                </label>
+                <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày bắt đầu</div>
+                    <input
+                      type="text"
+                      placeholder="DD/MM/YYYY"
+                      value={form.sdStart || ""}
+                      onChange={e => set("sdStart", e.target.value)}
+                      style={{
+                        ...iStyle("sdStart"),
+                        width:"100%",
+                        padding:"10px 12px",
+                        fontSize:"0.85rem",
+                      }}
+                      onFocus={e => Object.assign(e.target.style, fcs)}
+                      onBlur={e => Object.assign(e.target.style, blr("sdStart"))}
+                    />
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày kết thúc</div>
+                    <input
+                      type="text"
+                      placeholder="DD/MM/YYYY"
+                      value={form.sdEnd || ""}
+                      onChange={e => set("sdEnd", e.target.value)}
+                      style={{
+                        ...iStyle("sdEnd"),
+                        width:"100%",
+                        padding:"10px 12px",
+                        fontSize:"0.85rem",
+                      }}
+                      onFocus={e => Object.assign(e.target.style, fcs)}
+                      onBlur={e => Object.assign(e.target.style, blr("sdEnd"))}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* 4. Thời lượng sử dụng */}
-          <div>
-            <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
-              Thời lượng sử dụng <span style={{ color:"#D4183D" }}>*</span>
-              {(form.loaiGia === "dong-gia" || form.loaiGia === "khac-gia") && selectedBCCSGoi && (
-                <span style={{ fontSize:"0.63rem", color:"#005CB6", fontWeight:500, marginLeft:8 }}>· Tự động từ BCCS</span>
-              )}
-            </label>
 
-            {form.loaiGia === "free" ? (
-              // Miễn phí → Date range picker
-              <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày bắt đầu</div>
-                  <input
-                    type="text"
-                    placeholder="DD/MM/YYYY"
-                    value={form.sdStart || ""}
-                    onChange={e => set("sdStart", e.target.value)}
-                    style={{
-                      ...iStyle("sdStart"),
-                      width:"100%",
-                      padding:"10px 12px",
-                      fontSize:"0.85rem",
-                    }}
-                    onFocus={e => Object.assign(e.target.style, fcs)}
-                    onBlur={e => Object.assign(e.target.style, blr("sdStart"))}
-                  />
-                </div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:"0.7rem", color:"#64748B", fontWeight:600, marginBottom:4 }}>Ngày kết thúc</div>
-                  <input
-                    type="text"
-                    placeholder="DD/MM/YYYY"
-                    value={form.sdEnd || ""}
-                    onChange={e => set("sdEnd", e.target.value)}
-                    style={{
-                      ...iStyle("sdEnd"),
-                      width:"100%",
-                      padding:"10px 12px",
-                      fontSize:"0.85rem",
-                    }}
-                    onFocus={e => Object.assign(e.target.style, fcs)}
-                    onBlur={e => Object.assign(e.target.style, blr("sdEnd"))}
-                  />
-                </div>
-              </div>
-            ) : (
-              // Đồng giá / Khác giá → Input số, khóa khi có BCCS
-              <div className="relative" style={{ width:160 }}>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.thoiLuongSuDung}
-                  onChange={e => set("thoiLuongSuDung", e.target.value)}
-                  placeholder="0"
-                  readOnly={selectedBCCSGoi ? true : false}
-                  style={{
-                    ...iStyle("thoiLuongSuDung"),
-                    paddingRight: 48,
-                    background: selectedBCCSGoi ? "#F1F5F9" : "#F8F9FA",
-                    cursor: selectedBCCSGoi ? "default" : "text",
-                    opacity: selectedBCCSGoi ? 0.7 : 1,
-                  }}
-                  onFocus={e => !selectedBCCSGoi && Object.assign(e.target.style, fcs)}
-                  onBlur={e => !selectedBCCSGoi && Object.assign(e.target.style, blr("thoiLuongSuDung"))}
+          {/* 4. Thời lượng dùng thử — chỉ cho Đồng giá / Khác giá */}
+          {form.loaiGia !== "free" && (
+            <div>
+              <label style={{ fontSize:"0.78rem", fontWeight:700, color:"#374151", display:"block", marginBottom:6 }}>
+                Thời lượng dùng thử
+                <span style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:400, marginLeft:8 }}>Không bắt buộc</span>
+              </label>
+              <div className="relative" style={{ width:180 }}>
+                <input type="number" min="1" value={form.thoiLuongThuNghiem}
+                  onChange={e => set("thoiLuongThuNghiem", e.target.value)}
+                  placeholder="VD: 7"
+                  style={{ ...iStyle(), paddingRight:46 }}
+                  onFocus={e => Object.assign(e.target.style, fcs)}
+                  onBlur={e  => Object.assign(e.target.style, blr())}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>Tháng</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2"
+                  style={{ fontSize:"0.65rem", color:"#94A3B8", fontWeight:600 }}>ngày</span>
               </div>
-            )}
-
-            {form.thoiLuongSuDung && !isNaN(Number(form.thoiLuongSuDung)) && Number(form.thoiLuongSuDung) > 0 && form.loaiGia !== "free" && (
-              <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:600 }}>{form.thoiLuongSuDung} tháng</p>
-            )}
-            <ErrMsg f="sdEnd"/>
-          </div>
+              {form.thoiLuongThuNghiem && !isNaN(Number(form.thoiLuongThuNghiem)) && Number(form.thoiLuongThuNghiem) > 0 && (
+                <p style={{ fontSize:"0.68rem", color:"#005CB6", marginTop:3, fontWeight:600 }}>Dùng thử {form.thoiLuongThuNghiem} ngày</p>
+              )}
+            </div>
+          )}
 
           {/* 5. Môn học */}
           <div>
