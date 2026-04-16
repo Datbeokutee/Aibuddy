@@ -481,7 +481,7 @@ export default function AdminNoiDungPage() {
   const [filterKhoi,      setFilterKhoi]      = useState("");
   const [filterMon,       setFilterMon]       = useState("");
   const [filterTen,       setFilterTen]       = useState("");
-  const [filterTrangThai, setFilterTrangThai] = useState<TrangThaiND | "">("");
+  const [filterGoiCuoc,   setFilterGoiCuoc]   = useState("");
   const [filterDoiTac,    setFilterDoiTac]    = useState("");
   const [selected,   setSelected]   = useState<string[]>([]);
   const [showPopup,  setShowPopup]  = useState(false);
@@ -498,9 +498,9 @@ export default function AdminNoiDungPage() {
     const matchKhoi      = !filterKhoi      || ct.khoiLop.includes(filterKhoi);
     const matchMon       = !filterMon       || ct.monHoc.includes(filterMon);
     const matchTen       = !filterTen       || ct.ten.toLowerCase().includes(filterTen.toLowerCase());
-    const matchTrangThai = !filterTrangThai || ct.trangThai === filterTrangThai;
+    const matchGoiCuoc   = !filterGoiCuoc   || ct.goiCuoc === filterGoiCuoc;
     const matchDoiTac    = !filterDoiTac    || ct.nguoiTao === filterDoiTac;
-    return matchKhoi && matchMon && matchTen && matchTrangThai && matchDoiTac;
+    return matchKhoi && matchMon && matchTen && matchGoiCuoc && matchDoiTac;
   });
 
   const coPheNhap = danhSach.filter((c) => c.trangThai === "Chưa phê duyệt" && c.nguon === "doitac").length;
@@ -579,15 +579,16 @@ export default function AdminNoiDungPage() {
           {/* Thanh bộ lọc */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
             <SelFilterObj value={filterDoiTac} onChange={setFilterDoiTac} options={DANH_SACH_DOI_TAC} placeholder="-- Lọc theo đối tác --" />
+            <SelFilter value={filterGoiCuoc}   onChange={setFilterGoiCuoc}   options={[...new Set(MASTER_DATA.flatMap(m => m.danhSachGoi.map(g => g.ten)))].sort()} placeholder="-- Gói cước --" />
             <SelFilter value={filterKhoi}      onChange={setFilterKhoi}      options={DS_KHOI_LOP}        placeholder="-- Khối lớp --" />
             <SelFilter value={filterMon}       onChange={setFilterMon}       options={DS_MON_HOC}         placeholder="-- Môn học --" />
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", minWidth: 220 }}>
               <Search size={13} color="#9ca3af" />
-              <input value={filterTen} onChange={(e) => setFilterTen(e.target.value)} placeholder="Tên nội dung học" style={{ border: "none", outline: "none", fontSize: 13, background: "transparent", flex: 1, fontFamily: "'Be Vietnam Pro', sans-serif" }} />
+              <input value={filterTen} onChange={(e) => setFilterTen(e.target.value)} placeholder="Chương trình học" style={{ border: "none", outline: "none", fontSize: 13, background: "transparent", flex: 1, fontFamily: "'Be Vietnam Pro', sans-serif" }} />
               {filterTen && <X size={12} color="#9ca3af" style={{ cursor: "pointer" }} onClick={() => setFilterTen("")} />}
             </div>
             <div style={{ flex: 1 }} />
-            <button onClick={() => { setFilterKhoi(""); setFilterMon(""); setFilterTen(""); setFilterDoiTac(""); }}
+            <button onClick={() => { setFilterKhoi(""); setFilterMon(""); setFilterTen(""); setFilterGoiCuoc(""); setFilterDoiTac(""); }}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 13, color: "#374151", cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
               <RefreshCw size={13} />Tải lại
             </button>
@@ -612,7 +613,7 @@ export default function AdminNoiDungPage() {
                       {selected.length === dsHienThi.length && dsHienThi.length > 0 && <Check size={10} color="#fff" strokeWidth={3} />}
                     </div>
                   </th>
-                  {["STT","Tên nội dung học","Gói cước","Số học liệu","Đối tác","Lần sửa cuối","Hành động"].map((h, i) => (
+                  {["STT","Tên chương trình học","Gói cước","Số học liệu","Đối tác","Lần sửa cuối","Hành động"].map((h, i) => (
                     <th key={i} style={{ padding: "12px 14px", textAlign: "left" as const, fontSize: 13, fontWeight: 600, color: "#374151", ...(i === 0 ? { width: 50, textAlign: "center" as const } : {}), ...(i === 6 ? { width: 160, textAlign: "center" as const } : {}) }}>{h}</th>
                   ))}
                 </tr>

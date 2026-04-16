@@ -636,7 +636,7 @@ export default function DoiTacChuongTrinhPage() {
               <SelFilter value={filterTrangThai} onChange={(v) => setFilterTrangThai(v as TrangThaiND | "")} options={["Chưa phê duyệt","Chờ gán đơn vị","Đã phê duyệt"]} placeholder="-- Trạng thái --" />
               <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", minWidth: 220 }}>
                 <Search size={13} color="#9ca3af" />
-                <input value={filterTen} onChange={(e) => setFilterTen(e.target.value)} placeholder="Tên nội dung học" style={{ border: "none", outline: "none", fontSize: 13, background: "transparent", flex: 1, fontFamily: "'Be Vietnam Pro', sans-serif" }} />
+                <input value={filterTen} onChange={(e) => setFilterTen(e.target.value)} placeholder="Chương trình học" style={{ border: "none", outline: "none", fontSize: 13, background: "transparent", flex: 1, fontFamily: "'Be Vietnam Pro', sans-serif" }} />
                 {filterTen && <X size={12} color="#9ca3af" style={{ cursor: "pointer" }} onClick={() => setFilterTen("")} />}
               </div>
               <div style={{ flex: 1 }} />
@@ -664,7 +664,7 @@ export default function DoiTacChuongTrinhPage() {
                         {selected.length === dsHienThi.length && dsHienThi.length > 0 && <Check size={10} color="#fff" strokeWidth={3} />}
                       </div>
                     </th>
-                    {["STT","Tên nội dung học","Gói cước","Số học liệu","Trạng thái","Người tạo","Lần sửa cuối","Hành động"].map((h, i) => (
+                    {["STT","Chương trình học","Gói cước","Số học liệu","Trạng thái","Người tạo","Lần sửa cuối","Hành động"].map((h, i) => (
                       <th key={i} style={{ padding: "12px 14px", textAlign: "left" as const, fontSize: 13, fontWeight: 600, color: "#374151", ...(i === 0 ? { width: 50, textAlign: "center" as const } : {}), ...(i === 7 ? { width: 130, textAlign: "center" as const } : {}) }}>{h}</th>
                     ))}
                   </tr>
