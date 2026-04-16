@@ -579,7 +579,6 @@ export default function AdminNoiDungPage() {
           {/* Thanh bộ lọc */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
             <SelFilterObj value={filterDoiTac} onChange={setFilterDoiTac} options={DANH_SACH_DOI_TAC} placeholder="-- Lọc theo đối tác --" />
-            <SelFilter value={filterTrangThai} onChange={(v) => setFilterTrangThai(v as TrangThaiND | "")} options={["Chưa phê duyệt","Đã phê duyệt"]} placeholder="-- Trạng thái --" />
             <SelFilter value={filterKhoi}      onChange={setFilterKhoi}      options={DS_KHOI_LOP}        placeholder="-- Khối lớp --" />
             <SelFilter value={filterMon}       onChange={setFilterMon}       options={DS_MON_HOC}         placeholder="-- Môn học --" />
             <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", minWidth: 220 }}>
@@ -588,7 +587,7 @@ export default function AdminNoiDungPage() {
               {filterTen && <X size={12} color="#9ca3af" style={{ cursor: "pointer" }} onClick={() => setFilterTen("")} />}
             </div>
             <div style={{ flex: 1 }} />
-            <button onClick={() => { setFilterKhoi(""); setFilterMon(""); setFilterTen(""); setFilterTrangThai(""); setFilterDoiTac(""); }}
+            <button onClick={() => { setFilterKhoi(""); setFilterMon(""); setFilterTen(""); setFilterDoiTac(""); }}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "1px solid #d1d5db", background: "#fff", fontSize: 13, color: "#374151", cursor: "pointer", fontFamily: "'Be Vietnam Pro', sans-serif" }}>
               <RefreshCw size={13} />Tải lại
             </button>

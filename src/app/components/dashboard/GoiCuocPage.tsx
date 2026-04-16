@@ -3510,25 +3510,6 @@ export function GoiCuocPage({ userRole }: { userRole: UserRole }) {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-5">
-          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background:"#fff", border:"1.5px solid rgba(0,92,182,0.2)", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0" style={{ background:"rgba(0,92,182,0.08)" }}><Tags size={19} color="#005CB6"/></div>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2 mb-0.5"><span style={{ fontSize:"1.6rem", fontWeight:900, color:"#005CB6", lineHeight:1 }}>{totalGoi}</span><span style={{ fontSize:"0.7rem", color:"#94A3B8" }}>gói</span></div>
-              <span style={{ fontSize:"0.84rem", fontWeight:800, color:"#0F172A" }}>Tổng gói cước</span>
-              <div style={{ fontSize:"0.68rem", color:"#64748B", marginTop:3 }}><span style={{ color:"#0F766E", fontWeight:600 }}>{activeGoi} hoạt động</span>{pausedGoi>0&&<> · {pausedGoi} tạm dừng</>}</div>
-            </div>
-          </div>
-          <div className="rounded-2xl p-4 flex items-start gap-3" style={{ background:"#fff", border:"1.5px solid rgba(15,118,110,0.2)", boxShadow:"0 2px 8px rgba(0,0,0,0.04)" }}>
-            <div className="flex items-center justify-center w-11 h-11 rounded-xl flex-shrink-0" style={{ background:"rgba(15,118,110,0.08)" }}><CheckCircle size={19} color="#0F766E"/></div>
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2 mb-0.5"><span style={{ fontSize:"1.6rem", fontWeight:900, color:"#0F766E", lineHeight:1 }}>{activeGoi}</span><span style={{ fontSize:"0.7rem", color:"#94A3B8" }}>gói</span></div>
-              <span style={{ fontSize:"0.84rem", fontWeight:800, color:"#0F172A" }}>Đang hoạt động</span>
-              <div style={{ fontSize:"0.68rem", color:"#64748B", marginTop:3 }}><span style={{ color:"#0F766E", fontWeight:600 }}>{freeGoi} gói miễn phí</span></div>
-            </div>
-          </div>
-        </div>
 
         {/* Filters */}
         <div className="flex items-center gap-3 mb-4 flex-wrap">
