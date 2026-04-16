@@ -1039,16 +1039,11 @@ function ModalXemDonVi({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3.5 flex-shrink-0"
+        <div className="flex items-center justify-end px-5 py-3.5 flex-shrink-0"
           style={{ borderTop: "1px solid #EEF0F4", background: "#FAFBFC" }}>
           <button onClick={onClose} className="px-4 py-2 rounded-xl"
             style={{ background: "#F1F5F9", border: "1.5px solid #E2E8F0", color: "#64748B", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", fontFamily: "'Be Vietnam Pro',sans-serif" }}>
             Đóng
-          </button>
-          <button onClick={onGan}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl"
-            style={{ background: "rgba(0,92,182,0.08)", border: "1px solid rgba(0,92,182,0.2)", color: "#005CB6", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", fontFamily: "'Be Vietnam Pro',sans-serif" }}>
-            <Link2 size={13}/> Cập nhật gán
           </button>
         </div>
       </div>
